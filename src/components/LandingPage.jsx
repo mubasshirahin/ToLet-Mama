@@ -208,7 +208,7 @@ function LandingPage() {
   const featuresSectionRef = useRef(null);
   const { scrollYProgress: featuresProgress } = useScroll({
     target: featuresSectionRef,
-    offset: ["start start", "end end"],
+    offset: ["start center", "end end"],
   });
   const featuresTrackRef = useRef(null);
   const featuresMotionX = useMotionValue(0);
@@ -229,6 +229,8 @@ function LandingPage() {
     const startPx = centerOff;
     const endPx = centerOff - (trackW - cardW);
     featuresCalcRef.current = { start: startPx, range: endPx - startPx };
+    // Initialize cards to centered position on first load
+    featuresMotionX.set(startPx);
   }, []);
 
   const [activeFeature, setActiveFeature] = useState(0);
@@ -474,40 +476,40 @@ function LandingPage() {
       >
         {/* Sticky viewport-fixed container */}
         <div className="sticky top-0 flex h-screen flex-col overflow-hidden bg-[#FAF3E0]">
-          {/* Compact heading */}
-          <div className="mx-auto w-full max-w-screen-xl px-6 pt-6 pb-1 md:pt-8 md:pb-2">
-            <div className="flex items-center gap-3 mb-1">
-              <span className="inline-block h-px w-6 bg-[#2C1810]/30" />
-              <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+          {/* Refined heading */}
+          <div className="mx-auto w-full max-w-screen-xl px-6 pt-10 pb-4 text-center md:pt-12 md:pb-6">
+            <div className="flex items-center justify-center gap-4 mb-5">
+              <span className="inline-block h-px w-16 bg-gradient-to-r from-transparent to-[#5C3A21]/40" />
+              <p className="font-serif text-[10px] font-semibold uppercase tracking-[0.25em] text-[#5C3A21]">
                 Why To-Let Mama
               </p>
-              <span className="inline-block h-px flex-1 bg-[#2C1810]/30" />
+              <span className="inline-block h-px w-16 bg-gradient-to-l from-transparent to-[#5C3A21]/40" />
             </div>
-            <h2 className="font-serif text-2xl font-black leading-tight tracking-tight text-[#2C1810] md:text-3xl lg:text-4xl">
-              Everything you need, all in one place.
-</h2>
+            <h2 className="font-serif text-3xl font-medium leading-tight tracking-normal text-[#2C1810] md:text-4xl lg:text-5xl">
+              Everything you need, <span className="italic font-light text-[#5C3A21]">all in one place.</span>
+            </h2>
           </div>
 
           {/* Cards horizontal track */}
-          <div className="flex flex-1 items-center overflow-visible">
+          <div className="flex flex-1 items-center justify-center overflow-visible" style={{ minHeight: 0 }}>
             <motion.div
               ref={featuresTrackRef}
               style={{ x: featuresMotionX }}
-              className="flex items-stretch gap-6 md:gap-8 lg:gap-8"
+              className="flex items-stretch gap-6 md:gap-7 lg:gap-8"
             >
               {features.map((f, i) => {
                 const isActive = i === activeFeature;
                 return (
                   <div
                     key={f.title}
-                    className="relative shrink-0 w-[85vw] md:w-[50vw] lg:w-[420px] rounded-lg overflow-hidden"
+                    className="relative shrink-0 w-[80vw] md:w-[45vw] lg:w-[380px]"
                     style={{
-                      transition: "transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease",
-                      transform: isActive ? "scale(1.05)" : "scale(0.92)",
-                      opacity: isActive ? 1 : 0.65,
+                      transition: "transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.7s ease, box-shadow 0.7s ease",
+                      transform: isActive ? "scale(1) translateY(0)" : "scale(0.96) translateY(12px)",
+                      opacity: isActive ? 1 : 0.45,
                       boxShadow: isActive
-                        ? "0 8px 32px rgba(44,24,16,0.15)"
-                        : "0 4px 16px rgba(44,24,16,0.05)",
+                        ? "0 16px 40px -8px rgba(44,24,16,0.12), 0 0 0 1px rgba(44,24,16,0.05)"
+                        : "0 4px 12px -4px rgba(44,24,16,0.04), 0 0 0 1px rgba(44,24,16,0.02)",
                     }}
                   >
                     {/* Card body */}
@@ -515,62 +517,51 @@ function LandingPage() {
                       className="flex h-full flex-col bg-[#FFFDF8]"
                       style={{
                         border: isActive
-                          ? "1.5px solid rgba(44,24,16,0.6)"
-                          : "1px solid rgba(44,24,16,0.12)",
-                        transition: "border 0.35s ease",
+                          ? "1px solid rgba(92,58,33,0.3)"
+                          : "1px solid rgba(92,58,33,0.1)",
+                        borderRadius: "2px",
+                        transition: "border 0.7s ease",
                       }}
                     >
                       {/* Internal padding container */}
                       <div className="flex flex-1 flex-col justify-between px-8 py-8 md:px-9 md:py-9">
                         <div>
-                          {/* Icon area with step badge */}
-                          <div className="relative inline-block mb-4">
-                            {/* Icon box */}
+                          {/* Icon area with elegant step label */}
+                          <div className="relative flex items-center justify-between mb-8">
                             <div
-                              className="flex h-14 w-14 items-center justify-center rounded-lg"
+                              className="flex h-11 w-11 items-center justify-center rounded-full"
                               style={{
-                                backgroundColor: isActive ? "#2C1810" : "#EDE4D0",
-                                transition: "background-color 0.35s ease",
+                                border: `1px solid ${isActive ? "#5C3A21" : "rgba(92,58,33,0.15)"}`,
+                                transition: "border 0.7s ease",
                               }}
                             >
                               <f.icon
-                                size={22}
+                                size={18}
+                                strokeWidth={1.2}
                                 style={{
-                                  color: isActive ? "#FAF3E0" : "#2C1810",
-                                  transition: "color 0.35s ease",
+                                  color: isActive ? "#2C1810" : "#7A6B52",
+                                  transition: "color 0.7s ease",
                                 }}
-                                strokeWidth={1.5}
                               />
                             </div>
-                            {/* Step number badge - circle outline */}
-                            <div
-                              className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#FAF3E0]"
+                            <p
+                              className="font-serif text-[10px] uppercase tracking-[0.2em]"
                               style={{
-                                border: isActive
-                                  ? "1.5px solid #2C1810"
-                                  : "1px solid rgba(44,24,16,0.2)",
-                                transition: "border 0.35s ease",
+                                color: isActive ? "#5C3A21" : "rgba(122,107,82,0.4)",
+                                transition: "color 0.7s ease",
                               }}
                             >
-                              <span
-                                className="font-serif text-[8px] font-bold"
-                                style={{
-                                  color: isActive ? "#2C1810" : "rgba(44,24,16,0.4)",
-                                  transition: "color 0.35s ease",
-                                }}
-                              >
-                                {i + 1}
-                              </span>
-                            </div>
+                              No. 0{i + 1}
+                            </p>
                           </div>
 
                           {/* Title */}
                           <h3
-                            className="font-serif font-bold leading-snug mb-3"
+                            className="font-serif font-medium leading-relaxed mb-3"
                             style={{
-                              fontSize: "clamp(20px, 2.2vw, 24px)",
+                              fontSize: "clamp(18px, 1.8vw, 22px)",
                               color: isActive ? "#2C1810" : "#5C3A21",
-                              transition: "color 0.35s ease",
+                              transition: "color 0.7s ease",
                             }}
                           >
                             {f.title}
@@ -578,36 +569,34 @@ function LandingPage() {
 
                           {/* Description */}
                           <p
-                            className="font-serif"
+                            className="font-serif font-light"
                             style={{
-                              fontSize: "clamp(14px, 1.4vw, 15px)",
-                              lineHeight: 1.6,
+                              fontSize: "clamp(13px, 1.2vw, 14px)",
+                              lineHeight: 1.7,
                               color: isActive ? "#5C3A21" : "#7A6B52",
-                              transition: "color 0.35s ease",
+                              transition: "color 0.7s ease",
                             }}
                           >
                             {f.desc}
                           </p>
                         </div>
 
-                        {/* Bottom accent line - animated fill on active */}
-                        <div className="mt-6 pt-5 relative">
+                        {/* Bottom accent line - elegant full-width fill on active */}
+                        <div className="mt-6 pt-4 relative">
                           <div
                             className="h-px w-full"
                             style={{
                               backgroundColor: isActive
-                                ? "rgba(44,24,16,0.08)"
+                                ? "rgba(44,24,16,0.12)"
                                 : "rgba(44,24,16,0.04)",
-                              transition: "background-color 0.35s ease",
+                              transition: "background-color 0.7s ease",
                             }}
                           />
-                          {/* Active accent fill bar */}
                           <div
-                            className="absolute top-5 left-0 h-px"
+                            className="absolute top-4 left-0 h-px bg-[#5C3A21]"
                             style={{
-                              width: isActive ? "40%" : "0%",
-                              backgroundColor: "#2C1810",
-                              transition: "width 0.5s ease 0.1s",
+                              width: isActive ? "100%" : "0%",
+                              transition: "width 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s",
                             }}
                           />
                         </div>
@@ -619,21 +608,18 @@ function LandingPage() {
             </motion.div>
           </div>
 
-          {/* Progress dots */}
-          <div className="mx-auto w-full max-w-screen-xl px-6 pb-4 md:pb-5">
-            <div className="flex items-center justify-center gap-2.5">
+          {/* Progress indicators — elegant hyphens */}
+          <div className="mx-auto w-full max-w-screen-xl px-6 pb-8 pt-6 md:pb-10 md:pt-8">
+            <div className="flex items-center justify-center gap-3">
               {features.map((_, i) => (
-                <button
+                <div
                   key={i}
-                  className="rounded-full border transition-all duration-500"
+                  className="transition-all duration-700 ease-out"
                   style={{
-                    height: i === activeFeature ? 8 : 6,
-                    width: i === activeFeature ? 20 : 6,
-                    backgroundColor: i === activeFeature ? "#2C1810" : "transparent",
-                    borderColor: i === activeFeature ? "#2C1810" : "rgba(44,24,16,0.2)",
-                    transition: "all 0.35s ease",
+                    height: "2px",
+                    width: i === activeFeature ? "36px" : "12px",
+                    backgroundColor: i === activeFeature ? "#2C1810" : "rgba(92,58,33,0.15)",
                   }}
-                  aria-label={`Go to feature ${i + 1}`}
                 />
               ))}
             </div>
