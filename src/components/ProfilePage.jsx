@@ -10,7 +10,6 @@ import {
   Lock,
   Mail,
   MapPin,
-  ShieldCheck,
   Sparkles,
   Phone,
   SwitchCamera,
@@ -530,32 +529,6 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="border-2 border-[#5C3A21]/20 bg-[#2C1810] p-5 text-[#FAF3E0] shadow-[4px_4px_0px_rgba(44,24,16,0.1)] sm:p-6">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center border border-[#FAF3E0]/30 bg-[#FAF3E0]/10">
-                  <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
-                </div>
-                <div>
-                  <h3 className="font-serif text-lg font-black tracking-tight">
-                    Safety checklist
-                  </h3>
-                  <p className="font-serif text-sm text-[#F4E8C1]/80">
-                    A quick reminder while you edit sensitive account settings.
-                  </p>
-                </div>
-              </div>
-
-              <ul className="space-y-3 font-serif text-sm leading-relaxed text-[#F4E8C1]">
-                <li className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.8} />
-                  Use a unique password that is not shared with other sites.
-                </li>
-                <li className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.8} />
-                  Upload a clear avatar so landlords and students can recognize you faster.
-                </li>
-              </ul>
-            </div>
           </motion.aside>
         </form>
       </div>
