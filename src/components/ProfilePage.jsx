@@ -15,7 +15,6 @@ import {
   Phone,
   SwitchCamera,
   User,
-  X,
   AlertCircle,
 } from "lucide-react";
 
@@ -136,7 +135,6 @@ function ProfilePage() {
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [toasts, setToasts] = useState([]);
-  const [pendingRole, setPendingRole] = useState(null);
 
   const avatarFallback = useMemo(() => {
     const initials = formData.name
@@ -226,34 +224,6 @@ function ProfilePage() {
       pushToast("success", "Avatar preview updated.");
     };
     reader.readAsDataURL(file);
-  };
-
-  const requestRoleSwitch = (nextRole) => {
-    if (nextRole === role) return;
-    setPendingRole(nextRole);
-  };
-
-  const confirmRoleSwitch = () => {
-    if (!pendingRole) return;
-    persistProfile(role, {
-      ...formData,
-      avatar: avatarPreview,
-    });
-    setRole(pendingRole);
-    const nextStoredProfile = getStoredProfile(pendingRole);
-    setFormData({
-      ...createProfileState(pendingRole),
-      ...(nextStoredProfile || {}),
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setAvatarPreview(nextStoredProfile?.avatar || DEFAULT_PROFILE[pendingRole].avatar);
-    setUploadName(nextStoredProfile?.avatar ? "Saved avatar" : "");
-    setErrors({});
-    setPendingRole(null);
-    persistCurrentRole(pendingRole);
-    pushToast("success", `Switched to ${pendingRole} profile.`);
   };
 
   const handleSave = async (event) => {
@@ -529,31 +499,14 @@ function ProfilePage() {
             <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
               <div className="mb-5 border-b-2 border-[#2C1810] pb-4">
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
-                  Role Management
+                  Profile Summary
                 </h2>
                 <p className="font-serif text-sm text-[#5C3A21]">
-                  Switching role updates the dashboard context and saved defaults.
+                  Your current account context and uploaded photo status.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 border-2 border-[#2C1810]">
-                {[ROLES.STUDENT, ROLES.OWNER].map((nextRole) => (
-                  <button
-                    key={nextRole}
-                    type="button"
-                    onClick={() => requestRoleSwitch(nextRole)}
-                    className={`px-4 py-3 font-serif text-xs font-bold uppercase tracking-[0.15em] transition-all ${
-                      role === nextRole
-                        ? "bg-[#2C1810] text-[#FAF3E0]"
-                        : "bg-transparent text-[#5C3A21] hover:bg-[#F4E8C1]"
-                    }`}
-                  >
-                    {nextRole}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-4 space-y-3 font-serif text-sm text-[#5C3A21]">
+              <div className="space-y-3 font-serif text-sm text-[#5C3A21]">
                 <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
                   <span className="uppercase tracking-[0.14em] text-[10px] text-[#A89880]">
                     Active role
@@ -601,10 +554,6 @@ function ProfilePage() {
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.8} />
                   Upload a clear avatar so landlords and students can recognize you faster.
                 </li>
-                <li className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.8} />
-                  Switch roles only when your profile details match the active account type.
-                </li>
               </ul>
             </div>
           </motion.aside>
@@ -636,59 +585,6 @@ function ProfilePage() {
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {pendingRole && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 flex items-center justify-center bg-[#2C1810]/55 px-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.96 }}
-              className="w-full max-w-md border-2 border-[#2C1810] bg-[#FAF3E0] p-6 shadow-[10px_10px_0px_rgba(44,24,16,0.15)]"
-            >
-              <div className="mb-4 flex items-center gap-3 border-b-2 border-[#2C1810] pb-4">
-                <div className="flex h-10 w-10 items-center justify-center border-2 border-[#2C1810] bg-white">
-                  <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
-                </div>
-                <div>
-                  <h3 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
-                    Confirm role switch
-                  </h3>
-                  <p className="font-serif text-sm text-[#5C3A21]">
-                    Change your active profile from {role} to {pendingRole}?
-                  </p>
-                </div>
-              </div>
-
-              <p className="font-serif text-sm leading-relaxed text-[#5C3A21]">
-                This updates the default dashboard copy, avatar suggestion, and saved profile details for the selected mode.
-              </p>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setPendingRole(null)}
-                  className="inline-flex items-center justify-center gap-2 border-2 border-[#5C3A21]/30 bg-white px-4 py-2 font-serif text-xs font-bold uppercase tracking-[0.14em] text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
-                >
-                  <X className="h-4 w-4" strokeWidth={2} />
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmRoleSwitch}
-                  className="btn-rubber-stamp justify-center px-5 py-2 text-xs"
-                >
-                  Switch role
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
