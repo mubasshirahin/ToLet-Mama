@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Newspaper, Search, Mail, Bell, User, Settings, LogOut, Menu, MapPin, Users } from "lucide-react";
 
 const dummyListings = [
@@ -75,12 +75,13 @@ const sidebarLinks = [
   { icon: Search, label: "Browse Listings", active: true },
   { icon: Mail, label: "Messages" },
   { icon: Bell, label: "Notifications" },
-  { icon: User, label: "Profile" },
+  { icon: User, label: "Profile", route: "/profile" },
   { icon: Settings, label: "Settings" },
 ];
 
 function DashboardPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const role = location.state?.role || "Student";
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -126,10 +127,19 @@ function DashboardPage() {
           {sidebarLinks.map((link) => (
             <button
               key={link.label}
+              type="button"
+              onClick={() => {
+                if (link.route) {
+                  navigate(link.route, { state: { role } });
+                }
+              }}
+              disabled={!link.route}
               className={`flex w-full items-center gap-3 px-4 py-3 font-serif text-sm font-bold uppercase tracking-[0.1em] transition-all ${
                 link.active
                   ? "bg-[#2C1810] text-[#FAF3E0] -translate-y-px shadow-[2px_2px_0px_0px_rgba(44,24,16,0.2)]"
-                  : "text-[#5C3A21] hover:bg-[#F4E8C1] hover:text-[#2C1810]"
+                  : link.route
+                    ? "text-[#5C3A21] hover:bg-[#F4E8C1] hover:text-[#2C1810]"
+                    : "cursor-default text-[#5C3A21]/50"
               }`}
             >
               <link.icon className="h-4 w-4" strokeWidth={1.5} />
