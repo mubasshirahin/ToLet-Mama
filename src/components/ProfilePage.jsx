@@ -133,6 +133,7 @@ function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingBio, setIsSavingBio] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   const avatarFallback = useMemo(() => {
@@ -257,6 +258,23 @@ function ProfilePage() {
       pushToast("error", "We could not save the profile right now.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleBioSave = async () => {
+    setIsSavingBio(true);
+
+    try {
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
+      persistProfile(role, {
+        bio: formData.bio,
+      });
+      persistCurrentRole(role);
+      pushToast("success", "Bio saved.");
+    } catch {
+      pushToast("error", "We could not save the bio right now.");
+    } finally {
+      setIsSavingBio(false);
     }
   };
 
@@ -424,6 +442,16 @@ function ProfilePage() {
                       rows={4}
                       className="vintage-inset w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none transition-colors focus:border-[#2C1810]"
                     />
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleBioSave}
+                        disabled={isSavingBio}
+                        className="btn-coupon-clip px-4 py-2 text-[10px] disabled:opacity-50"
+                      >
+                        {isSavingBio ? "Saving bio..." : "Save bio"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
