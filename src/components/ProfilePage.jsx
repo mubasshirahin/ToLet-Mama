@@ -43,6 +43,68 @@ const DEFAULT_PROFILE = {
   },
 };
 
+const STORAGE_KEY = "toletmama.profile.v1";
+const CURRENT_ROLE_KEY = "toletmama.profile.currentRole";
+
+function readStoredProfiles() {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function readStoredCurrentRole() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(CURRENT_ROLE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getStoredProfile(role) {
+  const storedProfiles = readStoredProfiles();
+  return storedProfiles[role] || null;
+}
+
+function persistProfile(role, profile) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const storedProfiles = readStoredProfiles();
+    storedProfiles[role] = {
+      ...storedProfiles[role],
+      ...profile,
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedProfiles));
+  } catch {
+    // Ignore storage failures so the form still works normally.
+  }
+}
+
+function persistCurrentRole(role) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(CURRENT_ROLE_KEY, role);
+  } catch {
+    // Ignore storage failures so the form still works normally.
+  }
+}
+
 function createProfileState(role) {
   return {
     ...DEFAULT_PROFILE[role],
@@ -56,11 +118,18 @@ function ProfilePage() {
   const location = useLocation();
   const fileInputRef = useRef(null);
 
-  const initialRole = location.state?.role || ROLES.STUDENT;
+  const initialRole = location.state?.role || readStoredCurrentRole() || ROLES.STUDENT;
+  const storedProfile = getStoredProfile(initialRole);
   const [role, setRole] = useState(initialRole);
-  const [formData, setFormData] = useState(createProfileState(initialRole));
-  const [avatarPreview, setAvatarPreview] = useState(DEFAULT_PROFILE[initialRole].avatar);
-  const [uploadName, setUploadName] = useState("");
+  const [formData, setFormData] = useState(() => ({
+    ...createProfileState(initialRole),
+    ...(storedProfile || {}),
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  }));
+  const [avatarPreview, setAvatarPreview] = useState(() => storedProfile?.avatar || DEFAULT_PROFILE[initialRole].avatar);
+  const [uploadName, setUploadName] = useState(() => (storedProfile?.avatar ? "Saved avatar" : ""));
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -148,8 +217,12 @@ function ProfilePage() {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setAvatarPreview(String(reader.result));
+      const nextAvatar = String(reader.result);
+      setAvatarPreview(nextAvatar);
       setUploadName(file.name);
+      persistProfile(role, {
+        avatar: nextAvatar,
+      });
       pushToast("success", "Avatar preview updated.");
     };
     reader.readAsDataURL(file);
@@ -162,12 +235,24 @@ function ProfilePage() {
 
   const confirmRoleSwitch = () => {
     if (!pendingRole) return;
+    persistProfile(role, {
+      ...formData,
+      avatar: avatarPreview,
+    });
     setRole(pendingRole);
-    setFormData(createProfileState(pendingRole));
-    setAvatarPreview(DEFAULT_PROFILE[pendingRole].avatar);
-    setUploadName("");
+    const nextStoredProfile = getStoredProfile(pendingRole);
+    setFormData({
+      ...createProfileState(pendingRole),
+      ...(nextStoredProfile || {}),
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setAvatarPreview(nextStoredProfile?.avatar || DEFAULT_PROFILE[pendingRole].avatar);
+    setUploadName(nextStoredProfile?.avatar ? "Saved avatar" : "");
     setErrors({});
     setPendingRole(null);
+    persistCurrentRole(pendingRole);
     pushToast("success", `Switched to ${pendingRole} profile.`);
   };
 
@@ -190,6 +275,14 @@ function ProfilePage() {
         newPassword: "",
         confirmPassword: "",
       }));
+      persistProfile(role, {
+        ...formData,
+        avatar: avatarPreview,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      persistCurrentRole(role);
       pushToast("success", "Profile changes saved.");
     } catch {
       pushToast("error", "We could not save the profile right now.");
@@ -199,9 +292,17 @@ function ProfilePage() {
   };
 
   useEffect(() => {
+    const nextStoredProfile = getStoredProfile(initialRole);
     setRole(initialRole);
-    setFormData(createProfileState(initialRole));
-    setAvatarPreview(DEFAULT_PROFILE[initialRole].avatar);
+    setFormData({
+      ...createProfileState(initialRole),
+      ...(nextStoredProfile || {}),
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setAvatarPreview(nextStoredProfile?.avatar || DEFAULT_PROFILE[initialRole].avatar);
+    setUploadName(nextStoredProfile?.avatar ? "Saved avatar" : "");
   }, [initialRole]);
 
   return (
