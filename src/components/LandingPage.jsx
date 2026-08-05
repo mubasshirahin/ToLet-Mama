@@ -698,9 +698,13 @@ function LandingPage() {
                     <div className="p-5">
                       <h3 className="font-serif text-base font-bold text-[#2C1810]">{item.title}</h3>
                       <p className="mt-1 font-serif text-sm text-[#5C3A21]">{item.price}</p>
-                      <button className="mt-3 font-serif text-[10px] font-bold uppercase tracking-[0.15em] text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all">
+                      <Link
+                        to={`/listings/${item.id}`}
+                        state={{ listing: { ...item, price: item.price, image: item.img, images: [item.img] } }}
+                        className="mt-3 inline-flex font-serif text-[10px] font-bold uppercase tracking-[0.15em] text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all"
+                      >
                         View Details →
-                      </button>
+                      </Link>
                     </div>
                   </motion.div>
                 </ScrollReveal>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Newspaper, Search, Mail, Bell, User, Settings, LogOut, Menu, MapPin, Users } from "lucide-react";
 
 const dummyListings = [
@@ -264,8 +264,10 @@ function DashboardPage() {
           {/* Listings grid */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {dummyListings.map((listing) => (
-              <div
+              <Link
                 key={listing.id}
+                to={`/listings/${listing.id}`}
+                state={{ listing }}
                 className="group border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#2C1810]"
               >
                 {/* Image */}
@@ -304,7 +306,7 @@ function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
