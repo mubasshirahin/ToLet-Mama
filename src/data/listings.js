@@ -200,11 +200,6 @@ export const LISTINGS = [
   },
 ];
 
-export function getListingById(id) {
-  const numericId = Number(id);
-  return LISTINGS.find((listing) => listing.id === numericId) || null;
-}
-
 export function getListingSummary(listing) {
   return {
     id: listing.id,
@@ -217,4 +212,71 @@ export function getListingSummary(listing) {
     posted: listing.posted,
     interested: listing.interested,
   };
+}
+
+const LISTING_STORAGE_KEY = "toletmama.savedListings.v1";
+
+function readStoredListings() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(LISTING_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredListings(listings) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(LISTING_STORAGE_KEY, JSON.stringify(listings));
+  } catch {
+    // Ignore storage failures so the form still works normally.
+  }
+}
+
+export function getAllListings() {
+  const savedListings = readStoredListings();
+  const savedIds = new Set(savedListings.map((listing) => listing.id));
+
+  return [...savedListings, ...LISTINGS.filter((listing) => !savedIds.has(listing.id))];
+}
+
+export function getListingById(id) {
+  const numericId = Number(id);
+  return getAllListings().find((listing) => listing.id === numericId) || null;
+}
+
+export function upsertListing(listing) {
+  const savedListings = readStoredListings();
+  const nextListing = { ...listing };
+  const existingIndex = savedListings.findIndex((item) => item.id === nextListing.id);
+
+  if (existingIndex >= 0) {
+    const nextListings = [...savedListings];
+    nextListings[existingIndex] = nextListing;
+    writeStoredListings(nextListings);
+    return nextListing;
+  }
+
+  writeStoredListings([nextListing, ...savedListings]);
+  return nextListing;
+}
+
+export function createListingId() {
+  const allIds = getAllListings().map((listing) => listing.id);
+  return (allIds.length ? Math.max(...allIds) : 0) + 1;
+}
+
+export function deleteListing(id) {
+  const numericId = Number(id);
+  const nextListings = readStoredListings().filter((listing) => listing.id !== numericId);
+  writeStoredListings(nextListings);
 }

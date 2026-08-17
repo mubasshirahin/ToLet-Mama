@@ -6,6 +6,7 @@ import ForgotPasswordPage from "./components/ForgotPasswordPage";
 import DashboardPage from "./components/DashboardPage";
 import ProfilePage from "./components/ProfilePage";
 import ListingDetailPage from "./components/ListingDetailPage";
+import ListingFormPage from "./components/ListingFormPage";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/listings/new" element={<ListingFormPage />} />
+        <Route path="/listings/:id/edit" element={<ListingFormPage />} />
         <Route path="/listings/:id" element={<ListingDetailPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

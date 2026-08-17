@@ -251,9 +251,9 @@ function DashboardPage() {
                 <option>Studio</option>
               </select>
               {role === "Owner" && (
-                <button className="btn-rubber-stamp px-5 py-2 text-xs">
+                <Link to="/listings/new" className="btn-rubber-stamp px-5 py-2 text-xs">
                   + Add Listing
-                </button>
+                </Link>
               )}
             </div>
           </div>

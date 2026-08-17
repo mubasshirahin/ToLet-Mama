@@ -17,10 +17,11 @@ import {
   Share2,
   Sparkles,
   Star,
+  PenLine,
   Users,
   X,
 } from "lucide-react";
-import { LISTINGS, getListingById } from "../data/listings";
+import { getAllListings, getListingById } from "../data/listings";
 
 const FAVORITES_KEY = "toletmama.favorites.v1";
 
@@ -92,7 +93,7 @@ function ListingDetailPage() {
 
   const relatedListings = useMemo(() => {
     if (!listing) return [];
-    return LISTINGS.filter((item) => item.id !== listing.id && (item.type === listing.type || item.location.split(",")[1] === listing.location.split(",")[1])).slice(0, 4);
+    return getAllListings().filter((item) => item.id !== listing.id && (item.type === listing.type || item.location.split(",")[1] === listing.location.split(",")[1])).slice(0, 4);
   }, [listing]);
 
   const handleFavorite = () => {
@@ -191,6 +192,10 @@ function ListingDetailPage() {
               <Share2 className="h-4 w-4" strokeWidth={1.8} />
               Share
             </button>
+            <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="btn-rubber-stamp px-4 py-2 text-[10px]">
+              <PenLine className="h-4 w-4" strokeWidth={1.8} />
+              Edit
+            </Link>
           </div>
         </header>
 
