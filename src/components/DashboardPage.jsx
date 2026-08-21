@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { getAllListings } from "../data/listings";
+import ThemeToggle from "./ThemeToggle";
 
 const PRICE_BANDS = [
   { value: "any", label: "Any price" },
@@ -324,6 +325,7 @@ function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle compact className="hidden sm:inline-flex" />
               <button className="relative p-2 text-[#5C3A21] transition-colors hover:bg-[#F4E8C1] hover:text-[#2C1810]">
                 <Bell className="h-5 w-5" strokeWidth={1.5} />
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center bg-[#2C1810] text-[10px] font-bold text-[#FAF3E0]">

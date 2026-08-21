@@ -5,6 +5,7 @@ import {
   Search, Shield, TrendingUp, Home,
   ArrowRight, Check, Plus, Minus, ChevronLeft, ChevronRight
 } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 // ── Data ──────────────────────────────────────────────────
 
@@ -271,6 +272,7 @@ function LandingPage() {
               >{l}</a>
             ))}
             <div className="flex items-center gap-2">
+              <ThemeToggle compact />
               <Link to="/auth" className="btn-coupon-clip px-4 py-2 text-[10px]">Sign In</Link>
               <Link to="/signup" className="btn-rubber-stamp px-4 py-2 text-[11px]">Subscribe</Link>
             </div>

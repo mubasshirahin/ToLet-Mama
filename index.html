@@ -4,7 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>To-Let Mama — The Dhaka Rental Authority</title>
+    <title>To-Let Mama - The Dhaka Rental Authority</title>
+    <script>
+      (() => {
+        try {
+          const storageKey = "toletmama.theme.v1";
+          const stored = localStorage.getItem(storageKey);
+          const theme = stored === "dark" || stored === "light"
+            ? stored
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+        } catch {
+          // Ignore storage and preference lookup failures.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
