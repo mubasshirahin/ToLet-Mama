@@ -71,19 +71,18 @@ const dummyListings = [
   },
 ];
 
-const sidebarLinks = [
-  { icon: Search, label: "Browse Listings", active: true },
-  { icon: Mail, label: "Messages" },
-  { icon: Bell, label: "Notifications" },
-  { icon: User, label: "Profile", route: "/profile" },
-  { icon: Settings, label: "Settings" },
-];
-
 function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const role = location.state?.role || "Student";
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const sidebarLinks = [
+    { icon: Search, label: "Browse Listings", active: true },
+    { icon: Mail, label: "Messages", route: "/messages" },
+    { icon: Bell, label: "Notifications" },
+    { icon: User, label: "Profile", route: "/profile" },
+    { icon: Settings, label: "Settings" },
+  ];
 
   const stats = [
     { label: "Total Listings", value: "2,547", change: "+12%", up: true },
