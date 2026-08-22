@@ -47,6 +47,14 @@ const STEPS = [
   { id: "contact", label: "Rules & Contact" },
 ];
 
+function isPositiveInteger(value) {
+  return Number.isInteger(Number(value)) && Number(value) > 0;
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 function createEmptyForm() {
   return {
     title: "",
@@ -118,7 +126,6 @@ function ListingFormPage() {
     setForm(createFormFromListing(existingListing));
     setStepIndex(0);
     setErrors({});
-    setUploadedFiles([]);
   }, [existingListing]);
 
   const previewImages = useMemo(() => form.images, [form.images]);
@@ -138,6 +145,9 @@ function ListingFormPage() {
         ? current.amenities.filter((item) => item !== amenity)
         : [...current.amenities, amenity],
     }));
+    if (errors.amenities) {
+      setErrors((current) => ({ ...current, amenities: "" }));
+    }
   };
 
   const handleFiles = async (event) => {
@@ -165,6 +175,9 @@ function ListingFormPage() {
       ...current,
       images: [...current.images, ...previews].slice(0, 6),
     }));
+    if (errors.images) {
+      setErrors((current) => ({ ...current, images: "" }));
+    }
     setToast("Image preview added.");
     window.setTimeout(() => setToast(""), 1600);
     event.target.value = "";
@@ -186,19 +199,24 @@ function ListingFormPage() {
       if (!form.location.trim()) nextErrors.location = "Location is required.";
       if (!form.description.trim()) nextErrors.description = "Description is required.";
       if (!form.availableFrom.trim()) nextErrors.availableFrom = "Available date is required.";
+      if (!isPositiveInteger(form.bedrooms)) nextErrors.bedrooms = "Enter at least 1 bedroom.";
+      if (!isPositiveInteger(form.bathrooms)) nextErrors.bathrooms = "Enter at least 1 bathroom.";
+      if (!form.size.trim()) nextErrors.size = "Property size is required.";
+      if (!form.floor.trim()) nextErrors.floor = "Floor information is required.";
     }
 
     if (index === 1) {
       if (!form.images.length) nextErrors.images = "Add at least one property photo.";
       if (form.amenities.length < 2) nextErrors.amenities = "Choose at least two amenities.";
-      if (!form.size.trim()) nextErrors.size = "Property size is required.";
-      if (!form.floor.trim()) nextErrors.floor = "Floor information is required.";
     }
 
     if (index === 2) {
       if (!form.ownerName.trim()) nextErrors.ownerName = "Owner name is required.";
       if (!form.ownerPhone.trim()) nextErrors.ownerPhone = "Owner phone is required.";
       if (!form.ownerEmail.trim()) nextErrors.ownerEmail = "Owner email is required.";
+      if (form.ownerEmail.trim() && !isValidEmail(form.ownerEmail.trim())) {
+        nextErrors.ownerEmail = "Enter a valid email address.";
+      }
       if (!form.rulesText.trim()) nextErrors.rulesText = "Add at least one house rule.";
       if (!form.nearbyText.trim()) nextErrors.nearbyText = "Add nearby places for this listing.";
     }
@@ -232,6 +250,10 @@ function ListingFormPage() {
 
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
+      const firstInvalidStep = STEPS.findIndex((_, index) => Object.keys(getStepErrors(index)).length > 0);
+      if (firstInvalidStep >= 0) {
+        setStepIndex(firstInvalidStep);
+      }
       setToast("Please fix the highlighted fields.");
       window.setTimeout(() => setToast(""), 1800);
       return;
@@ -239,9 +261,7 @@ function ListingFormPage() {
 
     setIsSaving(true);
     try {
-      await new Promise((resolve, reject) =>
-        window.setTimeout(() => (Math.random() > 0.12 ? resolve() : reject(new Error("Network error"))), 900)
-      );
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
 
       const listing = {
         id: existingListing?.id || createListingId(),
@@ -419,14 +439,20 @@ function ListingFormPage() {
                       icon={BedDouble}
                       value={form.bedrooms}
                       onChange={(value) => updateField("bedrooms", value)}
+                      error={errors.bedrooms}
                       placeholder="1"
+                      type="number"
+                      min="1"
                     />
                     <Field
                       label="Bathrooms"
                       icon={Bath}
                       value={form.bathrooms}
                       onChange={(value) => updateField("bathrooms", value)}
+                      error={errors.bathrooms}
                       placeholder="1"
+                      type="number"
+                      min="1"
                     />
                     <Field
                       label="Size"
@@ -522,7 +548,11 @@ function ListingFormPage() {
                             </div>
                           ))
                         ) : (
-                          <label className="col-span-full flex min-h-[160px] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-[#5C3A21]/30 bg-white px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="col-span-full flex min-h-[160px] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-[#5C3A21]/30 bg-white px-4 text-center"
+                          >
                             <Upload className="h-8 w-8 text-[#A89880]" strokeWidth={1.7} />
                             <p className="mt-3 font-serif text-sm font-bold text-[#2C1810]">
                               Drop or select up to 6 photos
@@ -530,7 +560,7 @@ function ListingFormPage() {
                             <p className="mt-1 font-serif text-xs text-[#5C3A21]">
                               JPG, PNG, or WEBP previews will show here instantly.
                             </p>
-                          </label>
+                          </button>
                         )}
                       </div>
                       {errors.images && <p className="mt-2 font-serif text-xs text-[#2C1810]">{errors.images}</p>}
@@ -593,6 +623,7 @@ function ListingFormPage() {
                       onChange={(value) => updateField("ownerEmail", value)}
                       error={errors.ownerEmail}
                       placeholder="owner@example.com"
+                      type="email"
                     />
                     <Field
                       label="Response Time"
@@ -756,7 +787,7 @@ function ListingFormPage() {
   );
 }
 
-function Field({ label, icon: Icon, value, onChange, error, placeholder, className = "" }) {
+function Field({ label, icon: Icon, value, onChange, error, placeholder, className = "", type = "text", min }) {
   return (
     <div className={className}>
       <label className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
@@ -765,6 +796,8 @@ function Field({ label, icon: Icon, value, onChange, error, placeholder, classNa
       <div className="relative">
         <Icon className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${error ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
         <input
+          type={type}
+          min={min}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
