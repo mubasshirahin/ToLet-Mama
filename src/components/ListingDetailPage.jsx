@@ -93,7 +93,14 @@ function ListingDetailPage() {
 
   const relatedListings = useMemo(() => {
     if (!listing) return [];
-    return getAllListings().filter((item) => item.id !== listing.id && (item.type === listing.type || item.location.split(",")[1] === listing.location.split(",")[1])).slice(0, 4);
+    const listingCity = listing.location.split(",").at(-1)?.trim();
+
+    return getAllListings()
+      .filter((item) => {
+        const itemCity = item.location.split(",").at(-1)?.trim();
+        return item.id !== listing.id && (item.type === listing.type || itemCity === listingCity);
+      })
+      .slice(0, 4);
   }, [listing]);
 
   const handleFavorite = () => {
@@ -125,6 +132,16 @@ function ListingDetailPage() {
       setToast("Share cancelled");
       window.setTimeout(() => setToast(""), 1600);
     }
+  };
+
+  const showPreviousImage = () => {
+    if (!listing?.images?.length) return;
+    setActiveImageIndex((current) => (current - 1 + listing.images.length) % listing.images.length);
+  };
+
+  const showNextImage = () => {
+    if (!listing?.images?.length) return;
+    setActiveImageIndex((current) => (current + 1) % listing.images.length);
   };
 
   if (isLoading) {
@@ -168,10 +185,10 @@ function ListingDetailPage() {
               Back to home
             </Link>
             <h1 className="font-serif text-3xl font-black tracking-tight sm:text-4xl">
-              Listing Detail Page
+              {listing.title}
             </h1>
             <p className="mt-1 font-serif text-sm text-[#5C3A21]">
-              {listing.location} • {listing.type} • {listing.status}
+              {listing.location} / {listing.type} / {listing.status}
             </p>
           </div>
 
@@ -207,7 +224,7 @@ function ListingDetailPage() {
                   <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Image gallery
                   </p>
-                  <h2 className="font-serif text-xl font-black">Working image viewer</h2>
+                  <h2 className="font-serif text-xl font-black">Tour the space</h2>
                 </div>
                 <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
                   {activeImageIndex + 1}/{listing.images.length}
@@ -316,7 +333,7 @@ function ListingDetailPage() {
                       <h3 className="font-serif text-xl font-black">{listing.owner.name}</h3>
                       <p className="font-serif text-sm text-[#5C3A21]">
                         {listing.owner.role}
-                        {listing.owner.verified ? " • Verified" : ""}
+                        {listing.owner.verified ? " / Verified" : ""}
                       </p>
                       <div className="mt-1 flex items-center gap-1 font-serif text-xs text-[#5C3A21]">
                         <Star className="h-3.5 w-3.5 fill-current" strokeWidth={1.5} />
@@ -465,10 +482,31 @@ function ListingDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
+                aria-label="Close gallery"
                 className="absolute right-3 top-3 z-10 border-2 border-[#2C1810] bg-[#FAF3E0] p-2 text-[#2C1810]"
               >
                 <X className="h-4 w-4" strokeWidth={2} />
               </button>
+              {listing.images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={showPreviousImage}
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 z-10 -translate-y-1/2 border-2 border-[#2C1810] bg-[#FAF3E0] p-2 text-[#2C1810]"
+                  >
+                    <ChevronLeft className="h-5 w-5" strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextImage}
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 z-10 -translate-y-1/2 border-2 border-[#2C1810] bg-[#FAF3E0] p-2 text-[#2C1810]"
+                  >
+                    <ChevronRight className="h-5 w-5" strokeWidth={2} />
+                  </button>
+                </>
+              )}
               <img src={activeImage} alt={listing.title} className="max-h-[90vh] w-full object-contain bg-black" />
             </motion.div>
           </motion.div>
