@@ -141,6 +141,7 @@ function MessagesPage() {
   const initialInbox = useMemo(() => cloneInbox(role), [role]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
   const [conversations, setConversations] = useState(() => initialInbox);
@@ -156,15 +157,17 @@ function MessagesPage() {
     setConversations(initialInbox);
     setActiveConversationId(initialInbox[0]?.id ?? null);
     setIsMobileListOpen(true);
+    setShowUnreadOnly(false);
     setQuery("");
     setDraft("");
   }, [initialInbox, role]);
 
   const filteredConversations = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return conversations;
+    const inbox = showUnreadOnly ? conversations.filter((conversation) => conversation.unread > 0) : conversations;
+    if (!term) return inbox;
 
-    return conversations.filter((conversation) => {
+    return inbox.filter((conversation) => {
       const haystack = [
         conversation.name,
         conversation.role,
@@ -176,7 +179,7 @@ function MessagesPage() {
         .toLowerCase();
       return haystack.includes(term);
     });
-  }, [conversations, query]);
+  }, [conversations, query, showUnreadOnly]);
 
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeConversationId) || null,
@@ -184,6 +187,22 @@ function MessagesPage() {
   );
 
   const totalUnread = conversations.reduce((count, conversation) => count + conversation.unread, 0);
+  const unreadConversationCount = conversations.filter((conversation) => conversation.unread > 0).length;
+
+  useEffect(() => {
+    if (!activeConversationId || isLoading) return;
+
+    const isDesktop = typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
+    if (!isDesktop && isMobileListOpen) return;
+
+    setConversations((current) =>
+      current.map((conversation) =>
+        conversation.id === activeConversationId && conversation.unread > 0
+          ? { ...conversation, unread: 0 }
+          : conversation
+      )
+    );
+  }, [activeConversationId, isLoading, isMobileListOpen]);
 
   const selectConversation = (conversationId) => {
     setActiveConversationId(conversationId);
@@ -237,6 +256,20 @@ function MessagesPage() {
         })
       );
     }, 900);
+
+    window.setTimeout(() => {
+      setConversations((current) =>
+        current.map((conversation) => {
+          if (conversation.id !== activeConversation.id) return conversation;
+          return {
+            ...conversation,
+            messages: conversation.messages.map((message) =>
+              message.id === messageId ? { ...message, status: "read" } : message
+            ),
+          };
+        })
+      );
+    }, 2200);
   };
 
   if (isLoading) {
@@ -253,6 +286,7 @@ function MessagesPage() {
             <button
               type="button"
               onClick={() => navigate("/dashboard", { state: { role } })}
+              aria-label="Back to dashboard"
               className="mt-0.5 border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
@@ -295,6 +329,7 @@ function MessagesPage() {
                 <button
                   type="button"
                   onClick={() => navigate("/dashboard", { state: { role } })}
+                  aria-label="Back to dashboard"
                   className="lg:hidden border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
                 >
                   <ArrowLeft className="h-4 w-4" strokeWidth={2} />
@@ -310,6 +345,20 @@ function MessagesPage() {
                   className="w-full bg-transparent font-serif text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
                 />
               </label>
+
+              <button
+                type="button"
+                onClick={() => setShowUnreadOnly((current) => !current)}
+                aria-pressed={showUnreadOnly}
+                className={`mt-3 inline-flex w-full items-center justify-between border-2 px-3 py-2 font-serif text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
+                  showUnreadOnly
+                    ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
+                    : "border-[#5C3A21]/20 bg-white text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                }`}
+              >
+                <span>Unread only</span>
+                <span>{unreadConversationCount}</span>
+              </button>
             </div>
 
             <div className="max-h-[calc(100vh-13rem)] overflow-y-auto">
@@ -333,6 +382,7 @@ function MessagesPage() {
                         key={conversation.id}
                         type="button"
                         onClick={() => selectConversation(conversation.id)}
+                        aria-current={isActive ? "true" : undefined}
                         className={`flex w-full gap-3 px-4 py-4 text-left transition-colors ${
                           isActive ? "bg-[#F4E8C1]" : "hover:bg-[#FAF3E0]"
                         }`}
@@ -359,7 +409,10 @@ function MessagesPage() {
                                 {conversation.time}
                               </p>
                               {conversation.unread > 0 && (
-                                <span className="mt-1 inline-flex min-w-6 items-center justify-center border border-[#2C1810] bg-[#2C1810] px-1.5 py-0.5 font-serif text-[10px] font-bold text-[#FAF3E0]">
+                                <span
+                                  aria-label={`${conversation.unread} unread messages`}
+                                  className="mt-1 inline-flex min-w-6 items-center justify-center border border-[#2C1810] bg-[#2C1810] px-1.5 py-0.5 font-serif text-[10px] font-bold text-[#FAF3E0]"
+                                >
                                   {conversation.unread}
                                 </span>
                               )}
@@ -416,6 +469,7 @@ function MessagesPage() {
                     <button
                       type="button"
                       onClick={() => setIsMobileListOpen(true)}
+                      aria-label="Back to conversations"
                       className="lg:hidden border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
                     >
                       <ArrowLeft className="h-4 w-4" strokeWidth={2} />
