@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { signInWithSocialProvider } from "../lib/firebaseAuth";
 
 const ROLES = {
   STUDENT: "Student",
@@ -81,6 +82,24 @@ function SignUpPage() {
       setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
     } catch {
       setSubmitMessage({ type: "error", text: "Something went wrong. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialSignUp = async (providerName) => {
+    setSubmitMessage(null);
+    setIsSubmitting(true);
+    try {
+      const user = await signInWithSocialProvider(providerName, role);
+      const firstName = user.displayName?.split(" ")[0] || role;
+      setSubmitMessage({ type: "success", text: `Account ready, ${firstName}! Redirecting to your dashboard...` });
+      setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+    } catch (error) {
+      setSubmitMessage({
+        type: "error",
+        text: error.message || "Social sign up failed. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -312,12 +331,12 @@ function SignUpPage() {
             <motion.div variants={itemVariants}>
             {/* Social */}
             <div className="grid grid-cols-2 gap-3">
-              <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px]">
+              <motion.button type="button" disabled={isSubmitting} onClick={() => handleSocialSignUp("google")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px] disabled:opacity-50">
                 Google
               </motion.button>
-              <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px]">
+              <motion.button type="button" disabled={isSubmitting} onClick={() => handleSocialSignUp("facebook")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px] disabled:opacity-50">
                 Facebook
               </motion.button>
             </div>
