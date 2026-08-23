@@ -45,7 +45,8 @@ function DashboardPage() {
   const listings = useMemo(() => getAllListings(), []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [searchDraft, setSearchDraft] = useState(searchParams.get("q") ?? "");
+  const urlQuery = searchParams.get("q") ?? "";
+  const [searchDraft, setSearchDraft] = useState(urlQuery);
 
   const sidebarLinks = [
     { icon: Search, label: "Browse Listings", active: true },
@@ -56,8 +57,8 @@ function DashboardPage() {
   ];
 
   useEffect(() => {
-    setSearchDraft(searchParams.get("q") ?? "");
-  }, [searchParams.toString()]);
+    setSearchDraft(urlQuery);
+  }, [urlQuery]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
