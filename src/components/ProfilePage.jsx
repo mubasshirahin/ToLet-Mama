@@ -307,7 +307,7 @@ function ProfilePage() {
             <Link
               to="/dashboard"
               state={{ role }}
-              className="mb-3 inline-flex items-center gap-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
+              className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
             >
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
               Back to dashboard
@@ -328,7 +328,7 @@ function ProfilePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="btn-coupon-clip px-4 py-2 text-[10px]"
+              className="btn-coupon-clip px-4 py-2 text-xs"
             >
               <Camera className="h-4 w-4" strokeWidth={1.8} />
               Upload avatar
@@ -353,7 +353,7 @@ function ProfilePage() {
                     Edit your public identity and contact information.
                   </p>
                 </div>
-                <div className="hidden rounded-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 font-serif text-[10px] uppercase tracking-[0.2em] text-[#A89880] sm:block">
+                <div className="hidden rounded-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#A89880] sm:block">
                   Auto-save disabled
                 </div>
               </div>
@@ -372,7 +372,7 @@ function ProfilePage() {
                         {avatarFallback}
                       </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C1810]/80 to-transparent px-3 py-2 text-center font-serif text-[10px] font-bold uppercase tracking-[0.15em] text-[#FAF3E0]">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C1810]/80 to-transparent px-3 py-2 text-center text-xs font-bold uppercase tracking-[0.15em] text-[#FAF3E0]">
                       Preview
                     </div>
                   </div>
@@ -433,7 +433,7 @@ function ProfilePage() {
                     placeholder="Dhaka"
                   />
                   <div className="sm:col-span-2">
-                    <label className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                    <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                       Bio
                     </label>
                     <textarea
@@ -447,7 +447,7 @@ function ProfilePage() {
                         type="button"
                         onClick={handleBioSave}
                         disabled={isSavingBio}
-                        className="btn-coupon-clip px-4 py-2 text-[10px] disabled:opacity-50"
+                        className="btn-coupon-clip px-4 py-2 text-xs disabled:opacity-50"
                       >
                         {isSavingBio ? "Saving bio..." : "Save bio"}
                       </button>
@@ -535,19 +535,19 @@ function ProfilePage() {
 
               <div className="space-y-3 font-serif text-sm text-[#5C3A21]">
                 <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
-                  <span className="uppercase tracking-[0.14em] text-[10px] text-[#A89880]">
+                  <span className="text-xs uppercase tracking-wide text-[#A89880]">
                     Active role
                   </span>
                   <span className="font-bold text-[#2C1810]">{role}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
-                  <span className="uppercase tracking-[0.14em] text-[10px] text-[#A89880]">
+                  <span className="text-xs uppercase tracking-wide text-[#A89880]">
                     Current city
                   </span>
                   <span className="font-bold text-[#2C1810]">{formData.city}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="uppercase tracking-[0.14em] text-[10px] text-[#A89880]">
+                  <span className="text-xs uppercase tracking-wide text-[#A89880]">
                     Avatar status
                   </span>
                   <span className="font-bold text-[#2C1810]">
@@ -593,7 +593,7 @@ function ProfilePage() {
 function Field({ label, icon: Icon, value, onChange, error, placeholder, type = "text", className = "" }) {
   return (
     <div className={className}>
-      <label className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
         {label}
       </label>
       <div className="relative">
@@ -624,7 +624,7 @@ function PasswordField({
 }) {
   return (
     <div className={className}>
-      <label className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
         {label}
       </label>
       <div className="relative">
