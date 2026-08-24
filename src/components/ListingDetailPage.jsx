@@ -380,7 +380,7 @@ function ListingDetailPage() {
                     </a>
                     <a
                       href={`mailto:${listing.owner.email}`}
-                      className="btn-coupon-clip justify-center px-5 py-3 text-[10px]"
+                      className="btn-coupon-clip justify-center px-5 py-3 text-xs"
                     >
                       Message owner
                     </a>

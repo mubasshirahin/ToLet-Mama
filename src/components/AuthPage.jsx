@@ -257,11 +257,11 @@ function AuthPage() {
             {/* Social buttons */}
             <div className="grid grid-cols-2 gap-3">
               <motion.button type="button" disabled={isSubmitting} onClick={() => handleSocialSignIn("google")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px] disabled:opacity-50">
+                className="btn-coupon-clip w-full justify-center py-2.5 text-xs disabled:opacity-50">
                 Google
               </motion.button>
               <motion.button type="button" disabled={isSubmitting} onClick={() => handleSocialSignIn("facebook")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="btn-coupon-clip w-full justify-center py-2.5 text-[10px] disabled:opacity-50">
+                className="btn-coupon-clip w-full justify-center py-2.5 text-xs disabled:opacity-50">
                 Facebook
               </motion.button>
             </div>

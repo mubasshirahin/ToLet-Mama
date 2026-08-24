@@ -299,7 +299,7 @@ function LandingPage() {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="mb-1 mt-1 grid grid-cols-[auto_1fr] items-center gap-2">
             <div className="masthead-box justify-self-start border-2 border-[#2C1810] px-3 py-1.5">
-              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.15em] text-[#5C3A21] md:text-[10px]">Extra</p>
+              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.15em] text-[#5C3A21]">Extra</p>
               <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.1em] text-[#2C1810] md:text-[11px]">Edition</p>
             </div>
             {/* Center: Newspaper Name */}
@@ -312,7 +312,7 @@ function LandingPage() {
 
           <hr className="news-rule my-1.5" />
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
+            className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21]">
             <span>Vol. IV, No. 28</span>
             <span className="hidden sm:inline">Dhaka, Friday — July 24, 2026</span>
             <span className="sm:hidden">Dhaka — Jul 24</span>
@@ -434,7 +434,7 @@ function LandingPage() {
           </div>
 
           <hr className="news-rule-thick mt-3 mb-1" />
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21]">
             <span>Daily Weather: Fair, Mild &mdash; 32&deg;C</span>
             <span>Established 2022</span>
           </div>
