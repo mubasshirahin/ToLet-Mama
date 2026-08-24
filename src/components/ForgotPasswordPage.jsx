@@ -106,7 +106,7 @@ function ForgotPasswordPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <label htmlFor="email" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                  <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                     Email Address
                   </label>
                   <div className="relative">
@@ -157,7 +157,7 @@ function ForgotPasswordPage() {
                 <span className="font-bold text-[#2C1810]">{email}</span>
               </p>
               <div className="mb-8 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] p-4">
-                <p className="mb-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#2C1810]">
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#2C1810]">
                   Didn&apos;t receive the email?
                 </p>
                 <ul className="space-y-1.5 font-serif text-xs text-[#5C3A21]">
