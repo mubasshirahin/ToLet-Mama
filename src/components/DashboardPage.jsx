@@ -20,7 +20,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { getAllListings } from "../data/listings";
+import { fetchListings } from "../lib/api";
 import ThemeToggle from "./ThemeToggle";
 
 const PRICE_BANDS = [
@@ -44,7 +44,28 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const role = location.state?.role || "Student";
-  const listings = useMemo(() => getAllListings(), []);
+  const [listings, setListings] = useState([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingListings(true);
+    fetchListings({ page: 1 })
+      .then((res) => {
+        if (!cancelled) {
+          setListings(res.data || []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setListings([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingListings(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -414,7 +435,7 @@ function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(true)}
-                className="btn-coupon-clip px-4 py-2 text-[10px] lg:hidden"
+                className="btn-coupon-clip px-4 py-2 text-xs lg:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
@@ -422,7 +443,7 @@ function DashboardPage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="btn-coupon-clip px-4 py-2 text-[10px]"
+                className="btn-coupon-clip px-4 py-2 text-xs"
               >
                 <X className="h-4 w-4" />
                 Clear filters
@@ -609,13 +630,13 @@ function DashboardPage() {
             />
 
             <div className="mt-4 flex gap-3">
-              <button type="button" onClick={clearFilters} className="btn-coupon-clip flex-1 justify-center px-4 py-3 text-[10px]">
+              <button type="button" onClick={clearFilters} className="btn-coupon-clip flex-1 justify-center px-4 py-3 text-xs">
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="btn-rubber-stamp flex-1 justify-center px-4 py-3 text-[10px]"
+                className="btn-rubber-stamp flex-1 justify-center px-4 py-3 text-xs"
               >
                 Apply
               </button>
