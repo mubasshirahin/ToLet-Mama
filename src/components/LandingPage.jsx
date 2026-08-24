@@ -173,7 +173,7 @@ function AnimatedStat({ value, label, suffix = "" }) {
       <p className="font-serif text-3xl font-bold text-[#2C1810]">
         {count}{suffix}
       </p>
-      <p className="mt-1.5 font-serif text-[10px] font-semibold uppercase tracking-[0.15em] text-[#7A6B52]">
+      <p className="mt-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7A6B52]">
         {label}
       </p>
     </div>
@@ -273,7 +273,7 @@ function LandingPage() {
             ))}
             <div className="flex items-center gap-2">
               <ThemeToggle compact />
-              <Link to="/auth" className="btn-coupon-clip px-4 py-2 text-[10px]">Sign In</Link>
+              <Link to="/auth" className="btn-coupon-clip px-4 py-2 text-xs">Sign In</Link>
               <Link to="/signup" className="btn-rubber-stamp px-4 py-2 text-[11px]">Subscribe</Link>
             </div>
           </div>
@@ -299,8 +299,8 @@ function LandingPage() {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="mb-1 mt-1 grid grid-cols-[auto_1fr] items-center gap-2">
             <div className="masthead-box justify-self-start border-2 border-[#2C1810] px-3 py-1.5">
-              <p className="font-serif text-[9px] font-bold uppercase leading-tight tracking-[0.15em] text-[#5C3A21] md:text-[10px]">Extra</p>
-              <p className="font-serif text-[9px] font-bold uppercase leading-tight tracking-[0.1em] text-[#2C1810] md:text-[11px]">Edition</p>
+              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.15em] text-[#5C3A21] md:text-[10px]">Extra</p>
+              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.1em] text-[#2C1810] md:text-[11px]">Edition</p>
             </div>
             {/* Center: Newspaper Name */}
             <div className="text-center">
@@ -312,7 +312,7 @@ function LandingPage() {
 
           <hr className="news-rule my-1.5" />
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex items-center justify-between font-serif text-[9px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
+            className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
             <span>Vol. IV, No. 28</span>
             <span className="hidden sm:inline">Dhaka, Friday — July 24, 2026</span>
             <span className="sm:hidden">Dhaka — Jul 24</span>
@@ -327,12 +327,12 @@ function LandingPage() {
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}
               className="space-y-4 md:border-r md:border-[#7A6B52]/10 md:pr-4 md:col-span-2 max-w-[200px]">
               <div>
-                <p className="mb-1 font-serif text-[9px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Local Briefs</p>
+                <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Local Briefs</p>
                 <hr className="news-rule mb-1.5 opacity-30" />
                 {sideStats.map((s) => (
                   <div key={s.label} className="mb-2 border-b border-[#7A6B52]/5 pb-1.5 last:border-0 last:mb-0">
                     <p className="font-serif text-[11px] leading-none text-[#2C1810] opacity-65">{s.value}</p>
-                    <p className="font-serif text-[8px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">{s.label}</p>
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -359,8 +359,8 @@ function LandingPage() {
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.4 }}
                 className="flex items-baseline gap-2 border-b border-[#2C1810] pb-1">
-                <p className="font-serif text-[10px] font-bold uppercase tracking-[0.12em] text-[#2C1810]">Fig. 1 — DHAKA SKYLINE AT DUSK</p>
-                <p className="font-serif text-[9px] italic text-[#5C3A21]">The city&apos;s skyline as seen from Hatirjheel</p>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#2C1810]">Fig. 1 — DHAKA SKYLINE AT DUSK</p>
+                <p className="text-[11px] italic text-[#5C3A21]">The city&apos;s skyline as seen from Hatirjheel</p>
               </motion.div>
 
               {/* Article body — fills the gap like real newspaper prose */}
@@ -400,7 +400,7 @@ function LandingPage() {
                     <p className="font-serif text-[12px] italic leading-relaxed text-[#2C1810] md:text-sm opacity-80">
                       &ldquo;The days of dealing with dubious brokers are numbered.&rdquo;
                     </p>
-                    <p className="mt-1 font-serif text-[8px] uppercase tracking-[0.15em] text-[#5C3A21] opacity-60">
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] opacity-60">
                       — Platform Spokesperson
                     </p>
                   </div>
@@ -411,7 +411,7 @@ function LandingPage() {
                     Bangladesh. &ldquo;This is just the beginning,&rdquo; the spokesperson added.
                   </p>
                   {/* Continued line */}
-                  <p className="pt-1 font-serif text-[8px] uppercase tracking-[0.2em] text-[#7A6B52] opacity-60">
+                  <p className="pt-1 text-[11px] uppercase tracking-[0.2em] text-[#7A6B52] opacity-60">
                     — Continued on Page A4
                   </p>
                 </div>
@@ -422,11 +422,11 @@ function LandingPage() {
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}
               className="space-y-4 md:border-l md:border-[#7A6B52]/10 md:pl-4 md:col-span-2 max-w-[200px]">
               <div>
-                <p className="mb-1 font-serif text-[9px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Classifieds</p>
+                <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Classifieds</p>
                 <hr className="news-rule mb-1.5 opacity-30" />
                 {sideBulletins.map((text, i) => (
                   <div key={i} className="mb-2 border-b border-[#7A6B52]/5 pb-2 last:border-0 last:mb-0">
-                    <p className="font-serif text-[9px] leading-relaxed text-justify text-[#2C1810] opacity-65">{text}</p>
+                    <p className="text-[11px] leading-relaxed text-justify text-[#2C1810] opacity-65">{text}</p>
                   </div>
                 ))}
               </div>
@@ -434,7 +434,7 @@ function LandingPage() {
           </div>
 
           <hr className="news-rule-thick mt-3 mb-1" />
-          <div className="flex items-center justify-between font-serif text-[8px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] md:text-[10px]">
             <span>Daily Weather: Fair, Mild &mdash; 32&deg;C</span>
             <span>Established 2022</span>
           </div>
@@ -482,7 +482,7 @@ function LandingPage() {
           <div className="mx-auto w-full max-w-screen-xl px-6 pt-10 pb-4 text-center md:pt-12 md:pb-6">
             <div className="flex items-center justify-center gap-4 mb-5">
               <span className="inline-block h-px w-16 bg-gradient-to-r from-transparent to-[#5C3A21]/40" />
-              <p className="font-serif text-[10px] font-semibold uppercase tracking-[0.25em] text-[#5C3A21]">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#5C3A21]">
                 Why To-Let Mama
               </p>
               <span className="inline-block h-px w-16 bg-gradient-to-l from-transparent to-[#5C3A21]/40" />
@@ -547,7 +547,7 @@ function LandingPage() {
                               />
                             </div>
                             <p
-                              className="font-serif text-[10px] uppercase tracking-[0.2em]"
+                              className="text-xs uppercase tracking-[0.2em]"
                               style={{
                                 color: isActive ? "#5C3A21" : "rgba(122,107,82,0.4)",
                                 transition: "color 0.7s ease",
@@ -692,7 +692,7 @@ function LandingPage() {
                       <img src={item.img} alt={item.title}
                         className="w-full h-full object-cover sepia-[40%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105" />
                       {/* FOR RENT stamp */}
-                      <div className="absolute top-3 right-3 bg-[#2C1810] text-[#FAF3E0] font-serif text-[9px] font-bold uppercase tracking-[0.12em] px-3 py-1 rotate-6">
+                      <div className="absolute top-3 right-3 bg-[#2C1810] text-[#FAF3E0] text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rotate-6">
                         FOR RENT
                       </div>
                     </div>
@@ -703,7 +703,7 @@ function LandingPage() {
                       <Link
                         to={`/listings/${item.id}`}
                         state={{ listing: { ...item, price: item.price, image: item.img, images: [item.img] } }}
-                        className="mt-3 inline-flex font-serif text-[10px] font-bold uppercase tracking-[0.15em] text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all"
+                        className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.15em] text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all"
                       >
                         View Details →
                       </Link>
@@ -760,7 +760,7 @@ function LandingPage() {
                   </div>
                   <div>
                     <p className="font-serif text-sm font-bold text-[#2C1810]">{testimonials[activeTestimonial].name}</p>
-                    <p className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#7A6B52]">{testimonials[activeTestimonial].role}</p>
+                    <p className="text-xs uppercase tracking-[0.15em] text-[#7A6B52]">{testimonials[activeTestimonial].role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -805,7 +805,7 @@ function LandingPage() {
                 className="border border-[#5C3A21]/40 p-5 bg-[#1A0F0A] transition-all hover:bg-[#2C1810] hover:-translate-y-0.5">
                 <h3 className="font-serif text-sm font-bold text-[#FAF3E0] mb-2">{ad.title}</h3>
                 <p className="font-serif text-xs leading-relaxed text-[#A89880] mb-4">{ad.desc}</p>
-                <button className="font-serif text-[10px] font-bold uppercase tracking-[0.15em] text-[#A89880] underline underline-offset-4 decoration-[#5C3A21]/40 hover:text-[#FAF3E0] hover:decoration-[#FAF3E0] transition-all">
+                <button className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880] underline underline-offset-4 decoration-[#5C3A21]/40 hover:text-[#FAF3E0] hover:decoration-[#FAF3E0] transition-all">
                   {ad.cta} →
                 </button>
               </motion.div>
@@ -835,7 +835,7 @@ function LandingPage() {
                 }}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2C1810] text-[#FAF3E0] font-serif text-[9px] font-bold uppercase tracking-[0.15em] px-4 py-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2C1810] text-[#FAF3E0] text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1">
                     BEST VALUE
                   </div>
                 )}
@@ -974,7 +974,7 @@ function LandingPage() {
               </div>
               {/* Established stamp */}
               <div className="mt-6 inline-block border-2 border-[#5C3A21]/30 px-4 py-1.5 rotate-[-1deg]">
-                <p className="font-serif text-[9px] font-bold uppercase tracking-[0.15em] text-[#5C3A21]">Est. 2022</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#5C3A21]">Est. 2022</p>
               </div>
             </div>
 
@@ -985,7 +985,7 @@ function LandingPage() {
               { title: "Pages", links: [{ label: "Sign In", to: "/auth" }, { label: "Subscribe", to: "/signup" }, { label: "Dashboard", to: "/dashboard" }, { label: "Listings", to: "#listings" }] },
             ].map((col) => (
               <div key={col.title} className="md:col-span-2">
-                <p className="mb-4 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">{col.title}</p>
+                <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">{col.title}</p>
                 <ul className="space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
@@ -998,8 +998,8 @@ function LandingPage() {
           </div>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#5C3A21]/20 pt-6 md:flex-row">
-            <p className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#7A6B52]">&copy; 2026 To-Let Mama. All rights reserved.</p>
-            <p className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#A89880]">Printed in Dhaka</p>
+            <p className="text-xs uppercase tracking-[0.15em] text-[#7A6B52]">&copy; 2026 To-Let Mama. All rights reserved.</p>
+            <p className="text-xs uppercase tracking-[0.15em] text-[#A89880]">Printed in Dhaka</p>
           </div>
         </div>
       </motion.footer>
