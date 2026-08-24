@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { loginUser } from "../lib/api";
 import { signInWithSocialProvider } from "../lib/firebaseAuth";
 
 const ROLES = {
@@ -41,9 +42,7 @@ function AuthPage() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await new Promise((resolve, reject) =>
-        setTimeout(() => (Math.random() > 0.15 ? resolve() : reject(new Error("Network error"))), 1200)
-      );
+      await loginUser({ email, password });
       setSubmitMessage({ type: "success", text: `Welcome back, ${role}! Redirecting to your dashboard...` });
       setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
     } catch {

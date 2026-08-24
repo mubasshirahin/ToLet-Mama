@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { fetchConversations, fetchConversation, sendMessage as apiSendMessage } from "../lib/api";
 import {
   ArrowLeft,
   CheckCheck,
@@ -12,140 +13,52 @@ import {
   Users,
 } from "lucide-react";
 
-const ROLE_INBOX = {
-  Student: [
-    {
-      id: 1,
-      name: "Sharmin Akhter",
-      role: "Owner",
-      listing: "Furnished Flat near Gulshan Circle",
-      unread: 2,
-      online: true,
-      lastSeen: "Online now",
-      preview: "The flat is still open for Saturday afternoon viewing.",
-      time: "9:12 AM",
-      avatar: "SA",
-      accent: "bg-[#2C1810]",
-      messages: [
-        { id: 1, sender: "them", text: "Hello, is the apartment still available for next month?", time: "8:22 AM" },
-        { id: 2, sender: "me", text: "Yes, it is still available. Would you like to schedule a visit?", time: "8:24 AM", status: "delivered" },
-        { id: 3, sender: "them", text: "Saturday afternoon works for me. Can I bring a friend?", time: "8:31 AM" },
-        { id: 4, sender: "me", text: "Of course. I can hold a slot for 3:30 PM.", time: "8:33 AM", status: "read" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Imran Hossain",
-      role: "Owner",
-      listing: "Modern Studio near BUET Campus",
-      unread: 0,
-      online: false,
-      lastSeen: "Seen 14m ago",
-      preview: "Please share the move-in date and monthly budget.",
-      time: "Yesterday",
-      avatar: "IH",
-      accent: "bg-[#5C3A21]",
-      messages: [
-        { id: 1, sender: "me", text: "Hi, I'm interested in the studio near BUET.", time: "Yesterday 7:10 PM", status: "read" },
-        { id: 2, sender: "them", text: "Great. Could you share your move-in date and budget?", time: "Yesterday 7:16 PM" },
-        { id: 3, sender: "me", text: "I can move in on September 1st and the budget is within range.", time: "Yesterday 7:19 PM", status: "delivered" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Nadia Rahman",
-      role: "Owner",
-      listing: "Shared Room in Bashundhara",
-      unread: 1,
-      online: true,
-      lastSeen: "2m ago",
-      preview: "I added the utility charges and Wi-Fi details.",
-      time: "8:05 AM",
-      avatar: "NR",
-      accent: "bg-[#7A6B52]",
-      messages: [
-        { id: 1, sender: "them", text: "I added the utility charges and Wi-Fi details to the listing.", time: "8:05 AM" },
-        { id: 2, sender: "me", text: "Perfect, thanks. Is the room still female-only?", time: "8:07 AM", status: "sent" },
-      ],
-    },
-  ],
-  Owner: [
-    {
-      id: 1,
-      name: "Rafsan Islam",
-      role: "Student",
-      listing: "Furnished Flat near Gulshan Circle",
-      unread: 1,
-      online: true,
-      lastSeen: "Online now",
-      preview: "I can confirm the documents after my class ends.",
-      time: "9:18 AM",
-      avatar: "RI",
-      accent: "bg-[#2C1810]",
-      messages: [
-        { id: 1, sender: "them", text: "Hello, I saw your listing and I'd like to visit this week.", time: "8:20 AM" },
-        { id: 2, sender: "me", text: "Sure. Thursday evening or Saturday afternoon both work.", time: "8:23 AM", status: "delivered" },
-        { id: 3, sender: "them", text: "Saturday afternoon would be better for me.", time: "8:31 AM" },
-        { id: 4, sender: "me", text: "Great. I'll keep 3:30 PM open for you.", time: "8:33 AM", status: "read" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Mahi Tasnim",
-      role: "Student",
-      listing: "Premium Studio Apartment",
-      unread: 0,
-      online: false,
-      lastSeen: "Seen 22m ago",
-      preview: "I can send the guarantor details later today.",
-      time: "Yesterday",
-      avatar: "MT",
-      accent: "bg-[#5C3A21]",
-      messages: [
-        { id: 1, sender: "them", text: "Is the studio still available for September?", time: "Yesterday 6:14 PM" },
-        { id: 2, sender: "me", text: "Yes, it is available. Please send your move-in timeline.", time: "Yesterday 6:17 PM", status: "read" },
-        { id: 3, sender: "them", text: "I can send the guarantor details later today.", time: "Yesterday 6:21 PM" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Noman Karim",
-      role: "Student",
-      listing: "Affordable Room for Male Students",
-      unread: 3,
-      online: true,
-      lastSeen: "Now",
-      preview: "Can I reserve it with a deposit first?",
-      time: "8:01 AM",
-      avatar: "NK",
-      accent: "bg-[#7A6B52]",
-      messages: [
-        { id: 1, sender: "them", text: "Can I reserve it with a deposit first?", time: "8:01 AM" },
-        { id: 2, sender: "me", text: "Yes, a small deposit will hold the room for 48 hours.", time: "8:03 AM", status: "sent" },
-      ],
-    },
-  ],
-};
-
-function cloneInbox(role) {
-  return (ROLE_INBOX[role] || ROLE_INBOX.Student).map((conversation) => ({
-    ...conversation,
-    messages: conversation.messages.map((message) => ({ ...message })),
-  }));
-}
-
 function MessagesPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const role = location.state?.role || "Student";
-  const initialInbox = useMemo(() => cloneInbox(role), [role]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
-  const [conversations, setConversations] = useState(() => initialInbox);
-  const [activeConversationId, setActiveConversationId] = useState(() => initialInbox[0]?.id ?? null);
+  const [conversations, setConversations] = useState([]);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+
+  // Load conversations from API
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    fetchConversations()
+      .then((data) => {
+        if (!cancelled) {
+          const mapped = (Array.isArray(data) ? data : []).map((conv) => ({
+            id: conv.user?.id || conv.id,
+            name: conv.user?.name || "Unknown",
+            role: conv.user?.role || "User",
+            listing: conv.last_message?.listing?.title || "General",
+            unread: conv.unread_count || 0,
+            online: false,
+            lastSeen: "Last seen recently",
+            preview: conv.last_message?.body || "",
+            time: conv.last_message?.created_at ? new Date(conv.last_message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
+            avatar: (conv.user?.name || "U").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
+            accent: "bg-[#2C1810]",
+            messages: [],
+            _userId: conv.user?.id,
+          }));
+          setConversations(mapped);
+          if (mapped.length > 0) setActiveConversationId(mapped[0].id);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setConversations([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [role]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -154,13 +67,11 @@ function MessagesPage() {
   }, [role]);
 
   useEffect(() => {
-    setConversations(initialInbox);
-    setActiveConversationId(initialInbox[0]?.id ?? null);
     setIsMobileListOpen(true);
     setShowUnreadOnly(false);
     setQuery("");
     setDraft("");
-  }, [initialInbox, role]);
+  }, [role]);
 
   const filteredConversations = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -207,69 +118,75 @@ function MessagesPage() {
   const selectConversation = (conversationId) => {
     setActiveConversationId(conversationId);
     setIsMobileListOpen(false);
-    setConversations((current) =>
-      current.map((conversation) =>
-        conversation.id === conversationId ? { ...conversation, unread: 0 } : conversation
-      )
-    );
   };
 
-  const handleSend = (event) => {
+  const loadConversation = useCallback(async (userId) => {
+    try {
+      const messages = await fetchConversation(userId);
+      setConversations((current) =>
+        current.map((conv) =>
+          conv.id === userId || conv._userId === userId
+            ? {
+                ...conv,
+                unread: 0,
+                messages: (Array.isArray(messages) ? messages : []).map((msg) => ({
+                  id: msg.id,
+                  sender: msg.sender_id === userId ? "them" : "me",
+                  text: msg.body,
+                  time: new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  status: msg.read ? "read" : "delivered",
+                })),
+              }
+            : conv
+        )
+      );
+    } catch {
+      // Ignore errors for now
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeConversationId) {
+      loadConversation(activeConversationId);
+    }
+  }, [activeConversationId, loadConversation]);
+
+  const handleSend = async (event) => {
     event.preventDefault();
     const text = draft.trim();
     if (!text || !activeConversation) return;
 
-    const messageId = Date.now();
-    const sentMessage = {
-      id: messageId,
-      sender: "me",
-      text,
-      time: "Just now",
-      status: "sent",
-    };
+    try {
+      await apiSendMessage({
+        receiver_id: activeConversation._userId || activeConversation.id,
+        body: text,
+      });
 
-    setConversations((current) =>
-      current.map((conversation) =>
-        conversation.id === activeConversation.id
-          ? {
-              ...conversation,
-              unread: 0,
-              preview: text,
-              time: "Just now",
-              messages: [...conversation.messages, sentMessage],
-            }
-          : conversation
-      )
-    );
-    setDraft("");
+      const sentMessage = {
+        id: Date.now(),
+        sender: "me",
+        text,
+        time: "Just now",
+        status: "sent",
+      };
 
-    window.setTimeout(() => {
       setConversations((current) =>
-        current.map((conversation) => {
-          if (conversation.id !== activeConversation.id) return conversation;
-          return {
-            ...conversation,
-            messages: conversation.messages.map((message) =>
-              message.id === messageId ? { ...message, status: "delivered" } : message
-            ),
-          };
-        })
+        current.map((conversation) =>
+          conversation.id === activeConversation.id
+            ? {
+                ...conversation,
+                unread: 0,
+                preview: text,
+                time: "Just now",
+                messages: [...conversation.messages, sentMessage],
+              }
+            : conversation
+        )
       );
-    }, 900);
-
-    window.setTimeout(() => {
-      setConversations((current) =>
-        current.map((conversation) => {
-          if (conversation.id !== activeConversation.id) return conversation;
-          return {
-            ...conversation,
-            messages: conversation.messages.map((message) =>
-              message.id === messageId ? { ...message, status: "read" } : message
-            ),
-          };
-        })
-      );
-    }, 2200);
+      setDraft("");
+    } catch {
+      setDraft("");
+    }
   };
 
   if (isLoading) {

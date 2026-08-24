@@ -21,7 +21,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { getAllListings, getListingById } from "../data/listings";
+import { fetchListing, fetchListings } from "../lib/api";
 
 const FAVORITES_KEY = "toletmama.favorites.v1";
 
@@ -49,26 +49,45 @@ function ListingDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [apiListing, setApiListing] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    fetchListing(id)
+      .then((data) => { if (!cancelled) setApiListing(data); })
+      .catch(() => { if (!cancelled) setApiListing(null); });
+    return () => { cancelled = true; };
+  }, [id]);
+
   const listing = useMemo(() => {
-    const baseListing = getListingById(id);
     const routeListing = location.state?.listing;
+    const baseListing = apiListing || routeListing;
 
-    if (!baseListing && !routeListing) {
-      return null;
-    }
+    if (!baseListing) return null;
 
-    if (!routeListing) {
-      return baseListing;
-    }
-
+    // Normalize API shape to match component expectations
     return {
       ...baseListing,
-      ...routeListing,
-      images: routeListing.images?.length
-        ? routeListing.images
-        : baseListing?.images || (routeListing.image ? [routeListing.image] : []),
+      images: baseListing.images?.length
+        ? baseListing.images
+        : baseListing.image
+          ? [baseListing.image]
+          : ["https://images.unsplash.com/photo-1522708323590?w=1200&h=900&fit=crop"],
+      specs: baseListing.specs || { bedrooms: 1, bathrooms: 1, size: "N/A", floor: "N/A" },
+      highlights: baseListing.highlights || [],
+      amenities: baseListing.amenities || [],
+      rules: baseListing.rules || [],
+      nearby: baseListing.nearby || [],
+      owner: baseListing.user
+        ? { name: baseListing.user.name, role: "Owner", phone: "", email: baseListing.user.email, response: "Usually replies within 1 hour", verified: true, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop" }
+        : baseListing.owner || { name: "Unknown", role: "Owner", phone: "", email: "", response: "", verified: false, avatar: "" },
+      interested: baseListing.interested || 0,
+      posted: baseListing.posted || (baseListing.created_at ? new Date(baseListing.created_at).toLocaleDateString() : "Recently"),
+      availableFrom: baseListing.available_from || baseListing.availableFrom || "",
+      status: baseListing.status ? (baseListing.status.charAt(0).toUpperCase() + baseListing.status.slice(1)) : "Available",
     };
-  }, [id, location.state]);
+  }, [id, location.state, apiListing]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -91,16 +110,20 @@ function ListingDetailPage() {
 
   const isFavorite = listing ? favorites.includes(listing.id) : false;
 
-  const relatedListings = useMemo(() => {
-    if (!listing) return [];
-    const listingCity = listing.location.split(",").at(-1)?.trim();
+  const [relatedListings, setRelatedListings] = useState([]);
 
-    return getAllListings()
-      .filter((item) => {
-        const itemCity = item.location.split(",").at(-1)?.trim();
-        return item.id !== listing.id && (item.type === listing.type || itemCity === listingCity);
+  useEffect(() => {
+    if (!listing) return;
+    let cancelled = false;
+    fetchListings({ type: listing.type, page: 1 })
+      .then((res) => {
+        if (!cancelled) {
+          const items = (res.data || []).filter((item) => item.id !== listing.id).slice(0, 4);
+          setRelatedListings(items);
+        }
       })
-      .slice(0, 4);
+      .catch(() => { if (!cancelled) setRelatedListings([]); });
+    return () => { cancelled = true; };
   }, [listing]);
 
   const handleFavorite = () => {
