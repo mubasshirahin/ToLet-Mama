@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { registerUser } from "../lib/api";
 import { signInWithSocialProvider } from "../lib/firebaseAuth";
 
 const ROLES = {
@@ -75,9 +76,7 @@ function SignUpPage() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await new Promise((resolve, reject) =>
-        setTimeout(() => (Math.random() > 0.15 ? resolve() : reject(new Error("Network error"))), 1200)
-      );
+      await registerUser({ name, email, password });
       setSubmitMessage({ type: "success", text: "Account created! Redirecting to your dashboard..." });
       setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
     } catch {
@@ -183,7 +182,7 @@ function SignUpPage() {
             <motion.div variants={itemVariants}>
             {/* Name */}
             <div>
-              <label htmlFor="name" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="name" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Full Name
               </label>
               <div className="relative">
@@ -199,7 +198,7 @@ function SignUpPage() {
             <motion.div variants={itemVariants}>
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Email Address
               </label>
               <div className="relative">
@@ -215,7 +214,7 @@ function SignUpPage() {
             <motion.div variants={itemVariants}>
             {/* Password */}
             <div>
-              <label htmlFor="password" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Password
               </label>
               <div className="relative">
@@ -232,7 +231,7 @@ function SignUpPage() {
               {password && !errors.password && strength && (
                 <div className="mt-2">
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#A89880]">Password strength</span>
+                    <span className="text-xs uppercase tracking-[0.15em] text-[#A89880]">Password strength</span>
                     <span className={`font-serif text-xs font-bold uppercase tracking-[0.1em] ${
                       strength.level === "weak" ? "text-[#A89880]" : "text-[#2C1810]"
                     }`}>
@@ -250,7 +249,7 @@ function SignUpPage() {
             <motion.div variants={itemVariants}>
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="confirmPassword" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Confirm Password
               </label>
               <div className="relative">
@@ -322,7 +321,7 @@ function SignUpPage() {
             {/* Divider */}
             <div className="relative flex items-center gap-4">
               <div className="h-px flex-1 bg-[#5C3A21]/20" />
-              <span className="font-serif text-[10px] uppercase tracking-[0.2em] text-[#A89880]">or</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-[#A89880]">or</span>
               <div className="h-px flex-1 bg-[#5C3A21]/20" />
             </div>
 
