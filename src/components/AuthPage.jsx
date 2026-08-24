@@ -109,7 +109,7 @@ function AuthPage() {
           {/* Back to Landing Page */}
           <Link
             to="/"
-            className="mb-6 inline-flex items-center gap-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
+            className="mb-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
           >
             <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
             Back to home
@@ -152,7 +152,7 @@ function AuthPage() {
             <motion.div variants={itemVariants}>
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Email Address
               </label>
               <div className="relative">
@@ -176,7 +176,7 @@ function AuthPage() {
             <motion.div variants={itemVariants}>
             {/* Password */}
             <div>
-              <label htmlFor="password" className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+              <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                 Password
               </label>
               <div className="relative">
@@ -247,7 +247,7 @@ function AuthPage() {
             {/* Divider */}
             <div className="relative flex items-center gap-4">
               <div className="h-px flex-1 bg-[#5C3A21]/20" />
-              <span className="font-serif text-[10px] uppercase tracking-[0.2em] text-[#A89880]">or</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-[#A89880]">or</span>
               <div className="h-px flex-1 bg-[#5C3A21]/20" />
             </div>
 

@@ -209,7 +209,7 @@ function MessagesPage() {
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             </button>
             <div>
-              <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">Inbox</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">Inbox</p>
               <h1 className="font-serif text-3xl font-black tracking-tight">Messages</h1>
               <p className="mt-1 font-serif text-sm text-[#5C3A21]">
                 Student-owner conversations for listings, visits, and follow-ups.
@@ -238,7 +238,7 @@ function MessagesPage() {
             <div className="border-b-2 border-[#2C1810] p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Conversation list
                   </p>
                   <h2 className="font-serif text-xl font-black">Inbox</h2>
@@ -267,7 +267,7 @@ function MessagesPage() {
                 type="button"
                 onClick={() => setShowUnreadOnly((current) => !current)}
                 aria-pressed={showUnreadOnly}
-                className={`mt-3 inline-flex w-full items-center justify-between border-2 px-3 py-2 font-serif text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
+                className={`mt-3 inline-flex w-full items-center justify-between border-2 px-3 py-2 text-xs font-bold uppercase tracking-[0.15em] transition-colors ${
                   showUnreadOnly
                     ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
                     : "border-[#5C3A21]/20 bg-white text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
@@ -316,19 +316,19 @@ function MessagesPage() {
                               <p className="truncate font-serif text-sm font-bold text-[#2C1810]">
                                 {conversation.name}
                               </p>
-                              <p className="truncate font-serif text-[10px] uppercase tracking-[0.15em] text-[#A89880]">
+                              <p className="truncate text-xs uppercase tracking-[0.15em] text-[#A89880]">
                                 {conversation.role} - {conversation.listing}
                               </p>
                             </div>
 
                             <div className="text-right">
-                              <p className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#A89880]">
+                              <p className="text-xs uppercase tracking-[0.15em] text-[#A89880]">
                                 {conversation.time}
                               </p>
                               {conversation.unread > 0 && (
                                 <span
                                   aria-label={`${conversation.unread} unread messages`}
-                                  className="mt-1 inline-flex min-w-6 items-center justify-center border border-[#2C1810] bg-[#2C1810] px-1.5 py-0.5 font-serif text-[10px] font-bold text-[#FAF3E0]"
+                                  className="mt-1 inline-flex min-w-6 items-center justify-center border border-[#2C1810] bg-[#2C1810] px-1.5 py-0.5 text-xs font-bold text-[#FAF3E0]"
                                 >
                                   {conversation.unread}
                                 </span>
@@ -345,7 +345,7 @@ function MessagesPage() {
                           </p>
 
                           <div className="mt-3 flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 border border-[#5C3A21]/20 px-2 py-0.5 font-serif text-[10px] uppercase tracking-[0.14em] text-[#5C3A21]">
+                            <span className="inline-flex items-center gap-1 border border-[#5C3A21]/20 px-2 py-0.5 text-xs uppercase tracking-[0.14em] text-[#5C3A21]">
                               <Inbox className="h-3.5 w-3.5" strokeWidth={1.8} />
                               {conversation.online ? "Active" : conversation.lastSeen}
                             </span>
@@ -405,7 +405,7 @@ function MessagesPage() {
                   </div>
 
                   <div className="hidden items-center gap-2 lg:flex">
-                    <span className="inline-flex items-center gap-2 border border-[#5C3A21]/20 px-3 py-2 font-serif text-[10px] uppercase tracking-[0.14em] text-[#5C3A21]">
+                    <span className="inline-flex items-center gap-2 border border-[#5C3A21]/20 px-3 py-2 text-xs uppercase tracking-[0.14em] text-[#5C3A21]">
                       <Clock3 className="h-4 w-4" strokeWidth={1.8} />
                       {activeConversation.online ? "Online" : activeConversation.lastSeen}
                     </span>
@@ -415,7 +415,7 @@ function MessagesPage() {
                 <div className="flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(250,243,224,0.35),rgba(255,255,255,0.95))] p-4 sm:p-6">
                   <div className="mx-auto flex max-w-4xl flex-col gap-4">
                     <div className="flex items-center justify-center">
-                      <span className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 font-serif text-[10px] uppercase tracking-[0.18em] text-[#A89880]">
+                      <span className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#A89880]">
                         Conversation started on listing inquiry
                       </span>
                     </div>
@@ -432,7 +432,7 @@ function MessagesPage() {
                           <p className="font-serif text-sm leading-relaxed">{message.text}</p>
                           <div className="mt-2 flex items-center justify-between gap-3">
                             <span
-                              className={`font-serif text-[10px] uppercase tracking-[0.16em] ${
+                              className={`text-xs uppercase tracking-[0.16em] ${
                                 message.sender === "me" ? "text-[#F4E8C1]/80" : "text-[#A89880]"
                               }`}
                             >
@@ -449,7 +449,7 @@ function MessagesPage() {
                 <div className="border-t-2 border-[#2C1810] p-4">
                   <form onSubmit={handleSend} className="mx-auto flex max-w-4xl items-end gap-3">
                     <label className="flex-1">
-                      <span className="mb-2 block font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                         Reply
                       </span>
                       <textarea
@@ -483,7 +483,7 @@ function MessagesPage() {
 function MessageMeta({ message }) {
   if (message.sender !== "me") {
     return (
-      <span className="inline-flex items-center gap-1 font-serif text-[10px] uppercase tracking-[0.16em] text-[#A89880]">
+      <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-[#A89880]">
         <Inbox className="h-3.5 w-3.5" strokeWidth={1.8} />
         Received
       </span>
@@ -499,7 +499,7 @@ function MessageMeta({ message }) {
   const Icon = meta.icon;
 
   return (
-    <span className="inline-flex items-center gap-1 font-serif text-[10px] uppercase tracking-[0.16em] text-inherit">
+    <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-inherit">
       <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
       {meta.label}
     </span>

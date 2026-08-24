@@ -175,7 +175,7 @@ function ListingDetailPage() {
     return (
       <div className="min-h-screen bg-[#FAF3E0] px-4 py-10 text-[#2C1810]">
         <div className="mx-auto max-w-3xl border-2 border-[#5C3A21]/20 bg-white p-8 text-center">
-          <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
             Listing not found
           </p>
           <h1 className="mt-3 font-serif text-3xl font-black">We could not find that property.</h1>
@@ -202,7 +202,7 @@ function ListingDetailPage() {
           <div>
             <Link
               to="/"
-              className="mb-3 inline-flex items-center gap-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
+              className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
             >
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
               Back to home
@@ -223,16 +223,16 @@ function ListingDetailPage() {
             <button
               type="button"
               onClick={handleFavorite}
-              className={`btn-coupon-clip px-4 py-2 text-[10px] ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : ""}`}
+              className={`btn-coupon-clip px-4 py-2 text-xs ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : ""}`}
             >
               <Bookmark className="h-4 w-4" strokeWidth={1.8} />
               {isFavorite ? "Saved" : "Save"}
             </button>
-            <button type="button" onClick={handleShare} className="btn-coupon-clip px-4 py-2 text-[10px]">
+            <button type="button" onClick={handleShare} className="btn-coupon-clip px-4 py-2 text-xs">
               <Share2 className="h-4 w-4" strokeWidth={1.8} />
               Share
             </button>
-            <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="btn-rubber-stamp px-4 py-2 text-[10px]">
+            <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="btn-rubber-stamp px-4 py-2 text-xs">
               <PenLine className="h-4 w-4" strokeWidth={1.8} />
               Edit
             </Link>
@@ -244,12 +244,12 @@ function ListingDetailPage() {
             <div className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Image gallery
                   </p>
                   <h2 className="font-serif text-xl font-black">Tour the space</h2>
                 </div>
-                <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
+                <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 text-xs uppercase tracking-[0.15em] text-[#5C3A21]">
                   {activeImageIndex + 1}/{listing.images.length}
                 </span>
               </div>
@@ -260,7 +260,7 @@ function ListingDetailPage() {
                 className="halftone-overlay relative block w-full overflow-hidden border-2 border-[#2C1810] bg-[#F4E8C1]"
               >
                 <img src={activeImage} alt={listing.title} className="h-[320px] w-full object-cover sm:h-[420px]" />
-                <span className="absolute left-3 top-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1 font-serif text-[10px] font-bold uppercase tracking-[0.15em]">
+                <span className="absolute left-3 top-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1 text-xs font-bold uppercase tracking-[0.15em]">
                   Tap to enlarge
                 </span>
               </button>
@@ -283,7 +283,7 @@ function ListingDetailPage() {
 
             <div className="grid gap-6 xl:grid-cols-[1fr_0.85fr]">
               <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-                <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                   Property information
                 </p>
                 <h2 className="mt-2 font-serif text-2xl font-black tracking-tight">{listing.title}</h2>
@@ -343,7 +343,7 @@ function ListingDetailPage() {
 
               <div className="space-y-6">
                 <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Owner contact card
                   </p>
                   <div className="mt-4 flex items-center gap-4 border-b-2 border-[#2C1810] pb-4">
@@ -388,7 +388,7 @@ function ListingDetailPage() {
                 </div>
 
                 <div className="border-2 border-[#5C3A21]/20 bg-[#2C1810] p-5 text-[#FAF3E0] shadow-[4px_4px_0px_rgba(44,24,16,0.08)] sm:p-6">
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#F4E8C1]/80">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#F4E8C1]/80">
                     Quick facts
                   </p>
                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -416,12 +416,12 @@ function ListingDetailPage() {
             <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
               <div className="flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
                 <div>
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     At a glance
                   </p>
                   <h2 className="font-serif text-xl font-black">Property summary</h2>
                 </div>
-                <span className={`border-2 px-3 py-1 font-serif text-[10px] font-bold uppercase tracking-[0.15em] ${listing.status === "Available" ? "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]" : "border-[#5C3A21] bg-[#2C1810] text-[#FAF3E0]"}`}>
+                <span className={`border-2 px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] ${listing.status === "Available" ? "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]" : "border-[#5C3A21] bg-[#2C1810] text-[#FAF3E0]"}`}>
                   {listing.status}
                 </span>
               </div>
@@ -437,7 +437,7 @@ function ListingDetailPage() {
             <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
               <div className="flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
                 <div>
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Related listings
                   </p>
                   <h2 className="font-serif text-xl font-black">More options</h2>
@@ -610,7 +610,7 @@ function ListingSkeleton() {
 function InfoPill({ icon: Icon, label, value }) {
   return (
     <div className="border border-[#5C3A21]/20 bg-[#FAF3E0] p-3">
-      <div className="flex items-center gap-2 font-serif text-[10px] uppercase tracking-[0.16em] text-[#A89880]">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-[#A89880]">
         <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
         {label}
       </div>
@@ -624,7 +624,7 @@ function ContactRow({ icon: Icon, label, value }) {
     <div className="flex items-start gap-3 border-b border-[#5C3A21]/10 pb-2">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#A89880]" strokeWidth={1.8} />
       <div>
-        <p className="font-serif text-[10px] uppercase tracking-[0.16em] text-[#A89880]">{label}</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-[#A89880]">{label}</p>
         <p className="font-serif text-sm font-bold text-[#2C1810]">{value}</p>
       </div>
     </div>
@@ -634,7 +634,7 @@ function ContactRow({ icon: Icon, label, value }) {
 function FactCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-[#F4E8C1]/20 bg-[#FAF3E0]/10 p-3">
-      <p className="font-serif text-[10px] uppercase tracking-[0.18em] text-[#F4E8C1]/70">{label}</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-[#F4E8C1]/70">{label}</p>
       <p className="mt-1 font-serif text-sm font-bold text-[#FAF3E0]">{value}</p>
     </div>
   );
@@ -643,7 +643,7 @@ function FactCard({ label, value }) {
 function SummaryRow({ label, value }) {
   return (
     <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
-      <span className="font-serif text-[10px] font-bold uppercase tracking-[0.16em] text-[#A89880]">{label}</span>
+      <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#A89880]">{label}</span>
       <span className="font-serif text-sm font-bold text-[#2C1810]">{value}</span>
     </div>
   );
