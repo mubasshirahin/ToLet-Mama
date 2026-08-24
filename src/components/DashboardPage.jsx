@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
   LayoutGrid,
   List,
   LogOut,
@@ -44,6 +46,7 @@ function DashboardPage() {
   const role = location.state?.role || "Student";
   const listings = useMemo(() => getAllListings(), []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const urlQuery = searchParams.get("q") ?? "";
   const [searchDraft, setSearchDraft] = useState(urlQuery);
@@ -237,23 +240,37 @@ function DashboardPage() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r-2 border-[#5C3A21]/20 bg-[#FAF3E0] transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r-2 border-[#5C3A21]/20 bg-[#FAF3E0] transition-all duration-300 lg:static lg:translate-x-0 ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${sidebarCollapsed ? "w-[76px]" : "w-64"}`}
       >
-        <div className="border-b-2 border-[#2C1810] px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center bg-[#2C1810]">
+        <div className={`border-b-2 border-[#2C1810] ${sidebarCollapsed ? "px-3 py-5" : "px-6 py-5"}`}>
+          <div className={`flex items-center gap-3 ${sidebarCollapsed ? "justify-center" : ""}`}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#2C1810]">
               <Newspaper className="h-5 w-5 text-[#FAF3E0]" strokeWidth={1.5} />
             </div>
-            <span className="font-serif text-lg font-black uppercase tracking-tight text-[#2C1810]">
-              The Gazette
-            </span>
+            {!sidebarCollapsed && (
+              <span className="truncate font-serif text-lg font-black uppercase tracking-tight text-[#2C1810]">
+                The Gazette
+              </span>
+            )}
           </div>
-          <p className="mt-1 font-serif text-[9px] uppercase tracking-[0.15em] text-[#5C3A21]">
-            {role}&apos;s Dashboard - Vol. IV
-          </p>
+          {!sidebarCollapsed && (
+            <p className="mt-1 font-serif text-[9px] uppercase tracking-[0.15em] text-[#5C3A21]">
+              {role}&apos;s Dashboard - Vol. IV
+            </p>
+          )}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed((current) => !current)}
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="absolute -right-4 top-16 z-10 hidden h-8 w-8 items-center justify-center rounded-full border-2 border-[#5C3A21]/20 bg-white text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810] lg:flex"
+        >
+          {sidebarCollapsed ? <ChevronsRight className="h-4 w-4" strokeWidth={2} /> : <ChevronsLeft className="h-4 w-4" strokeWidth={2} />}
+        </button>
 
         <nav className="flex-1 space-y-1 px-4 py-5">
           {sidebarLinks.map((link) => (
@@ -266,7 +283,10 @@ function DashboardPage() {
                 }
               }}
               disabled={!link.route}
+              title={link.label}
               className={`flex w-full items-center gap-3 px-4 py-3 font-serif text-sm font-bold uppercase tracking-[0.1em] transition-all ${
+                sidebarCollapsed ? "justify-center px-0" : ""
+              } ${
                 link.active
                   ? "bg-[#2C1810] text-[#FAF3E0] -translate-y-px shadow-[2px_2px_0px_0px_rgba(44,24,16,0.2)]"
                   : link.route
@@ -280,22 +300,30 @@ function DashboardPage() {
           ))}
         </nav>
 
-        <div className="border-t-2 border-[#5C3A21]/20 p-4">
-          <div className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#F4E8C1] p-3">
-            <div className="flex h-10 w-10 items-center justify-center bg-[#2C1810] font-serif text-sm font-bold text-[#FAF3E0]">
+        <div className={`border-t-2 border-[#5C3A21]/20 ${sidebarCollapsed ? "p-2" : "p-4"}`}>
+          <div
+            className={`flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#F4E8C1] p-3 ${
+              sidebarCollapsed ? "flex-col" : ""
+            }`}
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#2C1810] font-serif text-sm font-bold text-[#FAF3E0]">
               {role === "Student" ? "RS" : "SA"}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-serif text-sm font-bold text-[#2C1810]">
-                {role === "Student" ? "Rafsan Islam" : "Sharmin Akhter"}
-              </p>
-              <p className="truncate font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
-                {role}
-              </p>
-            </div>
-            <button className="text-[#5C3A21] transition-colors hover:text-[#2C1810]">
-              <LogOut className="h-4 w-4" strokeWidth={1.5} />
-            </button>
+            {!sidebarCollapsed && (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-serif text-sm font-bold text-[#2C1810]">
+                    {role === "Student" ? "Rafsan Islam" : "Sharmin Akhter"}
+                  </p>
+                  <p className="truncate font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
+                    {role}
+                  </p>
+                </div>
+                <button aria-label="Log out" className="text-[#5C3A21] transition-colors hover:text-[#2C1810]">
+                  <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </aside>
@@ -408,25 +436,7 @@ function DashboardPage() {
           </div>
 
           <hr className="news-rule mb-8" />
-
-          <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <aside className="hidden lg:block">
-              <ListingFilters
-                filters={filters}
-                searchDraft={searchDraft}
-                setSearchDraft={setSearchDraft}
-                priceBands={PRICE_BANDS}
-                types={catalogOptions.types}
-                locations={catalogOptions.locations}
-                amenities={catalogOptions.amenities}
-                onPriceChange={setPrice}
-                onTypeChange={setType}
-                onLocationChange={setLocation}
-                onSortChange={setSort}
-                onToggleAmenity={toggleAmenity}
-                onClear={clearFilters}
-              />
-            </aside>
+          <div>
 
             <section className="min-w-0 space-y-5">
               <div className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
