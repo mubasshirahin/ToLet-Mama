@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Bell,
@@ -256,7 +256,7 @@ function DashboardPage() {
             )}
           </div>
           {!sidebarCollapsed && (
-            <p className="mt-1 font-serif text-[9px] uppercase tracking-[0.15em] text-[#5C3A21]">
+            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
               {role}&apos;s Dashboard - Vol. IV
             </p>
           )}
@@ -284,7 +284,7 @@ function DashboardPage() {
               }}
               disabled={!link.route}
               title={link.label}
-              className={`flex w-full items-center gap-3 px-4 py-3 font-serif text-sm font-bold uppercase tracking-[0.1em] transition-all ${
+              className={`flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-all ${
                 sidebarCollapsed ? "justify-center px-0" : ""
               } ${
                 link.active
@@ -306,16 +306,16 @@ function DashboardPage() {
               sidebarCollapsed ? "flex-col" : ""
             }`}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#2C1810] font-serif text-sm font-bold text-[#FAF3E0]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#2C1810] text-sm font-bold text-[#FAF3E0]">
               {role === "Student" ? "RS" : "SA"}
             </div>
             {!sidebarCollapsed && (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-sm font-bold text-[#2C1810]">
+                  <p className="truncate text-sm font-semibold text-[#2C1810]">
                     {role === "Student" ? "Rafsan Islam" : "Sharmin Akhter"}
                   </p>
-                  <p className="truncate font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
+                  <p className="truncate text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
                     {role}
                   </p>
                 </div>
@@ -339,10 +339,10 @@ function DashboardPage() {
                 <Menu className="h-5 w-5" strokeWidth={1.5} />
               </button>
               <div>
-                <h1 className="font-serif text-lg font-black text-[#2C1810]">
+                <h1 className="font-serif text-xl font-black text-[#2C1810]">
                   Welcome, {role === "Student" ? "Rafsan" : "Sharmin"}
                 </h1>
-                <p className="font-serif text-[10px] uppercase tracking-[0.15em] text-[#5C3A21]">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
                   {new Date().toLocaleDateString("en-GB", {
                     weekday: "long",
                     day: "numeric",
@@ -361,14 +361,14 @@ function DashboardPage() {
                   3
                 </span>
               </button>
-              <div className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] font-serif text-sm font-bold text-[#2C1810]">
+              <div className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] text-sm font-bold text-[#2C1810]">
                 {role === "Student" ? "RS" : "SA"}
               </div>
             </div>
           </div>
 
           <div className="border-t border-[#5C3A21]/10 px-6 py-1">
-            <p className="font-serif text-[9px] uppercase tracking-[0.2em] text-[#A89880]">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A89880]">
               Edition: Daily | Dhaka, Bangladesh
             </p>
           </div>
@@ -378,14 +378,14 @@ function DashboardPage() {
           <div className="mb-8 grid gap-px border-2 border-[#5C3A21]/20 bg-[#5C3A21]/20 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="bg-[#FAF3E0] p-5">
-                <p className="mb-1 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
                   {stat.label}
                 </p>
                 <div className="flex items-end justify-between">
                   <p className="font-serif text-3xl font-black text-[#2C1810]">{stat.value}</p>
                   {stat.change && (
                     <span
-                      className={`font-serif text-xs font-bold uppercase tracking-[0.1em] ${
+                      className={`text-xs font-semibold ${
                         stat.up ? "text-[#2C1810]" : "text-[#A89880]"
                       }`}
                     >
@@ -403,7 +403,7 @@ function DashboardPage() {
               <h2 className="font-serif text-2xl font-black tracking-tight text-[#2C1810]">
                 Browse Listings
               </h2>
-              <p className="font-serif text-sm text-[#5C3A21]">
+              <p className="text-sm leading-relaxed text-[#5C3A21]">
                 {role === "Owner"
                   ? "Search, sort, and manage your listings with URL-synced filters."
                   : "Search verified rooms and apartments with quick filters by price, area, and amenities."}
@@ -447,19 +447,19 @@ function DashboardPage() {
                       value={searchDraft}
                       onChange={(event) => setSearchDraft(event.target.value)}
                       placeholder="Search by keyword, area, owner, or amenity"
-                      className="w-full bg-transparent font-serif text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
+                      className="w-full bg-transparent text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
                     />
                   </label>
 
                   <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3">
-                    <span className="font-serif text-[10px] font-bold uppercase tracking-[0.14em] text-[#5C3A21]">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
                       Sort
                     </span>
                     <div className="relative flex-1">
                       <select
                         value={filters.sort}
                         onChange={(event) => setSort(event.target.value)}
-                        className="w-full appearance-none bg-transparent font-serif text-sm text-[#2C1810] outline-none"
+                        className="w-full appearance-none bg-transparent text-sm text-[#2C1810] outline-none"
                       >
                         {SORT_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -472,7 +472,7 @@ function DashboardPage() {
                   </label>
 
                   <div className="flex items-center justify-between border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-2">
-                    <span className="font-serif text-[10px] font-bold uppercase tracking-[0.14em] text-[#5C3A21]">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
                       View
                     </span>
                     <div className="flex items-center gap-2">
@@ -526,10 +526,10 @@ function DashboardPage() {
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <p className="font-serif text-xs uppercase tracking-[0.18em] text-[#A89880]">
+                <p className="text-xs font-medium text-[#A89880]">
                   Showing {filteredListings.length} of {listings.length} listings
                 </p>
-                <p className="font-serif text-xs uppercase tracking-[0.18em] text-[#A89880]">
+                <p className="text-xs font-medium text-[#A89880]">
                   {activeFilterCount ? `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} active` : "No active filters"}
                 </p>
               </div>
@@ -561,7 +561,7 @@ function DashboardPage() {
           </div>
 
           <div className="mt-10 border-t-2 border-[#5C3A21]/20 pt-6">
-            <div className="flex items-center justify-between font-serif text-[10px] uppercase tracking-[0.15em] text-[#A89880]">
+            <div className="flex items-center justify-between text-xs font-medium text-[#A89880]">
               <span>&copy; 2026 The Daily Gazette - All rights reserved.</span>
               <span>Est. 2022</span>
             </div>
@@ -577,7 +577,7 @@ function DashboardPage() {
           >
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#A89880]">
                   Filters
                 </p>
                 <h3 className="font-serif text-2xl font-black">Refine results</h3>
@@ -649,7 +649,7 @@ function ListingFilters({
         {!compact && (
           <div className="mb-4 flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
             <div>
-              <p className="font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#A89880]">
                 Filter panel
               </p>
               <h3 className="font-serif text-xl font-black">Browse controls</h3>
@@ -657,7 +657,7 @@ function ListingFilters({
             <button
               type="button"
               onClick={onClear}
-              className="border-2 border-[#5C3A21]/20 px-3 py-2 font-serif text-[10px] font-bold uppercase tracking-[0.14em] text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+              className="border-2 border-[#5C3A21]/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
             >
               Clear all
             </button>
@@ -672,7 +672,7 @@ function ListingFilters({
                 value={searchDraft}
                 onChange={(event) => setSearchDraft(event.target.value)}
                 placeholder="Search anything"
-                className="w-full bg-transparent font-serif text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
+                className="w-full bg-transparent text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
               />
             </label>
           </FilterGroup>
@@ -681,7 +681,7 @@ function ListingFilters({
             <select
               value={filters.price}
               onChange={(event) => onPriceChange(event.target.value)}
-              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none"
+              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none"
             >
               {priceBands.map((band) => (
                 <option key={band.value} value={band.value}>
@@ -695,7 +695,7 @@ function ListingFilters({
             <select
               value={filters.type}
               onChange={(event) => onTypeChange(event.target.value)}
-              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none"
+              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none"
             >
               <option value="any">Any type</option>
               {types.map((type) => (
@@ -710,7 +710,7 @@ function ListingFilters({
             <select
               value={filters.location}
               onChange={(event) => onLocationChange(event.target.value)}
-              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none"
+              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none"
             >
               <option value="any">Any location</option>
               {locations.map((location) => (
@@ -730,7 +730,7 @@ function ListingFilters({
                     key={amenity}
                     type="button"
                     onClick={() => onToggleAmenity(amenity)}
-                    className={`border-2 px-3 py-2 font-serif text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                    className={`border-2 px-3 py-2 text-xs font-medium transition-colors ${
                       active
                         ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
                         : "border-[#5C3A21]/20 bg-[#FAF3E0] text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
@@ -747,7 +747,7 @@ function ListingFilters({
             <select
               value={filters.sort}
               onChange={(event) => onSortChange(event.target.value)}
-              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none"
+              className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -775,7 +775,7 @@ function ListingFilters({
 function FilterGroup({ title, children, compact = false }) {
   return (
     <div className={compact ? "" : "border-b border-[#5C3A21]/10 pb-4 last:border-0 last:pb-0"}>
-      <p className="mb-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#A89880]">
         {title}
       </p>
       {children}
@@ -788,7 +788,7 @@ function ActiveFilterChip({ label, onClear }) {
     <button
       type="button"
       onClick={onClear}
-      className="inline-flex items-center gap-2 border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1.5 font-serif text-[10px] font-bold uppercase tracking-[0.14em] text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+      className="inline-flex items-center gap-2 border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
     >
       <span>{label}</span>
       <X className="h-3.5 w-3.5" strokeWidth={2} />
@@ -810,29 +810,42 @@ function ListingGridCard({ listing, statusStyles }) {
           className="h-full w-full object-cover sepia-[40%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105"
         />
         <span
-          className={`absolute left-3 top-3 border-2 px-2.5 py-1 font-serif text-[9px] font-bold uppercase tracking-[0.12em] ${statusStyles[listing.status]}`}
+          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[listing.status]}`}
         >
           {listing.status}
         </span>
-        <span className="absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-2.5 py-1 font-serif text-sm font-bold text-[#2C1810]">
+        <span className="absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-2.5 py-1 text-base font-bold text-[#2C1810]">
           {listing.price}
         </span>
       </div>
 
       <div className="p-5">
-        <h3 className="mb-1 font-serif text-base font-bold text-[#2C1810] group-hover:text-[#2C1810]">
+        <h3 className="mb-1.5 text-lg leading-snug font-bold text-[#2C1810] group-hover:text-[#2C1810]">
           {listing.title}
         </h3>
-        <div className="mb-3 flex items-center gap-1 font-serif text-xs text-[#5C3A21]">
-          <MapPin className="h-3.5 w-3.5" strokeWidth={1.5} />
-          {listing.location}
+        <div className="mb-3 flex items-center gap-1.5 text-sm text-[#5C3A21]">
+          <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+          <span className="truncate">{listing.location}</span>
         </div>
-        <div className="flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
-          <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#5C3A21]">
+        <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-[#5C3A21]">
+          {listing.description}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {(listing.amenities || []).slice(0, 3).map((amenity) => (
+            <span
+              key={amenity}
+              className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-2.5 py-1 text-xs font-medium text-[#5C3A21]"
+            >
+              {amenity}
+            </span>
+          ))}
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
+          <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 text-xs font-semibold text-[#5C3A21]">
             {listing.type}
           </span>
-          <div className="flex items-center gap-1 font-serif text-[10px] text-[#5C3A21]">
-            <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-[#5C3A21]">
+            <Users className="h-4 w-4 shrink-0" strokeWidth={1.5} />
             {listing.interested} interested
           </div>
         </div>
@@ -855,7 +868,7 @@ function ListingListCard({ listing, statusStyles }) {
           className="h-full w-full object-cover sepia-[35%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105"
         />
         <span
-          className={`absolute left-3 top-3 border-2 px-2.5 py-1 font-serif text-[9px] font-bold uppercase tracking-[0.12em] ${statusStyles[listing.status]}`}
+          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[listing.status]}`}
         >
           {listing.status}
         </span>
@@ -864,18 +877,18 @@ function ListingListCard({ listing, statusStyles }) {
       <div className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="font-serif text-xl font-black text-[#2C1810]">{listing.title}</h3>
-            <div className="mt-2 flex items-center gap-1 font-serif text-sm text-[#5C3A21]">
+            <h3 className="text-xl leading-snug font-bold text-[#2C1810]">{listing.title}</h3>
+            <div className="mt-1.5 flex items-center gap-1.5 text-sm text-[#5C3A21]">
               <MapPin className="h-4 w-4" strokeWidth={1.5} />
               {listing.location}
             </div>
           </div>
-          <span className="border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1 font-serif text-sm font-bold text-[#2C1810]">
+          <span className="border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1.5 text-base font-bold text-[#2C1810]">
             {listing.price}
           </span>
         </div>
 
-        <p className="mt-3 max-w-3xl font-serif text-sm leading-relaxed text-[#5C3A21]">
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#5C3A21]">
           {listing.description}
         </p>
 
@@ -883,7 +896,7 @@ function ListingListCard({ listing, statusStyles }) {
           {(listing.amenities || []).slice(0, 4).map((amenity) => (
             <span
               key={amenity}
-              className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 font-serif text-[10px] font-bold uppercase tracking-[0.12em] text-[#5C3A21]"
+              className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs font-medium text-[#5C3A21]"
             >
               {amenity}
             </span>
@@ -892,14 +905,14 @@ function ListingListCard({ listing, statusStyles }) {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#5C3A21]/10 pt-4">
           <div className="flex items-center gap-3">
-            <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 font-serif text-[10px] font-bold uppercase tracking-[0.1em] text-[#5C3A21]">
+            <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 text-xs font-semibold text-[#5C3A21]">
               {listing.type}
             </span>
-            <span className="font-serif text-[10px] uppercase tracking-[0.14em] text-[#A89880]">
+            <span className="text-xs font-medium text-[#A89880]">
               Posted {listing.posted}
             </span>
           </div>
-          <div className="flex items-center gap-1 font-serif text-[10px] text-[#5C3A21]">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-[#5C3A21]">
             <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
             {listing.interested} interested
           </div>
@@ -915,10 +928,10 @@ function EmptyResultsState({ onClear }) {
       <div className="mx-auto flex h-16 w-16 items-center justify-center border-2 border-[#5C3A21]/20 bg-[#FAF3E0]">
         <Sparkles className="h-7 w-7 text-[#A89880]" strokeWidth={1.6} />
       </div>
-      <h3 className="mt-5 font-serif text-2xl font-black text-[#2C1810]">
+      <h3 className="mt-5 text-2xl font-bold text-[#2C1810]">
         No listings match these filters.
       </h3>
-      <p className="mx-auto mt-2 max-w-md font-serif text-sm text-[#5C3A21]">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#5C3A21]">
         Try broadening the price range, removing a few amenities, or clearing the filters to see the full catalog.
       </p>
       <button type="button" onClick={onClear} className="btn-rubber-stamp mt-6 px-5 py-3 text-sm">
