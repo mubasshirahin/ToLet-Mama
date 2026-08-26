@@ -52,7 +52,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b-2 border-[#5C3A21]/20 bg-white/95 backdrop-blur-md shadow-[0_2px_8px_rgba(44,24,16,0.06)]">
       <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
         {/* Mobile menu toggle */}
         <button
