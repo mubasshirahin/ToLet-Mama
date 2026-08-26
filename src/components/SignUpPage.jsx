@@ -27,7 +27,7 @@ function SignUpPage() {
 
   const getPasswordStrength = () => {
     if (!password) return null;
-    if (password.length < 6) return { level: "weak", label: "Too short", color: "bg-[#A89880]", width: "w-1/4" };
+    if (password.length < 8) return { level: "weak", label: "Too short", color: "bg-[#A89880]", width: "w-1/4" };
     let score = 0;
     if (password.length >= 6) score++;
     if (password.length >= 8) score++;
@@ -56,8 +56,8 @@ function SignUpPage() {
     }
     if (!password) {
       newErrors.password = "Password is required.";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
     }
     if (!confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password.";
@@ -80,8 +80,9 @@ function SignUpPage() {
       await registerUser({ name, email, password });
       setSubmitMessage({ type: "success", text: "Account created! Redirecting to your dashboard..." });
       setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
-    } catch {
-      setSubmitMessage({ type: "error", text: "Something went wrong. Please try again." });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.password?.[0] || "Something went wrong. Please try again.";
+      setSubmitMessage({ type: "error", text: msg });
     } finally {
       setIsSubmitting(false);
     }
