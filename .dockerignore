@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+*.md
+.env
+.env.*
+docker.env
+docker-compose.yml
+Dockerfile*
+backend/vendor
+backend/node_modules
+backend/storage/logs/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*
