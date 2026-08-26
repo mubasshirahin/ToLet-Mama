@@ -20,7 +20,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchListings } from "../lib/api";
+import { clearStoredProfiles } from "../lib/googleAuth";
+import { fetchListings, logoutUser } from "../lib/api";
 import ThemeToggle from "./ThemeToggle";
 
 const PRICE_BANDS = [
@@ -67,6 +68,7 @@ function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const urlQuery = searchParams.get("q") ?? "";
@@ -254,6 +256,18 @@ function DashboardPage() {
     setMobileFiltersOpen(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // Ignore backend errors
+    }
+    clearStoredProfiles();
+    localStorage.removeItem("toletmama.api_token");
+    localStorage.removeItem("toletmama.api_user");
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#FAF3E0] text-[#2C1810]">
       {mobileSidebarOpen && (
@@ -340,7 +354,11 @@ function DashboardPage() {
                     {role}
                   </p>
                 </div>
-                <button aria-label="Log out" className="text-[#5C3A21] transition-colors hover:text-[#2C1810]">
+                <button
+                  aria-label="Log out"
+                  onClick={handleLogout}
+                  className="text-[#5C3A21] transition-colors hover:text-[#2C1810]"
+                >
                   <LogOut className="h-4 w-4" strokeWidth={1.5} />
                 </button>
               </>
@@ -382,8 +400,30 @@ function DashboardPage() {
                   3
                 </span>
               </button>
-              <div className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] text-sm font-bold text-[#2C1810]">
-                {role === "Student" ? "RS" : "SA"}
+              <div className="relative">
+                <button
+                  onClick={() => setProfileDropdownOpen((v) => !v)}
+                  className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] text-sm font-bold text-[#2C1810] transition-colors hover:border-[#2C1810]"
+                >
+                  {role === "Student" ? "RS" : "SA"}
+                </button>
+
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-44 border-2 border-[#5C3A21]/20 bg-white shadow-lg">
+                    <button
+                      onClick={() => { setProfileDropdownOpen(false); navigate("/profile", { state: { role } }); }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3A21] hover:bg-[#FAF3E0]"
+                    >
+                      <User className="h-4 w-4" /> Profile
+                    </button>
+                    <button
+                      onClick={() => { setProfileDropdownOpen(false); handleLogout(); }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" /> Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
