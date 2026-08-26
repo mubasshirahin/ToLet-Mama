@@ -16,125 +16,75 @@ import {
   User,
   AlertCircle,
 } from "lucide-react";
+import { fetchProfile, updateProfile, updatePassword } from "../lib/api";
 
-const ROLES = {
-  STUDENT: "Student",
-  OWNER: "Owner",
-};
-
-const DEFAULT_PROFILE = {
-  [ROLES.STUDENT]: {
-    name: "Rafsan Islam",
-    email: "rafsan.islam@example.com",
-    phone: "+880 1712 345678",
-    city: "Dhaka",
-    bio: "Searching for a calm room near campus with flexible rent and reliable utilities.",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop",
-  },
-  [ROLES.OWNER]: {
-    name: "Sharmin Akhter",
-    email: "sharmin.akhter@example.com",
-    phone: "+880 1811 223344",
-    city: "Dhaka",
-    bio: "Managing student-friendly homes across the city with quick replies and transparent listings.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop",
-  },
-};
-
-const STORAGE_KEY = "toletmama.profile.v1";
-const CURRENT_ROLE_KEY = "toletmama.profile.currentRole";
-
-function readStoredProfiles() {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function readStoredCurrentRole() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    return window.localStorage.getItem(CURRENT_ROLE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function getStoredProfile(role) {
-  const storedProfiles = readStoredProfiles();
-  return storedProfiles[role] || null;
-}
-
-function persistProfile(role, profile) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    const storedProfiles = readStoredProfiles();
-    storedProfiles[role] = {
-      ...storedProfiles[role],
-      ...profile,
-    };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedProfiles));
-  } catch {
-    // Ignore storage failures so the form still works normally.
-  }
-}
-
-function persistCurrentRole(role) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(CURRENT_ROLE_KEY, role);
-  } catch {
-    // Ignore storage failures so the form still works normally.
-  }
-}
-
-function createProfileState(role) {
-  return {
-    ...DEFAULT_PROFILE[role],
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  };
-}
-
-function ProfilePage() {
+const ProfilePage = function ProfilePage() {
   const location = useLocation();
   const fileInputRef = useRef(null);
 
-  const initialRole = location.state?.role || readStoredCurrentRole() || ROLES.STUDENT;
-  const storedProfile = getStoredProfile(initialRole);
-  const [role, setRole] = useState(initialRole);
-  const [formData, setFormData] = useState(() => ({
-    ...createProfileState(initialRole),
-    ...(storedProfile || {}),
+  // Role comes from navigation state or defaults to Student
+  // (read from localStorage as fallback)
+  const initialRole = useMemo(() => {
+    if (location.state?.role) return location.state.role;
+    try {
+      return localStorage.getItem("toletmama.profile.currentRole") || "Student";
+    } catch {
+      return "Student";
+    }
+  }, [location.state?.role]);
+  const [role] = useState(initialRole);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    bio: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  }));
-  const [avatarPreview, setAvatarPreview] = useState(() => storedProfile?.avatar || DEFAULT_PROFILE[initialRole].avatar);
-  const [uploadName, setUploadName] = useState(() => (storedProfile?.avatar ? "Saved avatar" : ""));
+  });
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [uploadName, setUploadName] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
+
+  const [fetchError, setFetchError] = useState("");
+
+  // Fetch real profile from backend on mount
+  useEffect(() => {
+    let cancelled = false;
+    fetchProfile()
+      .then((data) => {
+        if (cancelled) return;
+        setFormData((prev) => ({
+          ...prev,
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          city: data.city || "",
+          bio: data.bio || "",
+        }));
+        setAvatarPreview(data.avatar || "");
+        // Sync real backend data back to localStorage
+        try {
+          localStorage.setItem("toletmama.api_user", JSON.stringify(data));
+        } catch { /* ignore */ }
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFetchError("Could not load profile. Please log in again.");
+        setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const avatarFallback = useMemo(() => {
     const initials = formData.name
@@ -204,7 +154,7 @@ function ProfilePage() {
     }
   };
 
-  const handleAvatarSelect = (event) => {
+  const handleAvatarSelect = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -213,15 +163,19 @@ function ProfilePage() {
       return;
     }
 
+    // Convert to base64 for upload
     const reader = new FileReader();
-    reader.onload = () => {
-      const nextAvatar = String(reader.result);
-      setAvatarPreview(nextAvatar);
+    reader.onload = async () => {
+      const base64 = String(reader.result);
+      setAvatarPreview(base64);
       setUploadName(file.name);
-      persistProfile(role, {
-        avatar: nextAvatar,
-      });
-      pushToast("success", "Avatar preview updated.");
+
+      try {
+        await updateProfile({ avatar: base64 });
+        pushToast("success", "Avatar updated.");
+      } catch {
+        pushToast("error", "Could not save avatar.");
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -235,9 +189,22 @@ function ProfilePage() {
 
     setIsSaving(true);
     try {
-      await new Promise((resolve, reject) =>
-        window.setTimeout(() => (Math.random() > 0.14 ? resolve() : reject(new Error("Network error"))), 1200)
-      );
+      // Update profile info
+      await updateProfile({
+        name: formData.name.trim(),
+        phone: formData.phone.trim() || null,
+        city: formData.city.trim() || null,
+        bio: formData.bio.trim() || null,
+        ...(avatarPreview ? { avatar: avatarPreview } : {}),
+      });
+
+      // Change password if filled
+      if (formData.currentPassword || formData.newPassword) {
+        await updatePassword({
+          current_password: formData.currentPassword,
+          new_password: formData.newPassword,
+        });
+      }
 
       setFormData((current) => ({
         ...current,
@@ -245,17 +212,11 @@ function ProfilePage() {
         newPassword: "",
         confirmPassword: "",
       }));
-      persistProfile(role, {
-        ...formData,
-        avatar: avatarPreview,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      persistCurrentRole(role);
+
       pushToast("success", "Profile changes saved.");
-    } catch {
-      pushToast("error", "We could not save the profile right now.");
+    } catch (err) {
+      const msg = err.response?.data?.message || "We could not save the profile right now.";
+      pushToast("error", msg);
     } finally {
       setIsSaving(false);
     }
@@ -263,13 +224,8 @@ function ProfilePage() {
 
   const handleBioSave = async () => {
     setIsSavingBio(true);
-
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 700));
-      persistProfile(role, {
-        bio: formData.bio,
-      });
-      persistCurrentRole(role);
+      await updateProfile({ bio: formData.bio.trim() || null });
       pushToast("success", "Bio saved.");
     } catch {
       pushToast("error", "We could not save the bio right now.");
@@ -278,19 +234,58 @@ function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    const nextStoredProfile = getStoredProfile(initialRole);
-    setRole(initialRole);
-    setFormData({
-      ...createProfileState(initialRole),
-      ...(nextStoredProfile || {}),
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setAvatarPreview(nextStoredProfile?.avatar || DEFAULT_PROFILE[initialRole].avatar);
-    setUploadName(nextStoredProfile?.avatar ? "Saved avatar" : "");
-  }, [initialRole]);
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
+        <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4">
+          <div className="border-2 border-[#5C3A21]/20 bg-white p-8 text-center shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-[#2C1810]" strokeWidth={1.5} />
+            <h2 className="font-serif text-xl font-black text-[#2C1810]">Something went wrong</h2>
+            <p className="mt-2 font-serif text-sm text-[#5C3A21]">{fetchError}</p>
+            <button
+              onClick={() => { localStorage.removeItem("toletmama.api_token"); localStorage.removeItem("toletmama.api_user"); window.location.href = "/auth"; }}
+              className="btn-rubber-stamp mt-6 px-6 py-3 text-sm"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4">
+            <div className="h-3 w-32 bg-[#5C3A21]/10" />
+            <div className="mt-4 h-9 w-2/3 bg-[#5C3A21]/10" />
+            <div className="mt-3 h-4 w-1/2 bg-[#5C3A21]/10" />
+          </div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-5">
+              <div className="h-6 w-48 bg-[#5C3A21]/10" />
+              <div className="mt-6 h-40 w-40 bg-[#5C3A21]/10" />
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="h-10 bg-[#5C3A21]/10" />
+                <div className="h-10 bg-[#5C3A21]/10" />
+              </div>
+            </div>
+            <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-5">
+              <div className="h-6 w-40 bg-[#5C3A21]/10" />
+              <div className="mt-6 space-y-3">
+                <div className="h-8 bg-[#5C3A21]/10" />
+                <div className="h-8 bg-[#5C3A21]/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#FAF3E0] text-[#2C1810]">
@@ -316,7 +311,7 @@ function ProfilePage() {
               User Profile
             </h1>
             <p className="mt-1 max-w-2xl font-serif text-sm text-[#5C3A21]">
-              Update your personal details, upload a new photo, and switch between student and owner modes from one place.
+              Update your personal details, upload a new photo, and manage your account from one place.
             </p>
           </div>
 
@@ -352,9 +347,6 @@ function ProfilePage() {
                   <p className="font-serif text-sm text-[#5C3A21]">
                     Edit your public identity and contact information.
                   </p>
-                </div>
-                <div className="hidden rounded-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#A89880] sm:block">
-                  Auto-save disabled
                 </div>
               </div>
 
@@ -416,6 +408,7 @@ function ProfilePage() {
                     error={errors.email}
                     placeholder="you@example.com"
                     type="email"
+                    disabled
                   />
                   <Field
                     label="Phone Number"
@@ -440,6 +433,7 @@ function ProfilePage() {
                       value={formData.bio}
                       onChange={(e) => handleChange("bio", e.target.value)}
                       rows={4}
+                      placeholder="Tell others about yourself..."
                       className="vintage-inset w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none transition-colors focus:border-[#2C1810]"
                     />
                     <div className="mt-3 flex justify-end">
@@ -529,7 +523,7 @@ function ProfilePage() {
                   Profile Summary
                 </h2>
                 <p className="font-serif text-sm text-[#5C3A21]">
-                  Your current account context and uploaded photo status.
+                  Your current account context and info status.
                 </p>
               </div>
 
@@ -542,16 +536,28 @@ function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
                   <span className="text-xs uppercase tracking-wide text-[#A89880]">
-                    Current city
+                    Name
                   </span>
-                  <span className="font-bold text-[#2C1810]">{formData.city}</span>
+                  <span className="font-bold text-[#2C1810]">{formData.name || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
+                  <span className="text-xs uppercase tracking-wide text-[#A89880]">
+                    Email
+                  </span>
+                  <span className="font-bold text-[#2C1810]">{formData.email || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-[#5C3A21]/10 pb-2">
+                  <span className="text-xs uppercase tracking-wide text-[#A89880]">
+                    City
+                  </span>
+                  <span className="font-bold text-[#2C1810]">{formData.city || "—"}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs uppercase tracking-wide text-[#A89880]">
                     Avatar status
                   </span>
                   <span className="font-bold text-[#2C1810]">
-                    {uploadName ? "Updated" : "Default"}
+                    {uploadName ? "Updated" : avatarPreview ? "From Google" : "Default"}
                   </span>
                 </div>
               </div>
@@ -590,7 +596,7 @@ function ProfilePage() {
   );
 }
 
-function Field({ label, icon: Icon, value, onChange, error, placeholder, type = "text", className = "" }) {
+function Field({ label, icon: Icon, value, onChange, error, placeholder, type = "text", className = "", disabled = false }) {
   return (
     <div className={className}>
       <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
@@ -603,7 +609,10 @@ function Field({ label, icon: Icon, value, onChange, error, placeholder, type = 
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
+          disabled={disabled}
           className={`w-full border-b-2 bg-transparent py-3 pl-7 font-serif text-sm text-[#2C1810] placeholder-[#A89880] outline-none transition-colors ${
+            disabled ? "opacity-60 cursor-not-allowed" : ""
+          } ${
             error ? "border-[#2C1810]" : "border-[#5C3A21]/30 focus:border-[#2C1810]"
           }`}
         />

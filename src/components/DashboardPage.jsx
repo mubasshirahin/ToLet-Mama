@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { clearStoredProfiles } from "../lib/googleAuth";
-import { fetchListings, logoutUser } from "../lib/api";
+import { fetchDashboardStats, fetchListings, fetchProfile, getCurrentUser, logoutUser } from "../lib/api";
 import ThemeToggle from "./ThemeToggle";
 
 const PRICE_BANDS = [
@@ -47,14 +47,38 @@ function DashboardPage() {
   const role = location.state?.role || "Student";
   const [listings, setListings] = useState([]);
   const [isLoadingListings, setIsLoadingListings] = useState(true);
+  const [dashStats, setDashStats] = useState({ total_listings: 0, active_chats: 0, saved_properties: 0, monthly_visits: 0 });
+  const [userProfile, setUserProfile] = useState(null);
+  const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem("toletmama.api_token"));
+
+  // Verify token is valid before loading anything else
+  useEffect(() => {
+    if (!localStorage.getItem("toletmama.api_token")) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    let cancelled = false;
+    getCurrentUser()
+      .then(() => { if (!cancelled) setIsAuthed(true); })
+      .catch(() => {
+        if (!cancelled) {
+          localStorage.removeItem("toletmama.api_token");
+          localStorage.removeItem("toletmama.api_user");
+          navigate("/auth", { replace: true });
+        }
+      });
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   useEffect(() => {
+    if (!isAuthed) return;
     let cancelled = false;
     setIsLoadingListings(true);
     fetchListings({ page: 1 })
       .then((res) => {
         if (!cancelled) {
-          setListings(res.data || []);
+          const raw = res.data || [];
+          setListings(raw.map(normalizeListing));
         }
       })
       .catch(() => {
@@ -66,7 +90,27 @@ function DashboardPage() {
         if (!cancelled) setIsLoadingListings(false);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [isAuthed]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    let cancelled = false;
+    fetchProfile()
+      .then((data) => { if (!cancelled) setUserProfile(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAuthed]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    let cancelled = false;
+    fetchDashboardStats()
+      .then((res) => {
+        if (!cancelled) setDashStats(res);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAuthed]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -133,10 +177,10 @@ function DashboardPage() {
     (filters.view !== "grid" ? 1 : 0);
 
   const stats = [
-    { label: "Total Listings", value: listings.length.toLocaleString(), change: "+12%", up: true },
-    { label: "Active Chats", value: role === "Owner" ? "34" : "8", change: "+5%", up: true },
-    { label: "Saved Properties", value: "12", change: "", up: true },
-    { label: "Monthly Visits", value: role === "Owner" ? "47" : "3", change: "+18%", up: true },
+    { label: "Total Listings", value: (dashStats.total_listings || listings.length).toLocaleString(), change: "", up: true, icon: Newspaper },
+    { label: "Active Chats", value: String(dashStats.active_chats || 0), change: "", up: true, icon: Mail },
+    { label: "Saved Properties", value: String(dashStats.saved_properties || 0), change: "", up: true, icon: Sparkles },
+    { label: "Monthly Visits", value: String(dashStats.monthly_visits || 0), change: "", up: true, icon: Users },
   ];
 
   const statusStyles = {
@@ -281,8 +325,8 @@ function DashboardPage() {
       >
         <div className={`border-b-2 border-[#2C1810] ${sidebarCollapsed ? "px-3 py-5" : "px-6 py-5"}`}>
           <div className={`flex items-center gap-3 ${sidebarCollapsed ? "justify-center" : ""}`}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#2C1810]">
-              <Newspaper className="h-5 w-5 text-[#FAF3E0]" strokeWidth={1.5} />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]">
+              <Newspaper className="h-5 w-5 text-[#FAF3E0]" strokeWidth={1.8} />
             </div>
             {!sidebarCollapsed && (
               <span className="truncate font-serif text-lg font-black uppercase tracking-tight text-[#2C1810]">
@@ -291,8 +335,8 @@ function DashboardPage() {
             )}
           </div>
           {!sidebarCollapsed && (
-            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
-              {role}&apos;s Dashboard - Vol. IV
+            <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
+              {role}&apos;s Dashboard — Vol. IV
             </p>
           )}
         </div>
@@ -307,7 +351,7 @@ function DashboardPage() {
           {sidebarCollapsed ? <ChevronsRight className="h-4 w-4" strokeWidth={2} /> : <ChevronsLeft className="h-4 w-4" strokeWidth={2} />}
         </button>
 
-        <nav className="flex-1 space-y-1 px-4 py-5">
+        <nav className="flex-1 space-y-1 px-3 py-5">
           {sidebarLinks.map((link) => (
             <button
               key={link.label}
@@ -319,38 +363,38 @@ function DashboardPage() {
               }}
               disabled={!link.route}
               title={link.label}
-              className={`flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-all ${
+              className={`flex w-full items-center gap-3 px-4 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-all ${
                 sidebarCollapsed ? "justify-center px-0" : ""
               } ${
                 link.active
-                  ? "bg-[#2C1810] text-[#FAF3E0] -translate-y-px shadow-[2px_2px_0px_0px_rgba(44,24,16,0.2)]"
+                  ? "bg-[#2C1810] text-[#FAF3E0] -translate-y-px shadow-[3px_3px_0px_0px_rgba(44,24,16,0.25)]"
                   : link.route
                     ? "text-[#5C3A21] hover:bg-[#F4E8C1] hover:text-[#2C1810]"
-                    : "cursor-default text-[#5C3A21]/50"
+                    : "cursor-default text-[#5C3A21]/40"
               }`}
             >
-              <link.icon className="h-4 w-4" strokeWidth={1.5} />
-              {link.label}
+              <link.icon className="h-4 w-4" strokeWidth={1.8} />
+              {!sidebarCollapsed && link.label}
             </button>
           ))}
         </nav>
 
         <div className={`border-t-2 border-[#5C3A21]/20 ${sidebarCollapsed ? "p-2" : "p-4"}`}>
           <div
-            className={`flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#F4E8C1] p-3 ${
+            className={`flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#F4E8C1] p-3 transition-all hover:border-[#2C1810] ${
               sidebarCollapsed ? "flex-col" : ""
             }`}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#2C1810] text-sm font-bold text-[#FAF3E0]">
-              {role === "Student" ? "RS" : "SA"}
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#2C1810] font-serif text-sm font-black text-[#FAF3E0]">
+              {userProfile?.name ? userProfile.name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() : (role === "Student" ? "S" : "O")}
             </div>
             {!sidebarCollapsed && (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#2C1810]">
-                    {role === "Student" ? "Rafsan Islam" : "Sharmin Akhter"}
+                  <p className="truncate font-serif text-sm font-black text-[#2C1810]">
+                    {userProfile?.name || "User"}
                   </p>
-                  <p className="truncate text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
+                  <p className="truncate text-[10px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
                     {role}
                   </p>
                 </div>
@@ -359,7 +403,7 @@ function DashboardPage() {
                   onClick={handleLogout}
                   className="text-[#5C3A21] transition-colors hover:text-[#2C1810]"
                 >
-                  <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                  <LogOut className="h-4 w-4" strokeWidth={1.8} />
                 </button>
               </>
             )}
@@ -369,19 +413,19 @@ function DashboardPage() {
 
       <main className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 border-b-2 border-[#5C3A21]/20 bg-white/95 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-6 py-3">
+          <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
               <button
                 className="p-2 text-[#5C3A21] transition-colors hover:bg-[#F4E8C1] lg:hidden"
                 onClick={() => setMobileSidebarOpen(true)}
               >
-                <Menu className="h-5 w-5" strokeWidth={1.5} />
+                <Menu className="h-5 w-5" strokeWidth={1.8} />
               </button>
               <div>
                 <h1 className="font-serif text-xl font-black text-[#2C1810]">
-                  Welcome, {role === "Student" ? "Rafsan" : "Sharmin"}
+                  Welcome, {userProfile?.name?.split(" ")[0] || "User"}
                 </h1>
-                <p className="text-xs font-medium uppercase tracking-wide text-[#5C3A21]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
                   {new Date().toLocaleDateString("en-GB", {
                     weekday: "long",
                     day: "numeric",
@@ -392,35 +436,36 @@ function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <ThemeToggle compact className="hidden sm:inline-flex" />
               <button className="relative p-2 text-[#5C3A21] transition-colors hover:bg-[#F4E8C1] hover:text-[#2C1810]">
-                <Bell className="h-5 w-5" strokeWidth={1.5} />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center bg-[#2C1810] text-[10px] font-bold text-[#FAF3E0]">
+                <Bell className="h-5 w-5" strokeWidth={1.8} />
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center bg-[#2C1810] text-[9px] font-black text-[#FAF3E0]">
                   3
                 </span>
               </button>
               <div className="relative">
                 <button
                   onClick={() => setProfileDropdownOpen((v) => !v)}
-                  className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] text-sm font-bold text-[#2C1810] transition-colors hover:border-[#2C1810]"
+                  className="flex h-9 w-9 items-center justify-center border-2 border-[#5C3A21]/30 bg-[#E8D5A3] font-serif text-xs font-black text-[#2C1810] transition-all hover:border-[#2C1810] hover:shadow-[2px_2px_0px_rgba(44,24,16,0.15)]"
                 >
-                  {role === "Student" ? "RS" : "SA"}
+                  {userProfile?.name ? userProfile.name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() : (role === "Student" ? "S" : "O")}
                 </button>
 
                 {profileDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-44 border-2 border-[#5C3A21]/20 bg-white shadow-lg">
+                  <div className="absolute right-0 top-full mt-2 w-48 border-2 border-[#5C3A21]/20 bg-white shadow-[4px_4px_0px_rgba(44,24,16,0.1)]">
                     <button
                       onClick={() => { setProfileDropdownOpen(false); navigate("/profile", { state: { role } }); }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[#5C3A21] hover:bg-[#FAF3E0]"
+                      className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#5C3A21] transition-colors hover:bg-[#FAF3E0] hover:text-[#2C1810]"
                     >
-                      <User className="h-4 w-4" /> Profile
+                      <User className="h-4 w-4" strokeWidth={1.8} /> Profile
                     </button>
+                    <div className="border-t border-[#5C3A21]/10" />
                     <button
                       onClick={() => { setProfileDropdownOpen(false); handleLogout(); }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                      className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                     >
-                      <LogOut className="h-4 w-4" /> Logout
+                      <LogOut className="h-4 w-4" strokeWidth={1.8} /> Logout
                     </button>
                   </div>
                 )}
@@ -428,25 +473,27 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="border-t border-[#5C3A21]/10 px-6 py-1">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A89880]">
+          <div className="border-t border-[#5C3A21]/10 px-6 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
               Edition: Daily | Dhaka, Bangladesh
             </p>
           </div>
         </header>
 
         <div className="p-6 lg:p-8">
-          <div className="mb-8 grid gap-px border-2 border-[#5C3A21]/20 bg-[#5C3A21]/20 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
-              <div key={stat.label} className="bg-[#FAF3E0] p-5">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
-                  {stat.label}
-                </p>
-                <div className="flex items-end justify-between">
-                  <p className="font-serif text-3xl font-black text-[#2C1810]">{stat.value}</p>
+              <div
+                key={stat.label}
+                className="group border-2 border-[#5C3A21]/20 bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2C1810] hover:shadow-[3px_3px_0px_0px_rgba(44,24,16,0.15)]"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center border border-[#5C3A21]/20 bg-[#FAF3E0]">
+                    <stat.icon className="h-5 w-5 text-[#5C3A21]" strokeWidth={1.5} />
+                  </div>
                   {stat.change && (
                     <span
-                      className={`text-xs font-semibold ${
+                      className={`text-xs font-bold ${
                         stat.up ? "text-[#2C1810]" : "text-[#A89880]"
                       }`}
                     >
@@ -454,24 +501,33 @@ function DashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="mt-2 h-px bg-gradient-to-r from-[#2C1810] to-transparent opacity-20" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#A89880]">
+                  {stat.label}
+                </p>
+                <p className="mt-1 font-serif text-3xl font-black text-[#2C1810]">
+                  {stat.value}
+                </p>
+                <div className="mt-3 h-px bg-gradient-to-r from-[#2C1810] via-[#5C3A21]/20 to-transparent" />
               </div>
             ))}
           </div>
 
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="mb-6 flex flex-col gap-4 border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[3px_3px_0px_rgba(44,24,16,0.05)] sm:flex-row sm:items-center sm:justify-between">
             <div>
+              <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                {role === "Owner" ? "Property Management" : "Property Search"}
+              </p>
               <h2 className="font-serif text-2xl font-black tracking-tight text-[#2C1810]">
                 Browse Listings
               </h2>
-              <p className="text-sm leading-relaxed text-[#5C3A21]">
+              <p className="mt-1 text-sm leading-relaxed text-[#5C3A21]">
                 {role === "Owner"
                   ? "Search, sort, and manage your listings with URL-synced filters."
                   : "Search verified rooms and apartments with quick filters by price, area, and amenities."}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(true)}
@@ -486,7 +542,7 @@ function DashboardPage() {
                 className="btn-coupon-clip px-4 py-2 text-xs"
               >
                 <X className="h-4 w-4" />
-                Clear filters
+                Clear
               </button>
               {role === "Owner" && (
                 <Link to="/listings/new" className="btn-rubber-stamp px-5 py-2 text-xs">
@@ -495,14 +551,12 @@ function DashboardPage() {
               )}
             </div>
           </div>
-
-          <hr className="news-rule mb-8" />
           <div>
 
             <section className="min-w-0 space-y-5">
-              <div className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
+              <div className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[3px_3px_0px_rgba(44,24,16,0.05)]">
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_160px]">
-                  <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3">
+                  <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 transition-all focus-within:border-[#2C1810] focus-within:shadow-[2px_2px_0px_rgba(44,24,16,0.1)]">
                     <Search className="h-4 w-4 text-[#A89880]" strokeWidth={1.8} />
                     <input
                       value={searchDraft}
@@ -510,17 +564,26 @@ function DashboardPage() {
                       placeholder="Search by keyword, area, owner, or amenity"
                       className="w-full bg-transparent text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
                     />
+                    {searchDraft && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchDraft("")}
+                        className="text-[#A89880] hover:text-[#2C1810]"
+                      >
+                        <X className="h-4 w-4" strokeWidth={2} />
+                      </button>
+                    )}
                   </label>
 
                   <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
+                    <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
                       Sort
                     </span>
                     <div className="relative flex-1">
                       <select
                         value={filters.sort}
                         onChange={(event) => setSort(event.target.value)}
-                        className="w-full appearance-none bg-transparent text-sm text-[#2C1810] outline-none"
+                        className="w-full appearance-none bg-transparent text-sm font-medium text-[#2C1810] outline-none"
                       >
                         {SORT_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -533,16 +596,16 @@ function DashboardPage() {
                   </label>
 
                   <div className="flex items-center justify-between border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#5C3A21]">
+                    <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
                       View
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => setView("grid")}
-                        className={`flex h-9 w-9 items-center justify-center border transition-colors ${
+                        className={`flex h-8 w-8 items-center justify-center border transition-all ${
                           filters.view === "grid"
-                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
+                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
                             : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
                         }`}
                         aria-label="Grid view"
@@ -552,9 +615,9 @@ function DashboardPage() {
                       <button
                         type="button"
                         onClick={() => setView("list")}
-                        className={`flex h-9 w-9 items-center justify-center border transition-colors ${
+                        className={`flex h-8 w-8 items-center justify-center border transition-all ${
                           filters.view === "list"
-                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
+                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
                             : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
                         }`}
                         aria-label="List view"
@@ -586,12 +649,12 @@ function DashboardPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-medium text-[#A89880]">
+              <div className="flex items-center justify-between gap-3 rounded-sm border border-[#5C3A21]/10 bg-[#FAF3E0]/50 px-4 py-2.5">
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
                   Showing {filteredListings.length} of {listings.length} listings
                 </p>
-                <p className="text-xs font-medium text-[#A89880]">
-                  {activeFilterCount ? `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} active` : "No active filters"}
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880]">
+                  {activeFilterCount ? `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} active` : "No filters"}
                 </p>
               </div>
 
@@ -621,9 +684,9 @@ function DashboardPage() {
             </section>
           </div>
 
-          <div className="mt-10 border-t-2 border-[#5C3A21]/20 pt-6">
-            <div className="flex items-center justify-between text-xs font-medium text-[#A89880]">
-              <span>&copy; 2026 The Daily Gazette - All rights reserved.</span>
+          <div className="mt-12 border-t-2 border-[#5C3A21]/20 pt-6">
+            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
+              <span>&copy; 2026 The Daily Gazette — All rights reserved.</span>
               <span>Est. 2022</span>
             </div>
           </div>
@@ -849,10 +912,10 @@ function ActiveFilterChip({ label, onClear }) {
     <button
       type="button"
       onClick={onClear}
-      className="inline-flex items-center gap-2 border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+      className="inline-flex items-center gap-1.5 border-2 border-[#2C1810]/20 bg-[#FAF3E0] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#5C3A21] transition-all hover:border-[#2C1810] hover:bg-[#2C1810] hover:text-[#FAF3E0]"
     >
       <span>{label}</span>
-      <X className="h-3.5 w-3.5" strokeWidth={2} />
+      <X className="h-3 w-3" strokeWidth={2.5} />
     </button>
   );
 }
@@ -862,52 +925,53 @@ function ListingGridCard({ listing, statusStyles }) {
     <Link
       to={`/listings/${listing.id}`}
       state={{ listing }}
-      className="group border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#2C1810]"
+      className="group flex flex-col border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-[#2C1810] hover:shadow-[6px_6px_0px_0px_rgba(44,24,16,0.18)]"
     >
-      <div className="halftone-overlay relative h-48 overflow-hidden border-b-2 border-[#5C3A21]/20">
+      <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
         <img
           src={listing.image}
           alt={listing.title}
-          className="h-full w-full object-cover sepia-[40%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover sepia-[30%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/20 via-transparent to-transparent" />
         <span
-          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[listing.status]}`}
+          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}
         >
           {listing.status}
         </span>
-        <span className="absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-2.5 py-1 text-base font-bold text-[#2C1810]">
+        <span className="absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.15)]">
           {listing.price}
         </span>
       </div>
 
-      <div className="p-5">
-        <h3 className="mb-1.5 text-lg leading-snug font-bold text-[#2C1810] group-hover:text-[#2C1810]">
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="font-serif text-lg font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
           {listing.title}
         </h3>
-        <div className="mb-3 flex items-center gap-1.5 text-sm text-[#5C3A21]">
-          <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-          <span className="truncate">{listing.location}</span>
+        <div className="mt-2 flex items-center gap-1.5 text-sm text-[#5C3A21]">
+          <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+          <span className="truncate font-medium">{listing.location}</span>
         </div>
-        <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-[#5C3A21]">
+        <p className="mt-2.5 flex-1 line-clamp-2 text-sm leading-relaxed text-[#5C3A21]">
           {listing.description}
         </p>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {(listing.amenities || []).slice(0, 3).map((amenity) => (
             <span
               key={amenity}
-              className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-2.5 py-1 text-xs font-medium text-[#5C3A21]"
+              className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]"
             >
               {amenity}
             </span>
           ))}
         </div>
-        <div className="mt-3 flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
-          <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 text-xs font-semibold text-[#5C3A21]">
+        <div className="mt-4 flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
+          <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
             {listing.type}
           </span>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-[#5C3A21]">
-            <Users className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-            {listing.interested} interested
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
+            <Users className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+            {listing.interested}
           </div>
         </div>
       </div>
@@ -920,31 +984,34 @@ function ListingListCard({ listing, statusStyles }) {
     <Link
       to={`/listings/${listing.id}`}
       state={{ listing }}
-      className="group grid overflow-hidden border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#2C1810] md:grid-cols-[220px_minmax(0,1fr)]"
+      className="group grid overflow-hidden border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2C1810] hover:shadow-[5px_5px_0px_0px_rgba(44,24,16,0.18)] md:grid-cols-[240px_minmax(0,1fr)]"
     >
       <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
         <img
           src={listing.image}
           alt={listing.title}
-          className="h-full w-full object-cover sepia-[35%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover sepia-[25%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#2C1810]/10" />
         <span
-          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[listing.status]}`}
+          className={`absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}
         >
           {listing.status}
         </span>
       </div>
 
-      <div className="p-5">
+      <div className="flex flex-col p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-xl leading-snug font-bold text-[#2C1810]">{listing.title}</h3>
-            <div className="mt-1.5 flex items-center gap-1.5 text-sm text-[#5C3A21]">
-              <MapPin className="h-4 w-4" strokeWidth={1.5} />
+            <h3 className="font-serif text-xl font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
+              {listing.title}
+            </h3>
+            <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-[#5C3A21]">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />
               {listing.location}
             </div>
           </div>
-          <span className="border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1.5 text-base font-bold text-[#2C1810]">
+          <span className="border-2 border-[#2C1810] bg-[#FAF3E0] px-3.5 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.12)]">
             {listing.price}
           </span>
         </div>
@@ -953,29 +1020,29 @@ function ListingListCard({ listing, statusStyles }) {
           {listing.description}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {(listing.amenities || []).slice(0, 4).map((amenity) => (
             <span
               key={amenity}
-              className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs font-medium text-[#5C3A21]"
+              className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]"
             >
               {amenity}
             </span>
           ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#5C3A21]/10 pt-4">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#5C3A21]/10 pt-4">
           <div className="flex items-center gap-3">
-            <span className="border border-[#5C3A21]/20 px-2.5 py-0.5 text-xs font-semibold text-[#5C3A21]">
+            <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
               {listing.type}
             </span>
-            <span className="text-xs font-medium text-[#A89880]">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#A89880]">
               Posted {listing.posted}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-[#5C3A21]">
-            <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
-            {listing.interested} interested
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
+            <Users className="h-3.5 w-3.5" strokeWidth={1.8} />
+            {listing.interested}
           </div>
         </div>
       </div>
@@ -985,21 +1052,64 @@ function ListingListCard({ listing, statusStyles }) {
 
 function EmptyResultsState({ onClear }) {
   return (
-    <div className="border-2 border-[#5C3A21]/20 bg-white p-8 text-center shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center border-2 border-[#5C3A21]/20 bg-[#FAF3E0]">
-        <Sparkles className="h-7 w-7 text-[#A89880]" strokeWidth={1.6} />
+    <div className="border-2 border-[#5C3A21]/20 bg-white p-10 text-center shadow-[3px_3px_0px_rgba(44,24,16,0.05)]">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center border-2 border-[#5C3A21]/20 bg-[#FAF3E0]">
+        <Sparkles className="h-9 w-9 text-[#A89880]" strokeWidth={1.4} />
       </div>
-      <h3 className="mt-5 text-2xl font-bold text-[#2C1810]">
+      <h3 className="mt-6 font-serif text-2xl font-black text-[#2C1810]">
         No listings match these filters.
       </h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#5C3A21]">
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5C3A21]">
         Try broadening the price range, removing a few amenities, or clearing the filters to see the full catalog.
       </p>
-      <button type="button" onClick={onClear} className="btn-rubber-stamp mt-6 px-5 py-3 text-sm">
-        Clear filters
+      <button type="button" onClick={onClear} className="btn-rubber-stamp mt-8 px-6 py-3 text-sm">
+        Clear all filters
       </button>
     </div>
   );
+}
+
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1522708323590?w=1200&h=900&fit=crop";
+
+function normalizeListing(raw) {
+  const image = Array.isArray(raw.images) && raw.images.length ? raw.images[0] : raw.image || FALLBACK_IMAGE;
+  const owner = raw.user
+    ? {
+        name: raw.user.name || "Unknown",
+        role: "Owner",
+        phone: raw.user.phone || "",
+        email: raw.user.email || "",
+        response: "Usually replies within 1 hour",
+        verified: true,
+        avatar: raw.user.avatar || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+      }
+    : raw.owner || { name: "Unknown", role: "Owner", phone: "", email: "", response: "", verified: false, avatar: "" };
+  const capitalizedStatus = raw.status ? raw.status.charAt(0).toUpperCase() + raw.status.slice(1) : "Available";
+  const posted = raw.posted || (raw.created_at ? timeAgo(new Date(raw.created_at)) : "Recently");
+
+  return {
+    ...raw,
+    image,
+    images: Array.isArray(raw.images) ? raw.images : raw.image ? [raw.image] : [FALLBACK_IMAGE],
+    owner,
+    status: capitalizedStatus,
+    posted,
+    interested: raw.interested ?? 0,
+  };
+}
+
+function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }
 
 function getArea(location) {
