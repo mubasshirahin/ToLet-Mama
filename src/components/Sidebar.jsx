@@ -72,7 +72,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r-2 border-[#5C3A21]/20 bg-white
+          fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-white
           transition-transform duration-300 ease-in-out
           lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none
           ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
