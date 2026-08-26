@@ -30,8 +30,8 @@ function AuthPage() {
     }
     if (!password) {
       newErrors.password = "Password is required.";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -46,8 +46,9 @@ function AuthPage() {
       await loginUser({ email, password });
       setSubmitMessage({ type: "success", text: `Welcome back, ${role}! Redirecting to your dashboard...` });
       setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
-    } catch {
-      setSubmitMessage({ type: "error", text: "Something went wrong. Please try again." });
+    } catch (err) {
+      const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+      setSubmitMessage({ type: "error", text: msg });
     } finally {
       setIsSubmitting(false);
     }
