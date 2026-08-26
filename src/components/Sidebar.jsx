@@ -96,7 +96,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
         `}
       >
         {/* Brand */}
-        <div className="flex h-14 items-center gap-2.5 border-b-2 border-[#5C3A21]/20 px-5">
+        <div className="flex h-14 items-center gap-2.5 px-5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-[#2C1810] bg-[#2C1810]">
             <Newspaper className="h-4 w-4 text-[#FAF3E0]" strokeWidth={2} />
           </div>
@@ -106,6 +106,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
             </span>
           )}
         </div>
+        <div className="mx-4 h-px bg-[#5C3A21]/20" />
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
