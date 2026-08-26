@@ -6,7 +6,6 @@ import {
   ChevronDown,
   LogOut,
   Menu,
-  Newspaper,
   Search,
   Settings,
   User,
@@ -64,16 +63,6 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
         >
           {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
-
-        {/* Logo */}
-        <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center border-2 border-[#2C1810] bg-[#2C1810]">
-            <Newspaper className="h-4 w-4 text-[#FAF3E0]" strokeWidth={2} />
-          </div>
-          <span className="hidden font-serif text-lg font-black tracking-tight text-[#2C1810] sm:block">
-            ToLet<span className="text-[#5C3A21]">Mama</span>
-          </span>
-        </Link>
 
         {/* Desktop Search */}
         <div className="mx-auto hidden max-w-md flex-1 md:block">
