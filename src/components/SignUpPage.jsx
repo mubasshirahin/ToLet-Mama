@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
-import { registerUser } from "../lib/api";
+import { registerUser, loginWithGoogle } from "../lib/api";
 import { initGoogleSignIn } from "../lib/googleAuth";
 
 const ROLES = {
@@ -95,9 +95,18 @@ function SignUpPage() {
       return;
     }
     if (user) {
-      const firstName = user.name?.split(" ")[0] || role;
-      setSubmitMessage({ type: "success", text: `Account ready, ${firstName}! Redirecting to your dashboard...` });
-      setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+      try {
+        setIsSubmitting(true);
+        await loginWithGoogle(user.credential);
+        const firstName = user.name?.split(" ")[0] || role;
+        setSubmitMessage({ type: "success", text: `Account ready, ${firstName}! Redirecting to your dashboard...` });
+        setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+      } catch (err) {
+        const msg = err.response?.data?.message || "Google sign-up failed. Please try again.";
+        setSubmitMessage({ type: "error", text: msg });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 

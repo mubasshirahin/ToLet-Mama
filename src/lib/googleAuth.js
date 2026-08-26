@@ -75,6 +75,7 @@ function decodeJWT(token) {
 
 let currentCallback = null;
 let currentRole = null;
+let gisInitialized = false;
 
 function handleCredentialResponse(response) {
   if (!currentCallback) return;
@@ -92,6 +93,7 @@ function handleCredentialResponse(response) {
     picture: payload.picture,
     sub: payload.sub,
     email_verified: payload.email_verified,
+    credential: response.credential,
   };
 
   // Enforce .edu email check
@@ -133,11 +135,14 @@ export function initGoogleSignIn(containerId, callback, role) {
       return;
     }
 
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: handleCredentialResponse,
-      cancel_on_tap_outside: false,
-    });
+    if (!gisInitialized) {
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse,
+        cancel_on_tap_outside: false,
+      });
+      gisInitialized = true;
+    }
 
     google.accounts.id.renderButton(container, {
       type: "standard",

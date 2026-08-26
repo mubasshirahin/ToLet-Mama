@@ -14,6 +14,7 @@ import {
   MapPin,
   MessageCircle,
   PhoneCall,
+  Plus,
   Share2,
   Sparkles,
   Star,
@@ -21,29 +22,9 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchListing, fetchListings } from "../lib/api";
+import { fetchListing, fetchListings, fetchFavorites, toggleFavorite, recordListingView } from "../lib/api";
 
-const FAVORITES_KEY = "toletmama.favorites.v1";
 
-function readFavorites() {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(FAVORITES_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.map(Number).filter(Number.isFinite) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeFavorites(ids) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
-  } catch {
-    // ignore
-  }
-}
 
 function ListingDetailPage() {
   const { id } = useParams();
@@ -55,7 +36,10 @@ function ListingDetailPage() {
     if (!id) return;
     let cancelled = false;
     fetchListing(id)
-      .then((data) => { if (!cancelled) setApiListing(data); })
+      .then((data) => {
+        if (!cancelled) setApiListing(data);
+        recordListingView(id).catch(() => {});
+      })
       .catch(() => { if (!cancelled) setApiListing(null); });
     return () => { cancelled = true; };
   }, [id]);
@@ -91,8 +75,20 @@ function ListingDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [favorites, setFavorites] = useState(() => readFavorites());
+  const [favorites, setFavorites] = useState([]);
   const [toast, setToast] = useState("");
+
+  // Check if logged-in user is the owner of this listing
+  const currentUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("toletmama.api_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const isOwner = currentUser && listing && apiListing?.user && currentUser.id === apiListing.user.id;
 
   useEffect(() => {
     setIsLoading(true);
@@ -105,8 +101,14 @@ function ListingDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    writeFavorites(favorites);
-  }, [favorites]);
+    let cancelled = false;
+    fetchFavorites()
+      .then((res) => {
+        if (!cancelled) setFavorites(res.saved_ids || []);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const isFavorite = listing ? favorites.includes(listing.id) : false;
 
@@ -126,14 +128,19 @@ function ListingDetailPage() {
     return () => { cancelled = true; };
   }, [listing]);
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (!listing) return;
-    setFavorites((current) =>
-      current.includes(listing.id)
-        ? current.filter((value) => value !== listing.id)
-        : [...current, listing.id]
-    );
-    setToast(isFavorite ? "Removed from saved" : "Added to saved");
+    try {
+      const res = await toggleFavorite(listing.id);
+      setFavorites((current) =>
+        res.saved
+          ? [...current, listing.id]
+          : current.filter((value) => value !== listing.id)
+      );
+      setToast(res.saved ? "Added to saved" : "Removed from saved");
+    } catch {
+      setToast("Could not update favorites.");
+    }
     window.setTimeout(() => setToast(""), 1600);
   };
 
@@ -236,6 +243,12 @@ function ListingDetailPage() {
               <PenLine className="h-4 w-4" strokeWidth={1.8} />
               Edit
             </Link>
+            {isOwner && (
+              <Link to="/listings/new" className="btn-rubber-stamp px-4 py-2 text-xs bg-[#2C1810] text-[#FAF3E0] border-[#2C1810]">
+                <Plus className="h-4 w-4" strokeWidth={1.8} />
+                Add Listing
+              </Link>
+            )}
           </div>
         </header>
 
