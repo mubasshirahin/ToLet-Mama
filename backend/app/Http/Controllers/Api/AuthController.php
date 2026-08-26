@@ -8,7 +8,6 @@ use Illuminate\Http\Client\HttpClientException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Password;
 
@@ -85,7 +84,7 @@ class AuthController extends Controller
                         'email' => $email,
                         'google_id' => $googleId,
                         'avatar' => $avatar,
-                        'password' => Hash::make(uniqid('google_', true)),
+                        'password' => uniqid('google_', true),
                     ]);
                 }
             }
@@ -112,7 +111,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'],
         ]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
