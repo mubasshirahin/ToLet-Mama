@@ -5,7 +5,7 @@ import {
   Search, Shield, TrendingUp, Home, ArrowRight, Check, Plus, Minus, MapPin, Building2, Star,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import SceneCanvas from "./3d/SceneCanvas";
+
 
 // ── Data (content + routes preserved from previous landing) ──────────────
 
@@ -94,8 +94,7 @@ export default function LandingPage() {
   const prevTestimonial = useCallback(() => setActiveTestimonial((p) => (p - 1 + testimonials.length) % testimonials.length), []);
 
   return (
-    <div className="relative min-h-screen overflow-x-clip" style={{ background: "var(--theme-bg)", color: "var(--theme-ink)" }}>
-      <SceneCanvas />
+    <div className="relative min-h-screen overflow-x-clip" style={{ background: "transparent", color: "var(--theme-ink)" }}>
 
       {/* ── Navbar ── */}
       <motion.nav
@@ -128,7 +127,6 @@ export default function LandingPage() {
 
       {/* ── SECTION 1: HERO ── */}
       <section id="hero" className="relative flex min-h-screen flex-col justify-center overflow-visible">
-        <div className="pointer-events-none absolute inset-0 scrim" />
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 mx-auto w-full max-w-screen-xl px-6 pt-28 text-center">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
             className="mb-4 inline-flex items-center gap-2 rounded-full glass-pane px-4 py-1.5 font-serif text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
@@ -171,32 +169,18 @@ export default function LandingPage() {
             ))}
           </motion.div>
 
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.6 }}
-            className="mt-16 animate-pulse text-[11px] uppercase tracking-[0.3em] opacity-50" style={{ color: "var(--theme-ink-muted)" }}>
-            Scroll to explore
-          </motion.p>
         </motion.div>
       </section>
 
-      {/* ── SECTION 2: 3D SHOWCASE TRANSITION (transparent — 3D is the star) ── */}
-      <section id="showcase" className="relative flex min-h-screen items-center justify-center">
-        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
-          <SectionHeading label="The Transition" title="A city of possibilities." />
-          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-serif text-lg italic leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
-            Watch the skyline drift past — each property a door you could walk through.
-          </motion.p>
-        </div>
-      </section>
 
       {/* ── SECTION 3: FEATURES ── */}
       <section id="features" className="relative py-24">
-        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16 md:px-12">
+        <div className="mx-auto max-w-screen-xl px-6">
           <SectionHeading label="Why To-Let Mama" title="Everything you need, all in one place." />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
               <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={i}
-                className="group rounded-2xl p-6 transition-all hover:-translate-y-1" style={{ background: "color-mix(in srgb, var(--theme-surface) 60%, transparent)" }}>
+                className="group glass-pane rounded-2xl p-6 transition-all hover:-translate-y-1">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
                   <f.icon size={20} strokeWidth={2} />
                 </div>
@@ -227,16 +211,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── SECTION 4: LISTINGS (camera focus on scroll) ── */}
+      {/* ── SECTION 4: LISTINGS ── */}
       <section id="listings" className="relative py-24">
-        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16">
+        <div className="mx-auto max-w-screen-xl px-6">
           <SectionHeading label="Properties" title="Featured listings from across Dhaka." />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sampleListings.map((item, i) => (
               <motion.div key={item.id} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-40px" }} variants={fadeUp} custom={i}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="group overflow-hidden rounded-2xl transition-shadow hover:shadow-2xl"
-                style={{ background: "var(--theme-surface)" }}>
+                className="group glass-pane overflow-hidden rounded-2xl transition-shadow hover:shadow-2xl">
                 <div className="relative h-52 overflow-hidden">
                   <img src={item.img} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
@@ -263,10 +246,10 @@ export default function LandingPage() {
 
       {/* ── STATS ── */}
       <section className="relative py-16">
-        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-12">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="mx-auto max-w-screen-xl px-6">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {statsData.map((s) => (
-              <div key={s.label} className="text-center">
+              <div key={s.label} className="glass-pane rounded-2xl p-6 text-center">
                 <p className="font-serif text-3xl font-black md:text-4xl">{s.value.toLocaleString()}{s.suffix || ""}</p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>{s.label}</p>
               </div>
@@ -277,16 +260,12 @@ export default function LandingPage() {
 
       {/* ── PRICING ── */}
       <section id="pricing" className="relative py-24">
-        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16">
+        <div className="mx-auto max-w-screen-xl px-6">
           <SectionHeading label="Pricing" title="Choose your plan." />
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {pricingPlans.map((plan, i) => (
               <motion.div key={plan.name} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={i}
-                className={`relative rounded-2xl p-8 transition-all hover:-translate-y-1 ${plan.popular ? "ring-2" : ""}`}
-                style={{
-                  background: plan.popular ? "color-mix(in srgb, var(--theme-surface-2) 80%, transparent)" : "var(--theme-surface)",
-                  ...(plan.popular ? { boxShadow: "0 8px 30px -6px rgba(0,0,0,0.4)" } : {}),
-                }}>
+                className={`relative glass-pane rounded-2xl p-8 transition-all hover:-translate-y-1 ${plan.popular ? "ring-2" : ""}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[11px] font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
                     BEST VALUE
