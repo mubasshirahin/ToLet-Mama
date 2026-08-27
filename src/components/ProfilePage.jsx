@@ -239,7 +239,7 @@ const ProfilePage = function ProfilePage() {
       <div className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
         <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4">
-          <div className="border-2 border-[#5C3A21]/20 bg-white p-8 text-center shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
+          <div className="glass-pane rounded-3xl p-8 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-[#2C1810]" strokeWidth={1.5} />
             <h2 className="font-serif text-xl font-black text-[#2C1810]">Something went wrong</h2>
             <p className="mt-2 font-serif text-sm text-[#5C3A21]">{fetchError}</p>
@@ -296,7 +296,7 @@ const ProfilePage = function ProfilePage() {
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-6 flex flex-col gap-4 border-2 border-[#5C3A21]/20 bg-white/85 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between"
+          className="mb-6 flex flex-col gap-4 glass-pane rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
             <Link
@@ -338,8 +338,9 @@ const ProfilePage = function ProfilePage() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
             className="space-y-6"
           >
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-              <div className="mb-5 flex items-center justify-between gap-4 border-b-2 border-[#2C1810] pb-4">
+            <div className="glass-pane rounded-2xl p-5 sm:p-6"
+              >
+              <div className="mb-5 flex items-center justify-between gap-4 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <div>
                   <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                     Profile Details
@@ -451,8 +452,9 @@ const ProfilePage = function ProfilePage() {
               </div>
             </div>
 
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-              <div className="mb-5 border-b-2 border-[#2C1810] pb-4">
+            <div className="glass-pane rounded-2xl p-5 sm:p-6"
+              >
+              <div className="mb-5 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                   Security
                 </h2>
@@ -490,7 +492,7 @@ const ProfilePage = function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="flex flex-col gap-4 glass-pane rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
               <div>
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                   Save Changes
@@ -517,8 +519,9 @@ const ProfilePage = function ProfilePage() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             className="space-y-6"
           >
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-              <div className="mb-5 border-b-2 border-[#2C1810] pb-4">
+            <div className="glass-pane rounded-2xl p-5 sm:p-6"
+            >
+              <div className="mb-5 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                   Profile Summary
                 </h2>

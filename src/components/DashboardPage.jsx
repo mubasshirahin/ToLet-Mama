@@ -416,7 +416,7 @@ function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, type: "spring", stiffness: 260, damping: 24 }}
-            className="mb-6 flex flex-col gap-4 border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[3px_3px_0px_rgba(44,24,16,0.05)] sm:flex-row sm:items-center sm:justify-between"
+            className="mb-6 flex flex-col gap-4 glass-pane rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
@@ -470,7 +470,7 @@ function DashboardPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, type: "spring", stiffness: 260, damping: 24 }}
-                className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[3px_3px_0px_rgba(44,24,16,0.05)]"
+                className="glass-pane rounded-2xl p-4"
               >
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_160px]">
                   <label className="search-focus-ring flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 transition-all duration-300 focus-within:border-[#2C1810] focus-within:shadow-[2px_2px_0px_rgba(44,24,16,0.1)]">
@@ -577,7 +577,7 @@ function DashboardPage() {
           </motion.div>
 
           {/* Footer */}
-          <div className="mt-12 border-t-2 border-[#5C3A21]/20 pt-6">
+          <div className="mt-12 border-t pt-6" style={{ borderColor: "var(--theme-border)" }}>
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
               <span>&copy; 2026 The Daily Gazette — All rights reserved.</span>
               <span>Est. 2022</span>
@@ -653,7 +653,7 @@ function StatCard({ stat }) {
     <motion.div variants={statCardVariants}>
       <TiltCard
         intensity={12}
-        className="group relative border-2 border-[#5C3A21]/20 bg-white p-5 transition-all duration-300 hover:border-[#2C1810] gold-glow overflow-hidden"
+        className="group relative glass-pane rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 gold-glow overflow-hidden"
       >
         <div className="shimmer-overlay" />
         <div className="relative z-[6] card-3d-inner">
@@ -800,7 +800,7 @@ function ListingGridCard({ listing, statusStyles, index = 0 }) {
   return (
     <TiltCard
         intensity={10}
-        className="group relative flex flex-col border-2 border-[#5C3A21]/20 bg-white overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-[#2C1810] hover:shadow-[6px_6px_0px_0px_rgba(44,24,16,0.18)] gold-glow"
+        className="group relative flex flex-col glass-pane rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 gold-glow"
       >
         <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
           <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
@@ -860,7 +860,7 @@ function ListingListCard({ listing, statusStyles, index = 0 }) {
   return (
     <TiltCard
       intensity={6}
-        className="group relative grid overflow-hidden border-2 border-[#5C3A21]/20 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2C1810] hover:shadow-[5px_5px_0px_0px_rgba(44,24,16,0.18)] md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
+        className="group relative grid overflow-hidden glass-pane rounded-2xl transition-all duration-300 hover:-translate-y-0.5 md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
       >
         <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
           <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
@@ -929,12 +929,12 @@ function EmptyResultsState({ onClear }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
-      className="border-2 border-[#5C3A21]/20 bg-white p-10 text-center shadow-[3px_3px_0px_rgba(44,24,16,0.05)]"
+      className="glass-pane rounded-3xl p-10 text-center"
     >
       <motion.div
         animate={{ rotate: [0, 5, -5, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="mx-auto flex h-20 w-20 items-center justify-center border-2 border-[#5C3A21]/20 bg-[#FAF3E0]"
+        className="mx-auto flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "var(--theme-surface-2)" }}
       >
         <Sparkles className="h-9 w-9 text-[#A89880]" strokeWidth={1.4} />
       </motion.div>

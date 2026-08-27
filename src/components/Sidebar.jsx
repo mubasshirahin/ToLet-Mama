@@ -79,7 +79,8 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-[#2C1810]/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 backdrop-blur-sm lg:hidden"
+            style={{ background: "rgba(0,0,0,0.3)" }}
             onClick={onClose}
           />
         )}
@@ -88,7 +89,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 flex flex-col bg-white
+          glass-pane fixed inset-y-0 left-0 z-40 flex flex-col
           transition-all duration-300 ease-in-out
           lg:sticky lg:top-0 lg:h-screen lg:shadow-none
           ${collapsed ? "w-[68px]" : "w-64"}
@@ -97,16 +98,19 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
       >
         {/* Brand */}
         <div className="flex h-14 items-center gap-2.5 px-5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-[#2C1810] bg-[#2C1810]">
-            <Newspaper className="h-4 w-4 text-[#FAF3E0]" strokeWidth={2} />
+          <div
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+            style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}
+          >
+            <Newspaper className="h-4 w-4" strokeWidth={2} />
           </div>
           {!collapsed && (
-            <span className="font-serif text-lg font-black tracking-tight text-[#2C1810]">
-              ToLet<span className="text-[#5C3A21]">Mama</span>
+            <span className="font-serif text-lg font-black tracking-tight" style={{ color: "var(--theme-ink)" }}>
+              To-Let <span style={{ color: "var(--theme-ink-muted)" }}>Mama</span>
             </span>
           )}
         </div>
-        <div className="mx-4 h-px bg-[#5C3A21]/20" />
+        <div className="mx-4 h-px" style={{ background: "var(--theme-border)" }} />
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
@@ -119,12 +123,12 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
             return (
               <div key={group.section} className="mb-5">
                 {!collapsed && (
-                  <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="mb-2 px-3 font-serif text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: "var(--theme-ink-faded)" }}>
                     {group.section}
                   </p>
                 )}
-                {collapsed && <div className="mb-2 h-px mx-3 bg-[#5C3A21]/10" />}
-                <ul className="space-y-0.5">
+                {collapsed && <div className="mb-2 mx-3 h-px" style={{ background: "var(--theme-border)" }} />}
+                <ul className="space-y-1">
                   {visibleItems.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.to);
@@ -136,35 +140,45 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                           onClick={onClose}
                           title={collapsed ? item.label : undefined}
                           className={`
-                            group relative flex items-center rounded-lg transition-all duration-200
+                            group relative flex items-center rounded-2xl transition-all duration-200
                             ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}
                             ${
                               active
-                                ? "border-2 border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.1)]"
-                                : "border-2 border-transparent text-[#5C3A21] hover:border-[#5C3A21]/20 hover:bg-[#FAF3E0]"
+                                ? "text-[var(--theme-bg)]"
+                                : "transition-colors hover:bg-[var(--theme-surface)]"
                             }
                           `}
+                          style={
+                            active
+                              ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                              : { color: "var(--theme-ink-muted)" }
+                          }
                         >
                           <Icon
-                            className={`h-4 w-4 shrink-0 ${active ? "text-[#FAF3E0]" : "text-[#A89880] group-hover:text-[#2C1810]"}`}
+                            className="h-4 w-4 shrink-0"
                             strokeWidth={active ? 2.2 : 1.8}
+                            style={active ? { color: "var(--theme-bg)" } : {}}
                           />
                           {!collapsed && (
-                            <span className="flex-1 text-sm font-medium">{item.label}</span>
+                            <span className="flex-1 font-serif text-sm font-medium">{item.label}</span>
                           )}
                           {!collapsed && item.badge && (
                             <span
-                              className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black ${
+                              className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black"
+                              style={
                                 active
-                                  ? "bg-[#FAF3E0] text-[#2C1810]"
-                                  : "bg-[#2C1810] text-[#FAF3E0]"
-                              }`}
+                                  ? { background: "var(--theme-bg)", color: "var(--theme-ink)" }
+                                  : { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                              }
                             >
                               {item.badge}
                             </span>
                           )}
                           {collapsed && item.badge && (
-                            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#2C1810]" />
+                            <span
+                              className="absolute right-1 top-1 h-2 w-2 rounded-full"
+                              style={{ background: "var(--theme-ink)" }}
+                            />
                           )}
                         </Link>
                       </li>
@@ -177,11 +191,12 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
         </nav>
 
         {/* Collapse toggle — desktop only */}
-        <div className="hidden border-t-2 border-[#5C3A21]/20 px-3 py-2 lg:block">
+        <div className="hidden border-t px-3 py-2 lg:block" style={{ borderColor: "var(--theme-border)" }}>
           <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
-            className={`flex w-full items-center gap-2 rounded-lg border-2 border-[#5C3A21]/10 px-3 py-2 text-xs font-semibold text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810] ${collapsed ? "justify-center px-0" : ""}`}
+            className={`flex w-full items-center gap-2 rounded-2xl border px-3 py-2 font-serif text-xs font-semibold transition-colors hover:bg-[var(--theme-surface)] ${collapsed ? "justify-center px-0" : ""}`}
+            style={{ borderColor: "var(--theme-border)", color: "var(--theme-ink-muted)" }}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
@@ -196,9 +211,12 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
         </div>
 
         {/* Footer / User card */}
-        <div className="border-t-2 border-[#5C3A21]/20 p-3">
-          <div className={`flex items-center rounded-lg border-2 border-[#5C3A21]/10 bg-[#FAF3E0] ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#2C1810] bg-white text-[11px] font-black text-[#2C1810]">
+        <div className="border-t p-3" style={{ borderColor: "var(--theme-border)" }}>
+          <div className={`flex items-center rounded-2xl glass-pane ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[11px] font-black"
+              style={{ borderColor: "var(--theme-ink)", color: "var(--theme-ink)", background: "var(--theme-surface)" }}
+            >
               {(() => {
                 try {
                   const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
@@ -210,7 +228,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-[#2C1810]">
+                <p className="truncate font-serif text-xs font-bold" style={{ color: "var(--theme-ink)" }}>
                   {(() => {
                     try {
                       const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
@@ -220,17 +238,20 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                     }
                   })()}
                 </p>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A89880]">{role}</p>
+                <p className="font-serif text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--theme-ink-faded)" }}>
+                  {role}
+                </p>
               </div>
             )}
             {!collapsed && (
               <Link
                 to="/profile"
                 onClick={onClose}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#5C3A21]/20 text-[#A89880] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-surface)]"
+                style={{ borderColor: "var(--theme-border)", color: "var(--theme-ink-muted)" }}
                 title="Profile"
               >
-                <Settings className="h-3.5 w-3.5" strokeWidth={1.8} />
+                <Settings className="h-3.5 w-3.5" strokeWidth={2} />
               </Link>
             )}
           </div>

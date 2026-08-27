@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence, useScroll, useTransform, useInView, useMotionValueEvent, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import {
-  Search, Shield, TrendingUp, Home,
-  ArrowRight, Check, Plus, Minus, ChevronLeft, ChevronRight
+  Search, Shield, TrendingUp, Home, ArrowRight, Check, Plus, Minus, MapPin, Building2, Star,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import SceneCanvas from "./3d/SceneCanvas";
 
-// ── Data ──────────────────────────────────────────────────
+// ── Data (content + routes preserved from previous landing) ──────────────
 
 const features = [
   { icon: Search, title: "Smart Search", desc: "Find your ideal room or tenant with intelligent filters — budget, location, amenities, and more." },
@@ -67,679 +67,259 @@ const faqs = [
   { q: "What areas does To-Let Mama cover?", a: "We currently cover all major Dhaka neighbourhoods including Gulshan, Banani, Dhanmondi, Mirpur, Uttara, Baridhara, and Mohammadpur. More areas coming soon." },
 ];
 
-const breakingNews = [
-  "NEW LISTING IN GULSHAN • 2BR FLAT AT BDT 22,000/MO",
-  "VERIFIED LANDLORD JOINS PLATFORM — 15 NEW PROPERTIES",
-  "500+ ROOMS BOOKED THIS MONTH ACROSS DHAKA",
-  "STUDENT SPECIAL: ROOMS NEAR BUET FROM BDT 6,000",
-  "BANANI PENTHOUSE LISTED — FIRST MONTH HALF PRICE",
-];
-
-const sideStats = [
-  { value: "42", label: "Tea Cups Drained Today" },
-  { value: "7", label: "Pigeons on Roof. Yes." },
-  { value: "3", label: "Snail Escapes. Case Unsolved." },
-  { value: "0", label: "Important Things Happened." },
-  { value: "47", label: "Ducks Spotted at Dhanmondi Lake" },
-  { value: "12", label: "Lost Umbrellas. Unclaimed." },
-];
-
-const sideBulletins = [
-  "LOST: A sock. Grey. Possibly striped. No reward. No questions asked.",
-  "HOROSCOPE: You will read this whole bulletin and feel strangely satisfied.",
-  "WEATHER: Cloudy with a 30% chance of someone asking \"is it going to rain?\"",
-  "PERSONALS: Seeking a quiet room with no landlords who \"just pop in.\"",
-  "FOR SALE: Slightly used bucket. Still holds water. Bargain.",
-  "WANTED: Someone to water a cactus. Must not overwater.",
-];
-
-// ── Custom Hooks ──────────────────────────────────────────
-
-function useAnimatedCounter(target, duration = 2, suffix = "") {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  useEffect(() => {
-    if (!isInView) return;
-    let startTime;
-    const animate = (time) => {
-      if (!startTime) startTime = time;
-      const elapsed = (time - startTime) / 1000;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * target));
-      if (progress < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-  }, [isInView, target, duration]);
-
-  return { count: count.toLocaleString(), suffix, ref };
-}
-
-function useScrollDirection() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const handle = () => setScrolled(window.scrollY > 600);
-    window.addEventListener("scroll", handle, { passive: true });
-    return () => window.removeEventListener("scroll", handle);
-  }, []);
-  return scrolled;
-}
-
-// ── Animation Variants ────────────────────────────────────
-
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] } }),
 };
 
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
-};
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
-};
-
-// ── Components ────────────────────────────────────────────
-
-function SectionHeading({ label, title, className = "" }) {
+function SectionHeading({ label, title }) {
   return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={fadeUp}
-      className={`mb-14 ${className}`}
-    >
-      <p className="mb-2 font-serif text-[11px] font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
-        {label}
-      </p>
-      <h2 className="font-serif text-4xl font-black leading-tight tracking-tight text-[#2C1810] lg:text-5xl">
-        {title}
-      </h2>
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} className="mb-10 text-center">
+      <p className="mb-2 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-[var(--theme-ink-muted)]">{label}</p>
+      <h2 className="font-serif text-3xl font-black tracking-tight md:text-4xl lg:text-5xl" style={{ color: "var(--theme-ink)" }}>{title}</h2>
     </motion.div>
   );
 }
 
-function AnimatedStat({ value, label, suffix = "" }) {
-  const { count, ref } = useAnimatedCounter(value, 2, suffix);
-  return (
-    <div ref={ref} className="flex flex-col items-center px-4 text-center border-r border-[#5C3A21]/20 last:border-0">
-      <p className="font-serif text-3xl font-bold text-[#2C1810]">
-        {count}{suffix}
-      </p>
-      <p className="mt-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7A6B52]">
-        {label}
-      </p>
-    </div>
-  );
-}
+// ── Main component ───────────────────────────────────────────────────────
 
-function ScrollReveal({ children, className = "", delay = 0 }) {
-  return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] } },
-      }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// ── Main Component ────────────────────────────────────────
-
-function LandingPage() {
-  const scrolled = useScrollDirection();
-  const { scrollYProgress } = useScroll();
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+export default function LandingPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [activeFaq, setActiveFaq] = useState(null);
-  const carouselRef = useRef(null);
-  const featuresSectionRef = useRef(null);
-  const { scrollYProgress: featuresProgress } = useScroll({
-    target: featuresSectionRef,
-    offset: ["start center", "end end"],
-  });
-  const featuresTrackRef = useRef(null);
-  const featuresMotionX = useMotionValue(0);
-  const featuresCalcRef = useRef({ start: 0, range: 0 });
+  const { scrollYProgress } = useScroll();
+  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 120]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
 
-  // Measure actual track width and compute pixel translate values for centering
-  useLayoutEffect(() => {
-    const track = featuresTrackRef.current;
-    if (!track) return;
-    const cards = track.children;
-    if (!cards.length) return;
-    const cardEl = cards[0];
-    const cardW = cardEl.offsetWidth;
-    const trackW = track.scrollWidth;
-    const vw = window.innerWidth;
-    // Center offset = how many px to push right so first card is centered
-    const centerOff = (vw - cardW) / 2;
-    const startPx = centerOff;
-    const endPx = centerOff - (trackW - cardW);
-    featuresCalcRef.current = { start: startPx, range: endPx - startPx };
-    // Initialize cards to centered position on first load
-    featuresMotionX.set(startPx);
-  }, []);
-
-  const [activeFeature, setActiveFeature] = useState(0);
-  useMotionValueEvent(featuresProgress, "change", (latest) => {
-    const { start, range } = featuresCalcRef.current;
-    featuresMotionX.set(start + latest * range);
-    const idx = Math.min(features.length - 1, Math.floor(latest * features.length));
-    setActiveFeature(idx);
-  });
-
-  const nextTestimonial = useCallback(() => {
-    setActiveTestimonial((p) => (p + 1) % testimonials.length);
-  }, []);
-
-  const prevTestimonial = useCallback(() => {
-    setActiveTestimonial((p) => (p - 1 + testimonials.length) % testimonials.length);
-  }, []);
+  const nextTestimonial = useCallback(() => setActiveTestimonial((p) => (p + 1) % testimonials.length), []);
+  const prevTestimonial = useCallback(() => setActiveTestimonial((p) => (p - 1 + testimonials.length) % testimonials.length), []);
 
   return (
-    <div className="min-h-screen bg-white text-[#2C1810]">
-      {/* ═══════════════════════════════════════
-          STICKY NAVBAR (appears on scroll)
-          ═══════════════════════════════════════ */}
+    <div className="relative min-h-screen overflow-x-clip" style={{ background: "var(--theme-bg)", color: "var(--theme-ink)" }}>
+      <SceneCanvas />
+
+      {/* ── Navbar ── */}
       <motion.nav
         initial={{ y: -100 }}
-        animate={{ y: scrolled ? 0 : -100 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-[#5C3A21]/20 bg-[#FAF3E0]/95 backdrop-blur-sm shadow-sm"
+        animate={{ y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed inset-x-0 top-0 z-50"
       >
-        <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-3">
-          <Link to="/" className="font-serif text-lg font-black uppercase tracking-tight text-[#2C1810]">
+        <div className="glass-pane mx-auto mt-3 flex max-w-screen-xl items-center justify-between rounded-full px-6 py-3">
+          <Link to="/" className="font-serif text-lg font-black uppercase tracking-tight" style={{ color: "var(--theme-ink)" }}>
             To-Let Mama
           </Link>
           <div className="hidden items-center gap-6 md:flex">
             {["Features", "How It Works", "Listings", "Pricing"].map((l) => (
               <a key={l} href={`#${l.toLowerCase().replace(/\s/g, "-")}`}
-                className="font-serif text-xs font-semibold uppercase tracking-[0.12em] text-[#5C3A21] transition-colors hover:text-[#2C1810]"
+                className="font-serif text-xs font-semibold uppercase tracking-[0.12em] transition-colors"
+                style={{ color: "var(--theme-ink-muted)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--theme-ink)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--theme-ink-muted)")}
               >{l}</a>
             ))}
             <div className="flex items-center gap-2">
               <ThemeToggle compact />
-              <Link to="/auth" className="btn-coupon-clip px-4 py-2 text-xs">Sign In</Link>
-              <Link to="/signup" className="btn-rubber-stamp px-4 py-2 text-[11px]">Subscribe</Link>
+              <Link to="/auth" className="rounded-full border px-4 py-2 text-xs font-semibold" style={{ borderColor: "var(--theme-border-strong)" }}>Sign In</Link>
+              <Link to="/signup" className="rounded-full px-4 py-2 text-xs font-semibold" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>Subscribe</Link>
             </div>
           </div>
         </div>
       </motion.nav>
 
-      {/* ═══════════════════════════════════════
-          SECTION 1: VINTAGE NEWSPAPER HERO
-          ═══════════════════════════════════════ */}
-      <section className="deckled-parent deckled-top deckled-bottom vintage-inset relative min-h-screen flex flex-col overflow-hidden">
-        {/* Vignette */}
-        <div className="absolute inset-0 pointer-events-none z-10"
-          style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(60, 40, 20, 0.12) 85%, rgba(40, 25, 10, 0.18) 100%)" }} />
-        {/* Paper texture */}
-        <div className="absolute inset-0 z-0" style={{
-          backgroundColor: "#F4E8C1",
-          backgroundImage: `radial-gradient(ellipse at 15% 30%, rgba(139,119,75,0.06) 0%, transparent 60%),radial-gradient(ellipse at 85% 70%, rgba(139,119,75,0.05) 0%, transparent 50%),radial-gradient(ellipse at 50% 10%, rgba(210,190,140,0.08) 0%, transparent 40%),radial-gradient(ellipse at 30% 80%, rgba(120,100,60,0.04) 0%, transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E")`,
-          backgroundBlendMode: "overlay, overlay, overlay, overlay, normal",
-        }} />
+      {/* ── SECTION 1: HERO ── */}
+      <section id="hero" className="relative flex min-h-screen flex-col justify-center overflow-visible">
+        <div className="pointer-events-none absolute inset-0 scrim" />
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 mx-auto w-full max-w-screen-xl px-6 pt-28 text-center">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
+            className="mb-4 inline-flex items-center gap-2 rounded-full glass-pane px-4 py-1.5 font-serif text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
+            <MapPin className="h-3.5 w-3.5" strokeWidth={2} /> The Dhaka Rental Authority
+          </motion.p>
 
-        <div className="relative z-20 mx-auto flex w-full max-w-screen-xl flex-1 flex-col px-6 py-6 md:px-10">
-          {/* Masthead */}
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-1 mt-1 grid grid-cols-[auto_1fr] items-center gap-2">
-            <div className="masthead-box justify-self-start border-2 border-[#2C1810] px-3 py-1.5">
-              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.15em] text-[#5C3A21]">Extra</p>
-              <p className="text-[11px] font-bold uppercase leading-tight tracking-[0.1em] text-[#2C1810] md:text-[11px]">Edition</p>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.7 }}
+            className="font-serif text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl lg:text-8xl">
+            Find What<br /><span className="italic font-medium" style={{ color: "var(--theme-ink-muted)" }}>Moves You.</span>
+          </motion.h1>
+
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.6 }}
+            className="mx-auto mt-6 max-w-xl text-base leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
+            Verified rooms, flats, and tenants across Dhaka. Scroll the city — every turn brings you closer to home.
+          </motion.p>
+
+          <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.6 }}
+            onClick={(e) => e.preventDefault()}
+            className="mx-auto mt-10 flex max-w-2xl items-center gap-2 rounded-full glass-pane-strong p-2">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <Search className="h-4 w-4 shrink-0" style={{ color: "var(--theme-ink-muted)" }} strokeWidth={2} />
+              <input
+                type="text"
+                placeholder="Search by area, budget, or amenities…"
+                className="w-full bg-transparent font-serif text-sm outline-none placeholder:opacity-60"
+                style={{ color: "var(--theme-ink)" }}
+              />
             </div>
-            {/* Center: Newspaper Name */}
-            <div className="text-center">
-              <h1 className="font-serif text-2xl font-black uppercase leading-none tracking-tight text-[#2C1810] sm:text-3xl md:text-4xl lg:text-5xl">
-                The Daily Gazette
-              </h1>
-            </div>
-          </motion.div>
+            <Link to="/listings" className="shrink-0 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+              Search
+            </Link>
+          </motion.form>
 
-          <hr className="news-rule my-1.5" />
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21]">
-            <span>Vol. IV, No. 28</span>
-            <span className="hidden sm:inline">Dhaka, Friday — July 24, 2026</span>
-            <span className="sm:hidden">Dhaka — Jul 24</span>
-            <span>Price: One Taka</span>
-          </motion.div>
-          <hr className="news-rule-thick my-2" />
-          <hr className="news-rule my-0.5" />
-
-          {/* Main content grid */}
-          <div className="mt-3 grid flex-1 grid-cols-1 gap-0 md:grid-cols-12 md:gap-4 lg:gap-6">
-            {/* Left column — Local Briefs (muted filler, never competes visually) */}
-            <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}
-              className="space-y-4 md:border-r md:border-[#7A6B52]/10 md:pr-4 md:col-span-2 max-w-[200px]">
-              <div>
-                <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Local Briefs</p>
-                <hr className="news-rule mb-1.5 opacity-30" />
-                {sideStats.map((s) => (
-                  <div key={s.label} className="mb-2 border-b border-[#7A6B52]/5 pb-1.5 last:border-0 last:mb-0">
-                    <p className="font-serif text-[11px] leading-none text-[#2C1810] opacity-65">{s.value}</p>
-                    <p className="text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>            {/* Center: Headline + Photo */}
-            <div className="flex flex-col md:col-span-8">
-              {/* Main Headline */}
-              <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.7 }}
-                className="mb-2 font-serif text-3xl font-black leading-[0.92] tracking-tight text-[#2C1810] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-                FIND YOUR PERFECT HOME<br />WITH <span className="underline decoration-[#5C3A21]/40">TO-LET MAMA</span>
-              </motion.h2>
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35, duration: 0.5 }}
-                className="mb-3 font-serif text-sm italic leading-snug text-[#5C3A21] md:text-base">
-                The city&apos;s most trusted rental platform connects thousands of students with verified property owners across every neighbourhood.
-              </motion.p>
-
-              {/* Photo */}
-              <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, duration: 0.8 }}
-                className="halftone-overlay relative mb-2 w-full">
-                <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1200&auto=format&fit=crop"
-                  alt="Dhaka city skyline at dusk"
-                  className="w-full object-cover sepia-[60%] contrast-[1.1] brightness-[0.85] saturate-[0.6]"
-                  style={{ maxHeight: "420px" }} />
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.4 }}
-                className="flex items-baseline gap-2 border-b border-[#2C1810] pb-1">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#2C1810]">Fig. 1 — DHAKA SKYLINE AT DUSK</p>
-                <p className="text-[11px] italic text-[#5C3A21]">The city&apos;s skyline as seen from Hatirjheel</p>
-              </motion.div>
-
-              {/* Article body — fills the gap like real newspaper prose */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
-                className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:gap-6"
-              >
-                <div className="space-y-3">
-                  <p className="font-serif text-[11px] leading-[1.7] text-[#5C3A21] md:text-xs">
-                    DHAKA — In a city where the hunt for a decent rental has long been described as
-                    &ldquo;the second hardest thing after surviving CNG rush hour,&rdquo; a quiet revolution
-                    is underway. To-Let Mama, the capital&apos;s fastest-growing rental platform, has
-                    reported a 300% increase in verified listings since the start of the year,
-                    with neighbourhoods from Gulshan to Mirpur seeing unprecedented activity.
-                  </p>
-                  <p className="font-serif text-[11px] leading-[1.7] text-[#5C3A21] md:text-xs">
-                    &ldquo;We are bridging the gap between students who need affordable housing and
-                    owners who want reliable tenants,&rdquo; said a spokesperson. &ldquo;The days of
-                    dealing with middlemen and dubious brokers are numbered.&rdquo; The platform&apos;s
-                    dual-profile system allows users to toggle between student and landlord
-                    roles, a feature that has proven especially popular among graduates who
-                    later become property owners themselves.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-serif text-[11px] leading-[1.7] text-[#5C3A21] md:text-xs">
-                    Industry analysts note that Dhaka&apos;s rental market, long characterised by
-                    opaque pricing and informal agreements, is slowly maturing. &ldquo;Platforms
-                    like To-Let Mama bring much-needed transparency,&rdquo; said one observer.
-                    &ldquo;Verified listings, background checks, and secure communication channels
-                    — these are not luxuries, they are basics that the market has lacked.&rdquo;
-                  </p>
-                  {/* Pull quote — classic newspaper device */}
-                  <div className="border-l-2 border-[#2C1810]/30 pl-4 py-2">
-                    <p className="font-serif text-[12px] italic leading-relaxed text-[#2C1810] md:text-sm opacity-80">
-                      &ldquo;The days of dealing with dubious brokers are numbered.&rdquo;
-                    </p>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-[#5C3A21] opacity-60">
-                      — Platform Spokesperson
-                    </p>
-                  </div>
-                  <p className="font-serif text-[11px] leading-[1.7] text-[#5C3A21] md:text-xs">
-                    With the monsoon season approaching, demand is expected to surge further.
-                    To-Let Mama has announced plans to expand into Chattogram and Sylhet by the
-                    end of the year, bringing its verified rental ecosystem to the rest of
-                    Bangladesh. &ldquo;This is just the beginning,&rdquo; the spokesperson added.
-                  </p>
-                  {/* Continued line */}
-                  <p className="pt-1 text-[11px] uppercase tracking-[0.2em] text-[#7A6B52] opacity-60">
-                    — Continued on Page A4
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right column — Classifieds (muted filler, never competes visually) */}
-            <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}
-              className="space-y-4 md:border-l md:border-[#7A6B52]/10 md:pl-4 md:col-span-2 max-w-[200px]">
-              <div>
-                <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-[#2C1810] opacity-55">Classifieds</p>
-                <hr className="news-rule mb-1.5 opacity-30" />
-                {sideBulletins.map((text, i) => (
-                  <div key={i} className="mb-2 border-b border-[#7A6B52]/5 pb-2 last:border-0 last:mb-0">
-                    <p className="text-[11px] leading-relaxed text-justify text-[#2C1810] opacity-65">{text}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          <hr className="news-rule-thick mt-3 mb-1" />
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.15em] text-[#5C3A21]">
-            <span>Daily Weather: Fair, Mild &mdash; 32&deg;C</span>
-            <span>Established 2022</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Transition Fade ── */}
-      <div className="fade-to-modern relative z-30 -mb-px" />
-
-      {/* ═══════════════════════════════════════
-          SECTION 2: BREAKING NEWS TICKER
-          ═══════════════════════════════════════ */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="border-y border-[#5C3A21]/20 bg-[#FAF3E0] overflow-hidden py-3 group"
-      >
-        <div className="marquee-track flex whitespace-nowrap group-hover:[animation-play-state:paused]">
-          {[...Array(2)].map((_, idx) => (
-            <div key={idx} className="flex shrink-0 items-center gap-8 px-4">
-              {breakingNews.map((item, i) => (
-                <span key={i} className="inline-flex items-center gap-3 font-serif text-xs font-semibold uppercase tracking-[0.12em] text-[#2C1810]">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#2C1810]" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* ═══════════════════════════════════════
-          SECTION 3: FEATURES — HORIZONTAL SCROLL HIJACK
-          ═══════════════════════════════════════ */}
-      <section
-        id="features"
-        ref={featuresSectionRef}
-        className="relative bg-[#FAF3E0]"
-        style={{ height: `${features.length * 100}vh` }}
-      >
-        {/* Sticky viewport-fixed container */}
-        <div className="sticky top-0 flex h-screen flex-col overflow-hidden bg-[#FAF3E0]">
-          {/* Refined heading */}
-          <div className="mx-auto w-full max-w-screen-xl px-6 pt-10 pb-4 text-center md:pt-12 md:pb-6">
-            <div className="flex items-center justify-center gap-4 mb-5">
-              <span className="inline-block h-px w-16 bg-gradient-to-r from-transparent to-[#5C3A21]/40" />
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#5C3A21]">
-                Why To-Let Mama
-              </p>
-              <span className="inline-block h-px w-16 bg-gradient-to-l from-transparent to-[#5C3A21]/40" />
-            </div>
-            <h2 className="font-serif text-3xl font-medium leading-tight tracking-normal text-[#2C1810] md:text-4xl lg:text-5xl">
-              Everything you need, <span className="italic font-light text-[#5C3A21]">all in one place.</span>
-            </h2>
-          </div>
-
-          {/* Cards horizontal track */}
-          <div className="flex flex-1 items-center justify-center overflow-visible" style={{ minHeight: 0 }}>
-            <motion.div
-              ref={featuresTrackRef}
-              style={{ x: featuresMotionX }}
-              className="flex items-stretch gap-6 md:gap-7 lg:gap-8"
-            >
-              {features.map((f, i) => {
-                const isActive = i === activeFeature;
-                return (
-                  <div
-                    key={f.title}
-                    className="relative shrink-0 w-[80vw] md:w-[45vw] lg:w-[380px]"
-                    style={{
-                      transition: "transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.7s ease, box-shadow 0.7s ease",
-                      transform: isActive ? "scale(1) translateY(0)" : "scale(0.96) translateY(12px)",
-                      opacity: isActive ? 1 : 0.45,
-                      boxShadow: isActive
-                        ? "0 16px 40px -8px rgba(44,24,16,0.12), 0 0 0 1px rgba(44,24,16,0.05)"
-                        : "0 4px 12px -4px rgba(44,24,16,0.04), 0 0 0 1px rgba(44,24,16,0.02)",
-                    }}
-                  >
-                    {/* Card body */}
-                    <div
-                      className="flex h-full flex-col bg-[#FFFDF8]"
-                      style={{
-                        border: isActive
-                          ? "1px solid rgba(92,58,33,0.3)"
-                          : "1px solid rgba(92,58,33,0.1)",
-                        borderRadius: "2px",
-                        transition: "border 0.7s ease",
-                      }}
-                    >
-                      {/* Internal padding container */}
-                      <div className="flex flex-1 flex-col justify-between px-8 py-8 md:px-9 md:py-9">
-                        <div>
-                          {/* Icon area with elegant step label */}
-                          <div className="relative flex items-center justify-between mb-8">
-                            <div
-                              className="flex h-11 w-11 items-center justify-center rounded-full"
-                              style={{
-                                border: `1px solid ${isActive ? "#5C3A21" : "rgba(92,58,33,0.15)"}`,
-                                transition: "border 0.7s ease",
-                              }}
-                            >
-                              <f.icon
-                                size={18}
-                                strokeWidth={1.2}
-                                style={{
-                                  color: isActive ? "#2C1810" : "#7A6B52",
-                                  transition: "color 0.7s ease",
-                                }}
-                              />
-                            </div>
-                            <p
-                              className="text-xs uppercase tracking-[0.2em]"
-                              style={{
-                                color: isActive ? "#5C3A21" : "rgba(122,107,82,0.4)",
-                                transition: "color 0.7s ease",
-                              }}
-                            >
-                              No. 0{i + 1}
-                            </p>
-                          </div>
-
-                          {/* Title */}
-                          <h3
-                            className="font-serif font-medium leading-relaxed mb-3"
-                            style={{
-                              fontSize: "clamp(18px, 1.8vw, 22px)",
-                              color: isActive ? "#2C1810" : "#5C3A21",
-                              transition: "color 0.7s ease",
-                            }}
-                          >
-                            {f.title}
-                          </h3>
-
-                          {/* Description */}
-                          <p
-                            className="font-serif font-light"
-                            style={{
-                              fontSize: "clamp(13px, 1.2vw, 14px)",
-                              lineHeight: 1.7,
-                              color: isActive ? "#5C3A21" : "#7A6B52",
-                              transition: "color 0.7s ease",
-                            }}
-                          >
-                            {f.desc}
-                          </p>
-                        </div>
-
-                        {/* Bottom accent line - elegant full-width fill on active */}
-                        <div className="mt-6 pt-4 relative">
-                          <div
-                            className="h-px w-full"
-                            style={{
-                              backgroundColor: isActive
-                                ? "rgba(44,24,16,0.12)"
-                                : "rgba(44,24,16,0.04)",
-                              transition: "background-color 0.7s ease",
-                            }}
-                          />
-                          <div
-                            className="absolute top-4 left-0 h-px bg-[#5C3A21]"
-                            style={{
-                              width: isActive ? "100%" : "0%",
-                              transition: "width 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </motion.div>
-          </div>
-
-          {/* Progress indicators — elegant hyphens */}
-          <div className="mx-auto w-full max-w-screen-xl px-6 pb-8 pt-6 md:pb-10 md:pt-8">
-            <div className="flex items-center justify-center gap-3">
-              {features.map((_, i) => (
-                <div
-                  key={i}
-                  className="transition-all duration-700 ease-out"
-                  style={{
-                    height: "2px",
-                    width: i === activeFeature ? "36px" : "12px",
-                    backgroundColor: i === activeFeature ? "#2C1810" : "rgba(92,58,33,0.15)",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════
-          SECTION 4: HOW IT WORKS — STEP DECK
-          ═══════════════════════════════════════ */}
-      <section id="how-it-works" className="bg-[#2C1810] py-20 text-[#FAF3E0] lg:py-24 overflow-hidden">
-        <div className="mx-auto max-w-screen-xl px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} className="mb-14">
-            <p className="mb-2 font-serif text-[11px] font-bold uppercase tracking-[0.2em] text-[#A89880]">Simple Process</p>
-            <h2 className="font-serif text-4xl font-black leading-tight tracking-tight lg:text-5xl">How it works.</h2>
-          </motion.div>
-
-          {/* Desktop: 4-column grid */}
-          <div className="hidden md:grid md:grid-cols-4 gap-8">
-            {steps.map((item, i) => (
-              <ScrollReveal key={item.num} delay={i * 0.1}>
-                <div className="relative group">
-                  {/* Stamp badge */}
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#5C3A21] bg-transparent text-[#5C3A21] font-serif text-lg font-black transition-colors group-hover:bg-[#5C3A21] group-hover:text-[#FAF3E0]">
-                    {item.num}
-                  </div>
-                  <h3 className="mb-3 font-serif text-xl font-bold text-[#FAF3E0]">{item.title}</h3>
-                  <p className="font-serif text-sm leading-relaxed text-[#A89880]">{item.desc}</p>
-                  {i < steps.length - 1 && (
-                    <div className="hidden xl:block absolute top-8 -right-6 text-[#5C3A21] font-serif text-2xl">→</div>
-                  )}
-                </div>
-              </ScrollReveal>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75, duration: 0.6 }}
+            className="mt-10 flex flex-wrap items-center justify-center gap-6">
+            {["Gulshan", "Banani", "Dhanmondi", "Mirpur", "Uttara"].map((area) => (
+              <span key={area} className="font-serif text-xs uppercase tracking-[0.15em] opacity-60" style={{ color: "var(--theme-ink-muted)" }}>
+                {area}
+              </span>
             ))}
-          </div>
+          </motion.div>
 
-          {/* Mobile: horizontal scroll */}
-          <div className="flex md:hidden gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 scrollbar-hide">
-            {steps.map((item, i) => (
-              <ScrollReveal key={item.num} delay={i * 0.1}>
-                <div className="snap-center shrink-0 w-[280px] border border-[#5C3A21]/30 p-6">
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#5C3A21] font-serif text-lg font-black text-[#5C3A21]">
-                    {item.num}
-                  </div>
-                  <h3 className="mb-3 font-serif text-lg font-bold text-[#FAF3E0]">{item.title}</h3>
-                  <p className="font-serif text-sm leading-relaxed text-[#A89880]">{item.desc}</p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.6 }}
+            className="mt-16 animate-pulse text-[11px] uppercase tracking-[0.3em] opacity-50" style={{ color: "var(--theme-ink-muted)" }}>
+            Scroll to explore
+          </motion.p>
+        </motion.div>
+      </section>
+
+      {/* ── SECTION 2: 3D SHOWCASE TRANSITION (transparent — 3D is the star) ── */}
+      <section id="showcase" className="relative flex min-h-screen items-center justify-center">
+        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
+          <SectionHeading label="The Transition" title="A city of possibilities." />
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="font-serif text-lg italic leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
+            Watch the skyline drift past — each property a door you could walk through.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* ── SECTION 3: FEATURES ── */}
+      <section id="features" className="relative py-24">
+        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16 md:px-12">
+          <SectionHeading label="Why To-Let Mama" title="Everything you need, all in one place." />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((f, i) => (
+              <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={i}
+                className="group rounded-2xl p-6 transition-all hover:-translate-y-1" style={{ background: "color-mix(in srgb, var(--theme-surface) 60%, transparent)" }}>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+                  <f.icon size={20} strokeWidth={2} />
                 </div>
-              </ScrollReveal>
+                <h3 className="mb-2 font-serif text-lg font-bold">{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>{f.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          SECTION 5: LISTINGS CAROUSEL
-          ═══════════════════════════════════════ */}
-      <section id="listings" className="bg-white py-20 lg:py-24">
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="relative py-24">
         <div className="mx-auto max-w-screen-xl px-6">
+          <SectionHeading label="Simple Process" title="How it works." />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+            {steps.map((item, i) => (
+              <motion.div key={item.num} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={i}
+                className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full font-serif text-lg font-black" style={{ border: "2px solid var(--theme-ink)", color: "var(--theme-ink)" }}>
+                  {item.num}
+                </div>
+                <h3 className="mb-2 font-serif text-xl font-bold">{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 4: LISTINGS (camera focus on scroll) ── */}
+      <section id="listings" className="relative py-24">
+        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16">
           <SectionHeading label="Properties" title="Featured listings from across Dhaka." />
-
-          <div className="relative">
-            <div ref={carouselRef} className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide -mx-6 px-6">
-              {sampleListings.map((item, i) => (
-                <ScrollReveal key={item.id} delay={i * 0.08}>
-                  <motion.div whileHover={{ y: -4 }} className="snap-center shrink-0 w-[320px] bg-[#FAF3E0] border border-[#5C3A21]/20 overflow-hidden group">
-                    {/* Image */}
-                    <div className="halftone-overlay relative h-52 overflow-hidden">
-                      <img src={item.img} alt={item.title}
-                        className="w-full h-full object-cover sepia-[40%] contrast-[1.05] transition-transform duration-500 group-hover:scale-105" />
-                      {/* FOR RENT stamp */}
-                      <div className="absolute top-3 right-3 bg-[#2C1810] text-[#FAF3E0] text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rotate-6">
-                        FOR RENT
-                      </div>
-                    </div>
-                    {/* Info */}
-                    <div className="p-5">
-                      <h3 className="font-serif text-base font-bold text-[#2C1810]">{item.title}</h3>
-                      <p className="mt-1 font-serif text-sm text-[#5C3A21]">{item.price}</p>
-                      <Link
-                        to={`/listings/${item.id}`}
-                        state={{ listing: { ...item, price: item.price, image: item.img, images: [item.img] } }}
-                        className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.15em] text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all"
-                      >
-                        View Details →
-                      </Link>
-                    </div>
-                  </motion.div>
-                </ScrollReveal>
-              ))}
-            </div>
-            {/* Gradient fade on edges */}
-            <div className="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-            <div className="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════
-          SECTION 6: STATS COUNTER
-          ═══════════════════════════════════════ */}
-      <section className="border-y border-[#5C3A21]/20 bg-[#FAF3E0] py-16">
-        <div className="mx-auto max-w-screen-xl px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#5C3A21]/20">
-            {statsData.map((s) => (
-              <AnimatedStat key={s.label} value={s.value} label={s.label} suffix={s.suffix || ""} />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {sampleListings.map((item, i) => (
+              <motion.div key={item.id} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-40px" }} variants={fadeUp} custom={i}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group overflow-hidden rounded-2xl transition-shadow hover:shadow-2xl"
+                style={{ background: "var(--theme-surface)" }}>
+                <div className="relative h-52 overflow-hidden">
+                  <img src={item.img} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <div className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+                    FOR RENT
+                  </div>
+                </div>
+                <div className="p-5">
+                  <div className="mb-1 flex items-center gap-1 text-xs" style={{ color: "var(--theme-ink-faded)" }}>
+                    <Star className="h-3 w-3 fill-current" /> 4.8 · {item.title.split("—")[1]?.trim() || "Dhaka"}
+                  </div>
+                  <h3 className="font-serif text-base font-bold">{item.title}</h3>
+                  <p className="mt-1 font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>{item.price}</p>
+                  <Link to={`/listings/${item.id}`}
+                    state={{ listing: { ...item, price: item.price, image: item.img, images: [item.img] } }}
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink)" }}>
+                    View Details <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+                  </Link>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          SECTION 7: TESTIMONIALS — LETTERS TO THE EDITOR
-          ═══════════════════════════════════════ */}
-      <section id="testimonials" className="bg-white py-20 lg:py-24">
-        <div className="mx-auto max-w-screen-xl px-6">
-          <SectionHeading label="Testimonials" title="Letters to the editor." />
+      {/* ── STATS ── */}
+      <section className="relative py-16">
+        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-12">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {statsData.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="font-serif text-3xl font-black md:text-4xl">{s.value.toLocaleString()}{s.suffix || ""}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div className="relative max-w-3xl mx-auto">
+      {/* ── PRICING ── */}
+      <section id="pricing" className="relative py-24">
+        <div className="glass-pane mx-auto max-w-screen-xl rounded-3xl px-6 py-16">
+          <SectionHeading label="Pricing" title="Choose your plan." />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {pricingPlans.map((plan, i) => (
+              <motion.div key={plan.name} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={i}
+                className={`relative rounded-2xl p-8 transition-all hover:-translate-y-1 ${plan.popular ? "ring-2" : ""}`}
+                style={{
+                  background: plan.popular ? "color-mix(in srgb, var(--theme-surface-2) 80%, transparent)" : "var(--theme-surface)",
+                  ...(plan.popular ? { boxShadow: "0 8px 30px -6px rgba(0,0,0,0.4)" } : {}),
+                }}>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[11px] font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+                    BEST VALUE
+                  </div>
+                )}
+                <p className="mb-1 font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>{plan.name}</p>
+                <p className="mb-1 font-serif text-3xl font-black">{plan.price}</p>
+                <p className="mb-6 text-xs" style={{ color: "var(--theme-ink-faded)" }}>{plan.period}</p>
+                <ul className="mb-8 space-y-3">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} style={{ color: "var(--theme-ink-muted)" }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/signup" className="block rounded-full py-3 text-center font-serif text-xs font-bold uppercase tracking-[0.15em]"
+                  style={plan.popular
+                    ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                    : { border: "1px solid var(--theme-border-strong)" }}>
+                  Get Started
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 5: TESTIMONIALS (camera pull-back + starfield resolve) ── */}
+      <section id="testimonials" className="relative py-24">
+        <div className="glass-pane-strong mx-auto max-w-3xl rounded-3xl px-6 py-16">
+          <SectionHeading label="Testimonials" title="Letters from the city." />
+          <div className="relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTestimonial}
@@ -747,234 +327,136 @@ function LandingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="border border-[#5C3A21]/20 bg-[#FAF3E0] p-8 md:p-12"
+                className="rounded-2xl p-8 text-center md:p-10"
+                style={{ background: "color-mix(in srgb, var(--theme-surface) 80%, transparent)" }}
               >
-                <p className="mb-6 font-serif text-5xl font-black leading-none text-[#A89880]">&ldquo;</p>
-                <p className="mb-8 font-serif text-lg italic leading-relaxed text-[#2C1810]">
-                  {testimonials[activeTestimonial].text}
-                </p>
-                <div className="flex items-center gap-4 border-t border-[#5C3A21]/20 pt-5">
-                  {/* Sepia avatar */}
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8D5A3] font-serif text-sm font-bold text-[#2C1810] border-2 border-[#5C3A21]/30 sepia">
+                <p className="mb-4 font-serif text-5xl font-black leading-none opacity-30">&ldquo;</p>
+                <p className="mb-6 font-serif text-lg italic leading-relaxed">{testimonials[activeTestimonial].text}</p>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full font-serif text-sm font-bold" style={{ background: "var(--theme-surface-3)", color: "var(--theme-ink)" }}>
                     {testimonials[activeTestimonial].initials}
                   </div>
-                  <div>
-                    <p className="font-serif text-sm font-bold text-[#2C1810]">{testimonials[activeTestimonial].name}</p>
-                    <p className="text-xs uppercase tracking-[0.15em] text-[#7A6B52]">{testimonials[activeTestimonial].role}</p>
+                  <div className="text-left">
+                    <p className="font-serif text-sm font-bold">{testimonials[activeTestimonial].name}</p>
+                    <p className="text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>{testimonials[activeTestimonial].role}</p>
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button onClick={prevTestimonial}
-                className="flex h-10 w-10 items-center justify-center border-2 border-[#5C3A21]/30 text-[#5C3A21] transition-all hover:bg-[#2C1810] hover:text-white hover:border-[#2C1810]">
-                <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <button onClick={prevTestimonial} aria-label="Previous testimonial"
+                className="flex h-10 w-10 items-center justify-center rounded-full" style={{ border: "1px solid var(--theme-border-strong)" }}>
+                <ArrowRight className="h-4 w-4 rotate-180" strokeWidth={2} />
               </button>
               <div className="flex gap-2">
                 {testimonials.map((_, i) => (
-                  <button key={i} onClick={() => setActiveTestimonial(i)}
-                    className={`h-2.5 w-2.5 rounded-full border transition-all ${i === activeTestimonial ? "bg-[#2C1810] border-[#2C1810]" : "bg-transparent border-[#5C3A21]/40 hover:border-[#2C1810]"}`}
-                  />
+                  <button key={i} onClick={() => setActiveTestimonial(i)} aria-label={`Testimonial ${i + 1}`}
+                    className="h-2.5 w-2.5 rounded-full transition-all"
+                    style={{ background: i === activeTestimonial ? "var(--theme-ink)" : "transparent", border: "1px solid var(--theme-border-strong)" }} />
                 ))}
               </div>
-              <button onClick={nextTestimonial}
-                className="flex h-10 w-10 items-center justify-center border-2 border-[#5C3A21]/30 text-[#5C3A21] transition-all hover:bg-[#2C1810] hover:text-white hover:border-[#2C1810]">
-                <ChevronRight className="h-4 w-4" strokeWidth={2} />
+              <button onClick={nextTestimonial} aria-label="Next testimonial"
+                className="flex h-10 w-10 items-center justify-center rounded-full" style={{ border: "1px solid var(--theme-border-strong)" }}>
+                <ArrowRight className="h-4 w-4" strokeWidth={2} />
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          SECTION 8: CLASSIFIED ADS
-          ═══════════════════════════════════════ */}
-      <section className="bg-[#2C1810] py-16">
+      {/* ── CLASSIFIEDS + FAQ ── */}
+      <section className="relative py-16">
         <div className="mx-auto max-w-screen-xl px-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="mb-10">
-            <p className="mb-2 font-serif text-[11px] font-bold uppercase tracking-[0.2em] text-[#A89880]">Classifieds</p>
-            <h2 className="font-serif text-3xl font-black leading-tight tracking-tight text-[#FAF3E0]">Special offers &amp; announcements.</h2>
-          </motion.div>
-
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {classifieds.map((ad, i) => (
-              <motion.div key={ad.title} variants={fadeUp} custom={i}
-                className="border border-[#5C3A21]/40 p-5 bg-[#1A0F0A] transition-all hover:bg-[#2C1810] hover:-translate-y-0.5">
-                <h3 className="font-serif text-sm font-bold text-[#FAF3E0] mb-2">{ad.title}</h3>
-                <p className="font-serif text-xs leading-relaxed text-[#A89880] mb-4">{ad.desc}</p>
-                <button className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880] underline underline-offset-4 decoration-[#5C3A21]/40 hover:text-[#FAF3E0] hover:decoration-[#FAF3E0] transition-all">
-                  {ad.cta} →
-                </button>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════
-          SECTION 9: PRICING PLANS
-          ═══════════════════════════════════════ */}
-      <section id="pricing" className="bg-[#FAF3E0] py-20 lg:py-24">
-        <div className="mx-auto max-w-screen-xl px-6">
-          <SectionHeading label="Pricing" title="Choose your plan." />
-
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {pricingPlans.map((plan, i) => (
-              <motion.div key={plan.name} variants={fadeUp} custom={i}
-                className={`relative bg-white border ${plan.popular ? "border-[#2C1810] ring-1 ring-[#2C1810]" : "border-[#5C3A21]/20"} p-8 transition-all hover:-translate-y-1 hover:shadow-lg
-                  before:absolute before:top-0 before:left-0 before:right-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#5C3A21]/30 before:to-transparent
-                  after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-[#5C3A21]/30 after:to-transparent`}
-                style={{
-                  // Perforated edges visual — dashed with circle cutout effect
-                  borderImage: `repeating-linear-gradient(90deg, #5C3A21 0px, #5C3A21 6px, transparent 6px, transparent 10px) 1`,
-                  borderImageSlice: plan.popular ? undefined : undefined,
-                }}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2C1810] text-[#FAF3E0] text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1">
-                    BEST VALUE
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* Classifieds */}
+            <div className="glass-pane rounded-3xl p-8">
+              <p className="mb-6 font-serif text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: "var(--theme-ink-muted)" }}>Classifieds</p>
+              <div className="space-y-4">
+                {classifieds.map((ad) => (
+                  <div key={ad.title} className="flex items-start justify-between gap-4 rounded-2xl p-4" style={{ background: "var(--theme-surface)" }}>
+                    <div>
+                      <h3 className="font-serif text-sm font-bold">{ad.title}</h3>
+                      <p className="text-xs leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>{ad.desc}</p>
+                    </div>
+                    <button className="shrink-0 text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink)" }}>{ad.cta} →</button>
                   </div>
-                )}
-                <p className="font-serif text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21] mb-1">{plan.name}</p>
-                <p className="font-serif text-3xl font-black text-[#2C1810] mb-1">{plan.price}</p>
-                <p className="font-serif text-xs text-[#7A6B52] mb-6">{plan.period}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 font-serif text-xs text-[#5C3A21]">
-                      <Check className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[#2C1810]" strokeWidth={2} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/signup"
-                  className={`block text-center py-3 font-serif text-xs font-bold uppercase tracking-[0.15em] transition-all ${plan.popular
-                    ? "bg-[#2C1810] text-[#FAF3E0] hover:bg-[#5C3A21]"
-                    : "border border-[#5C3A21]/30 text-[#2C1810] hover:bg-[#2C1810] hover:text-[#FAF3E0]"
-                  }`}>
-                  Get Started
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+                ))}
+              </div>
+            </div>
 
-      {/* ═══════════════════════════════════════
-          SECTION 10: FAQ — Q&A COLUMN
-          ═══════════════════════════════════════ */}
-      <section className="bg-white py-20 lg:py-24">
-        <div className="mx-auto max-w-screen-xl px-6">
-          <SectionHeading label="Q&A Column" title="Frequently asked questions." />
-
-          <div className="max-w-3xl mx-auto space-y-3">
-            {faqs.map((faq, i) => (
-              <ScrollReveal key={i} delay={i * 0.05}>
-                <div className="border border-[#5C3A21]/20 bg-[#FAF3E0] overflow-hidden">
-                  <button
-                    onClick={() => setActiveFaq(activeFaq === i ? null : i)}
-                    className="flex w-full items-center justify-between p-5 text-left transition-colors hover:bg-[#F0E4C0]"
-                  >
-                    <span className="font-serif text-sm font-bold text-[#2C1810] pr-4">{faq.q}</span>
-                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center border border-[#5C3A21]/30 text-[#5C3A21] transition-all ${activeFaq === i ? "bg-[#2C1810] text-[#FAF3E0] border-[#2C1810]" : ""}`}>
-                      {activeFaq === i ? <Minus className="h-3 w-3" strokeWidth={2} /> : <Plus className="h-3 w-3" strokeWidth={2} />}
-                    </span>
-                  </button>
-                  <AnimatePresence>
-                    {activeFaq === i && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-5 pb-5 pt-0 border-t border-[#5C3A21]/10">
-                          <p className="font-serif text-sm leading-relaxed text-[#5C3A21]">{faq.a}</p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </ScrollReveal>
-            ))}
+            {/* FAQ */}
+            <div className="glass-pane rounded-3xl p-8">
+              <p className="mb-6 font-serif text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: "var(--theme-ink-muted)" }}>Q&A</p>
+              <div className="space-y-3">
+                {faqs.map((faq, i) => (
+                  <div key={i} className="overflow-hidden rounded-2xl" style={{ background: "var(--theme-surface)" }}>
+                    <button onClick={() => setActiveFaq(activeFaq === i ? null : i)}
+                      className="flex w-full items-center justify-between p-4 text-left transition-colors">
+                      <span className="pr-4 font-serif text-sm font-bold">{faq.q}</span>
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full" style={{ border: "1px solid var(--theme-border-strong)" }}>
+                        {activeFaq === i ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                      </span>
+                    </button>
+                    <AnimatePresence>
+                      {activeFaq === i && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+                          <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>{faq.a}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          SECTION 11: FINAL CTA WITH PARALLAX
-          ═══════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#2C1810] py-24">
-        {/* Parallax background texture */}
-        <motion.div
-          style={{
-            y: bgY,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-            backgroundSize: "300px 300px",
-          }}
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-        />
-        <div className="relative z-10 mx-auto max-w-screen-xl px-6 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
-            <p className="mb-3 font-serif text-[11px] font-bold uppercase tracking-[0.2em] text-[#A89880]">Final Edition</p>
-            <h2 className="font-serif text-4xl font-black leading-tight tracking-tight text-[#FAF3E0] lg:text-5xl">
+      {/* ── FINAL CTA ── */}
+      <section className="relative py-24">
+        <div className="mx-auto max-w-screen-xl px-6 text-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+            <p className="mb-3 font-serif text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>Final Edition</p>
+            <h2 className="font-serif text-4xl font-black leading-tight tracking-tight md:text-5xl">
               Your perfect home is<br />one click away.
             </h2>
-            <p className="mx-auto mt-5 max-w-md font-serif text-base leading-relaxed text-[#A89880]">
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
               Join thousands of students and house owners already using To-Let Mama across Dhaka.
             </p>
-            <motion.div whileHover={{ scale: 1.02 }} className="mt-10 flex flex-wrap justify-center gap-6">
-              <Link to="/signup" className="btn-rubber-stamp border-[#FAF3E0] text-[#FAF3E0] hover:bg-[#FAF3E0] hover:text-[#2C1810]">
-                Subscribe Now <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            <div className="mt-10 flex flex-wrap justify-center gap-6">
+              <Link to="/signup" className="rounded-full px-8 py-3 font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+                Subscribe Now <ArrowRight className="ml-1 inline h-4 w-4" strokeWidth={2} />
               </Link>
-              <Link to="/auth" className="btn-coupon-clip border-[#A89880] text-[#A89880] hover:border-[#FAF3E0] hover:text-[#FAF3E0]">
+              <Link to="/auth" className="rounded-full border px-8 py-3 font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ borderColor: "var(--theme-border-strong)" }}>
                 Sign In
               </Link>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          SECTION 12: FOOTER
-          ═══════════════════════════════════════ */}
-      <motion.footer
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-        }}
-        className="relative bg-[#FAF3E0] border-t border-[#5C3A21]/20"
-      >
-        {/* Torn paper edge at the very top of footer */}
-        <div className="absolute -top-4 left-0 right-0 h-4 bg-[#FAF3E0] deckled-top" />
-
-        <div className="mx-auto max-w-screen-xl px-6 pt-12 pb-16">
+      {/* ── FOOTER (translucent — starfield resolves through) ── */}
+      <footer className="relative border-t pt-14" style={{ borderColor: "var(--theme-border)" }}>
+        <div className="mx-auto max-w-screen-xl px-6 pb-16">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
             <div className="md:col-span-4">
-              <span className="font-serif text-xl font-black uppercase tracking-tight text-[#2C1810]">To-Let Mama</span>
-              <p className="mt-4 max-w-xs font-serif text-sm leading-relaxed text-[#5C3A21]">
+              <div className="mb-4 inline-flex items-center gap-2">
+                <Building2 className="h-5 w-5" strokeWidth={2} style={{ color: "var(--theme-ink-muted)" }} />
+                <span className="font-serif text-xl font-black uppercase tracking-tight">To-Let Mama</span>
+              </div>
+              <p className="max-w-xs text-sm leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
                 The Dhaka Rental Authority. Connecting students and house owners since 2022. Verified listings. Real people. No nonsense.
               </p>
               <div className="mt-6 flex gap-3">
                 {["F", "T", "I"].map((letter) => (
-                  <div key={letter}
-                    className="flex h-8 w-8 items-center justify-center border border-[#5C3A21]/30 font-serif text-xs font-bold text-[#5C3A21] transition-all hover:bg-[#2C1810] hover:text-[#FAF3E0] hover:border-[#2C1810] cursor-pointer"
+                  <div key={letter} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs font-bold transition-colors"
+                    style={{ border: "1px solid var(--theme-border)", color: "var(--theme-ink-muted)" }}
                     aria-label={`${letter === "F" ? "Facebook" : letter === "T" ? "Twitter" : "Instagram"}`}>
-                    <span>{letter}</span>
+                    {letter}
                   </div>
                 ))}
-              </div>
-              {/* Established stamp */}
-              <div className="mt-6 inline-block border-2 border-[#5C3A21]/30 px-4 py-1.5 rotate-[-1deg]">
-                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#5C3A21]">Est. 2022</p>
               </div>
             </div>
 
@@ -985,11 +467,11 @@ function LandingPage() {
               { title: "Pages", links: [{ label: "Sign In", to: "/auth" }, { label: "Subscribe", to: "/signup" }, { label: "Dashboard", to: "/dashboard" }, { label: "Listings", to: "#listings" }] },
             ].map((col) => (
               <div key={col.title} className="md:col-span-2">
-                <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">{col.title}</p>
+                <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>{col.title}</p>
                 <ul className="space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
-                      <Link to={l.to} className="font-serif text-sm text-[#5C3A21] transition-colors hover:text-[#2C1810]">{l.label}</Link>
+                      <Link to={l.to} className="text-sm transition-colors" style={{ color: "var(--theme-ink-muted)" }}>{l.label}</Link>
                     </li>
                   ))}
                 </ul>
@@ -997,14 +479,12 @@ function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#5C3A21]/20 pt-6 md:flex-row">
-            <p className="text-xs uppercase tracking-[0.15em] text-[#7A6B52]">&copy; 2026 To-Let Mama. All rights reserved.</p>
-            <p className="text-xs uppercase tracking-[0.15em] text-[#A89880]">Printed in Dhaka</p>
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-6 md:flex-row" style={{ borderColor: "var(--theme-border)" }}>
+            <p className="text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-faded)" }}>&copy; 2026 To-Let Mama. All rights reserved.</p>
+            <p className="text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-faded)" }}>Built in Dhaka</p>
           </div>
         </div>
-      </motion.footer>
+      </footer>
     </div>
   );
 }
-
-export default LandingPage;

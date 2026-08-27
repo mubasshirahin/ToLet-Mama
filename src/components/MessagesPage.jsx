@@ -43,7 +43,7 @@ function MessagesPage() {
             preview: conv.last_message?.body || "",
             time: conv.last_message?.created_at ? new Date(conv.last_message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
             avatar: (conv.user?.name || "U").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
-            accent: "bg-[#2C1810]",
+            accent: "var(--theme-ink)",
             messages: [],
             _userId: conv.user?.id,
           }));
@@ -194,35 +194,36 @@ function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
+    <div className="min-h-screen" style={{ background: "var(--theme-bg)", color: "var(--theme-ink)" }}>
+      <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at top left, color-mix(in srgb, var(--theme-ink-muted) 12%, transparent), transparent 28%), radial-gradient(circle at top right, color-mix(in srgb, var(--theme-ink) 8%, transparent), transparent 24%)" }} />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <header className="mb-4 flex flex-col gap-3 border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-screen-xl flex-col px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <header className="mb-4 flex flex-col gap-3 glass-pane rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <button
               type="button"
               onClick={() => navigate("/dashboard", { state: { role } })}
               aria-label="Back to dashboard"
-              className="mt-0.5 border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+              className="mt-0.5 rounded-full p-2 transition-colors"
+              style={{ border: "1px solid var(--theme-border-strong)", color: "var(--theme-ink-muted)" }}
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             </button>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">Inbox</p>
+              <p className="font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>Inbox</p>
               <h1 className="font-serif text-3xl font-black tracking-tight">Messages</h1>
-              <p className="mt-1 font-serif text-sm text-[#5C3A21]">
+              <p className="mt-1 font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>
                 Student-owner conversations for listings, visits, and follow-ups.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em]">
+            <span className="inline-flex items-center gap-2 rounded-full px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ border: "1px solid var(--theme-border-strong)", background: "var(--theme-surface)" }}>
               <Sparkles className="h-4 w-4" strokeWidth={1.8} />
               {totalUnread} unread
             </span>
-            <span className="inline-flex items-center gap-2 border-2 border-[#5C3A21]/20 px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
+            <span className="inline-flex items-center gap-2 rounded-full px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>
               <Users className="h-4 w-4" strokeWidth={1.8} />
               {role} view
             </span>
@@ -233,12 +234,12 @@ function MessagesPage() {
           <aside
             className={`${
               isMobileListOpen ? "block" : "hidden"
-            } min-h-0 overflow-hidden border-2 border-[#5C3A21]/20 bg-white shadow-[4px_4px_0px_rgba(44,24,16,0.05)] lg:block`}
+            } min-h-0 overflow-hidden glass-pane rounded-2xl lg:block`}
           >
-            <div className="border-b-2 border-[#2C1810] p-4">
+            <div className="border-b p-4" style={{ borderColor: "var(--theme-border)" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  <p className="font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
                     Conversation list
                   </p>
                   <h2 className="font-serif text-xl font-black">Inbox</h2>
@@ -247,19 +248,21 @@ function MessagesPage() {
                   type="button"
                   onClick={() => navigate("/dashboard", { state: { role } })}
                   aria-label="Back to dashboard"
-                  className="lg:hidden border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+                  className="lg:hidden rounded-full p-2 transition-colors"
+                  style={{ border: "1px solid var(--theme-border-strong)", color: "var(--theme-ink-muted)" }}
                 >
                   <ArrowLeft className="h-4 w-4" strokeWidth={2} />
                 </button>
               </div>
 
-              <label className="mt-4 flex items-center gap-2 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-2">
-                <Search className="h-4 w-4 text-[#A89880]" strokeWidth={1.8} />
+              <label className="mt-4 flex items-center gap-2 rounded-full px-3 py-2" style={{ background: "var(--theme-surface)", border: "1px solid var(--theme-border)" }}>
+                <Search className="h-4 w-4" strokeWidth={1.8} style={{ color: "var(--theme-ink-faded)" }} />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search messages, names, listings"
-                  className="w-full bg-transparent font-serif text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
+                  className="w-full bg-transparent font-serif text-sm outline-none placeholder:opacity-60"
+                  style={{ color: "var(--theme-ink)" }}
                 />
               </label>
 
@@ -267,11 +270,12 @@ function MessagesPage() {
                 type="button"
                 onClick={() => setShowUnreadOnly((current) => !current)}
                 aria-pressed={showUnreadOnly}
-                className={`mt-3 inline-flex w-full items-center justify-between border-2 px-3 py-2 text-xs font-bold uppercase tracking-[0.15em] transition-colors ${
+                className="mt-3 inline-flex w-full items-center justify-between rounded-full px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em] transition-colors"
+                style={
                   showUnreadOnly
-                    ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
-                    : "border-[#5C3A21]/20 bg-white text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
-                }`}
+                    ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                    : { border: "1px solid var(--theme-border)", color: "var(--theme-ink-muted)" }
+                }
               >
                 <span>Unread only</span>
                 <span>{unreadConversationCount}</span>
@@ -290,7 +294,7 @@ function MessagesPage() {
                   description="Try a different name, listing title, or message snippet."
                 />
               ) : (
-                <div className="divide-y divide-[#5C3A21]/10">
+                <div className="divide-y" style={{ borderColor: "var(--theme-border)" }}>
                   {filteredConversations.map((conversation) => {
                     const isActive = conversation.id === activeConversationId;
 
@@ -300,12 +304,12 @@ function MessagesPage() {
                         type="button"
                         onClick={() => selectConversation(conversation.id)}
                         aria-current={isActive ? "true" : undefined}
-                        className={`flex w-full gap-3 px-4 py-4 text-left transition-colors ${
-                          isActive ? "bg-[#F4E8C1]" : "hover:bg-[#FAF3E0]"
-                        }`}
+                        className="flex w-full gap-3 px-4 py-4 text-left transition-colors"
+                        style={isActive ? { background: "var(--theme-surface-2)" } : {}}
                       >
                         <div
-                          className={`flex h-12 w-12 shrink-0 items-center justify-center border-2 border-[#2C1810] text-sm font-bold text-[#FAF3E0] ${conversation.accent}`}
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-sm font-bold"
+                          style={{ borderColor: "var(--theme-ink)", background: "var(--theme-ink)", color: "var(--theme-bg)" }}
                         >
                           {conversation.avatar}
                         </div>
@@ -313,22 +317,23 @@ function MessagesPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="truncate font-serif text-sm font-bold text-[#2C1810]">
+                              <p className="truncate font-serif text-sm font-bold" style={{ color: "var(--theme-ink)" }}>
                                 {conversation.name}
                               </p>
-                              <p className="truncate text-xs uppercase tracking-[0.15em] text-[#A89880]">
+                              <p className="truncate font-serif text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-faded)" }}>
                                 {conversation.role} - {conversation.listing}
                               </p>
                             </div>
 
                             <div className="text-right">
-                              <p className="text-xs uppercase tracking-[0.15em] text-[#A89880]">
+                              <p className="font-serif text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-faded)" }}>
                                 {conversation.time}
                               </p>
                               {conversation.unread > 0 && (
                                 <span
                                   aria-label={`${conversation.unread} unread messages`}
-                                  className="mt-1 inline-flex min-w-6 items-center justify-center border border-[#2C1810] bg-[#2C1810] px-1.5 py-0.5 text-xs font-bold text-[#FAF3E0]"
+                                  className="mt-1 inline-flex min-w-6 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-bold"
+                                  style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}
                                 >
                                   {conversation.unread}
                                 </span>
@@ -337,15 +342,14 @@ function MessagesPage() {
                           </div>
 
                           <p
-                            className={`mt-2 line-clamp-2 font-serif text-sm ${
-                              isActive ? "text-[#2C1810]" : "text-[#5C3A21]"
-                            }`}
+                            className="mt-2 line-clamp-2 font-serif text-sm"
+                            style={{ color: isActive ? "var(--theme-ink)" : "var(--theme-ink-muted)" }}
                           >
                             {conversation.preview}
                           </p>
 
                           <div className="mt-3 flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 border border-[#5C3A21]/20 px-2 py-0.5 text-xs uppercase tracking-[0.14em] text-[#5C3A21]">
+                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-serif text-xs uppercase tracking-[0.14em]" style={{ border: "1px solid var(--theme-border)", color: "var(--theme-ink-muted)" }}>
                               <Inbox className="h-3.5 w-3.5" strokeWidth={1.8} />
                               {conversation.online ? "Active" : conversation.lastSeen}
                             </span>
@@ -362,60 +366,67 @@ function MessagesPage() {
           <section
             className={`${
               isMobileListOpen ? "hidden" : "flex"
-            } min-h-0 flex-col overflow-hidden border-2 border-[#5C3A21]/20 bg-white shadow-[4px_4px_0px_rgba(44,24,16,0.05)] lg:flex`}
+            } min-h-0 flex-col overflow-hidden glass-pane rounded-2xl lg:flex`}
           >
             {!activeConversation ? (
               <div className="flex min-h-[70vh] flex-1 flex-col items-center justify-center p-8 text-center">
-                <MessageSquareText className="h-12 w-12 text-[#A89880]" strokeWidth={1.5} />
+                <MessageSquareText className="h-12 w-12" strokeWidth={1.5} style={{ color: "var(--theme-ink-faded)" }} />
                 <h2 className="mt-4 font-serif text-2xl font-black">
                   {conversations.length === 0 ? "Your inbox is empty" : "Select a conversation"}
                 </h2>
-                <p className="mt-2 max-w-md font-serif text-sm text-[#5C3A21]">
+                <p className="mt-2 max-w-md font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>
                   {conversations.length === 0
                     ? "Once a student or owner reaches out, the full thread will appear here."
                     : "Pick a thread from the inbox to read messages, review status, and reply."}
                 </p>
-                <Link to="/dashboard" state={{ role }} className="btn-rubber-stamp mt-6 px-5 py-3 text-sm">
+                <Link
+                  to="/dashboard"
+                  state={{ role }}
+                  className="mt-6 rounded-full px-5 py-3 font-serif text-sm font-bold uppercase tracking-[0.15em]"
+                  style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}
+                >
                   Back to dashboard
                 </Link>
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between border-b-2 border-[#2C1810] p-4">
+                <div className="flex items-center justify-between border-b p-4" style={{ borderColor: "var(--theme-border)" }}>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => setIsMobileListOpen(true)}
                       aria-label="Back to conversations"
-                      className="lg:hidden border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]"
+                      className="lg:hidden rounded-full p-2 transition-colors"
+                      style={{ border: "1px solid var(--theme-border-strong)", color: "var(--theme-ink-muted)" }}
                     >
                       <ArrowLeft className="h-4 w-4" strokeWidth={2} />
                     </button>
                     <div
-                      className={`flex h-12 w-12 items-center justify-center border-2 border-[#2C1810] text-sm font-bold text-[#FAF3E0] ${activeConversation.accent}`}
+                      className="flex h-12 w-12 items-center justify-center rounded-full border text-sm font-bold"
+                      style={{ borderColor: "var(--theme-ink)", background: "var(--theme-ink)", color: "var(--theme-bg)" }}
                     >
                       {activeConversation.avatar}
                     </div>
                     <div>
                       <p className="font-serif text-lg font-black">{activeConversation.name}</p>
-                      <p className="font-serif text-xs uppercase tracking-[0.16em] text-[#A89880]">
+                      <p className="font-serif text-xs uppercase tracking-[0.16em]" style={{ color: "var(--theme-ink-faded)" }}>
                         {activeConversation.role} - {activeConversation.listing}
                       </p>
                     </div>
                   </div>
 
                   <div className="hidden items-center gap-2 lg:flex">
-                    <span className="inline-flex items-center gap-2 border border-[#5C3A21]/20 px-3 py-2 text-xs uppercase tracking-[0.14em] text-[#5C3A21]">
+                    <span className="inline-flex items-center gap-2 rounded-full px-3 py-2 font-serif text-xs uppercase tracking-[0.14em]" style={{ border: "1px solid var(--theme-border)", color: "var(--theme-ink-muted)" }}>
                       <Clock3 className="h-4 w-4" strokeWidth={1.8} />
                       {activeConversation.online ? "Online" : activeConversation.lastSeen}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(250,243,224,0.35),rgba(255,255,255,0.95))] p-4 sm:p-6">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6" style={{ background: "linear-gradient(180deg, color-mix(in srgb, var(--theme-surface) 35%, transparent), var(--theme-surface))" }}>
                   <div className="mx-auto flex max-w-4xl flex-col gap-4">
                     <div className="flex items-center justify-center">
-                      <span className="border border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#A89880]">
+                      <span className="rounded-full px-3 py-1 font-serif text-xs uppercase tracking-[0.18em]" style={{ border: "1px solid var(--theme-border)", background: "var(--theme-surface)", color: "var(--theme-ink-faded)" }}>
                         Conversation started on listing inquiry
                       </span>
                     </div>
@@ -423,18 +434,20 @@ function MessagesPage() {
                     {activeConversation.messages.map((message) => (
                       <div key={message.id} className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[min(36rem,85%)] border-2 px-4 py-3 shadow-[3px_3px_0px_rgba(44,24,16,0.05)] ${
+                          className="max-w-[min(36rem,85%)] rounded-2xl px-4 py-3"
+                          style={
                             message.sender === "me"
-                              ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
-                              : "border-[#5C3A21]/20 bg-white text-[#2C1810]"
-                          }`}
+                              ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                              : { background: "var(--theme-surface)", border: "1px solid var(--theme-border)", color: "var(--theme-ink)" }
+                          }
                         >
                           <p className="font-serif text-sm leading-relaxed">{message.text}</p>
                           <div className="mt-2 flex items-center justify-between gap-3">
                             <span
-                              className={`text-xs uppercase tracking-[0.16em] ${
-                                message.sender === "me" ? "text-[#F4E8C1]/80" : "text-[#A89880]"
-                              }`}
+                              className="font-serif text-xs uppercase tracking-[0.16em]"
+                              style={{
+                                color: message.sender === "me" ? "rgba(244,232,193,0.7)" : "var(--theme-ink-faded)",
+                              }}
                             >
                               {message.time}
                             </span>
@@ -446,10 +459,10 @@ function MessagesPage() {
                   </div>
                 </div>
 
-                <div className="border-t-2 border-[#2C1810] p-4">
+                <div className="border-t p-4" style={{ borderColor: "var(--theme-border)" }}>
                   <form onSubmit={handleSend} className="mx-auto flex max-w-4xl items-end gap-3">
                     <label className="flex-1">
-                      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                      <span className="mb-2 block font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-faded)" }}>
                         Reply
                       </span>
                       <textarea
@@ -457,17 +470,18 @@ function MessagesPage() {
                         onChange={(event) => setDraft(event.target.value)}
                         rows={2}
                         placeholder="Write a message..."
-                        className="min-h-[72px] w-full resize-none border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none transition-colors placeholder:text-[#A89880] focus:border-[#2C1810]"
+                        className="w-full resize-none rounded-2xl px-4 py-3 font-serif text-sm outline-none transition-colors placeholder:opacity-60"
+                        style={{ background: "var(--theme-surface)", color: "var(--theme-ink)", border: "1px solid var(--theme-border)" }}
                       />
                     </label>
 
                     <button
                       type="submit"
                       disabled={!draft.trim()}
-                      className="btn-rubber-stamp flex-none px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      className="shrink-0 rounded-full px-5 py-3 font-serif text-sm font-bold uppercase tracking-[0.15em] disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}
                     >
                       <Send className="h-4 w-4" strokeWidth={2} />
-                      Send
                     </button>
                   </form>
                 </div>
@@ -483,7 +497,7 @@ function MessagesPage() {
 function MessageMeta({ message }) {
   if (message.sender !== "me") {
     return (
-      <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-[#A89880]">
+      <span className="inline-flex items-center gap-1 font-serif text-xs uppercase tracking-[0.16em]" style={{ color: "var(--theme-ink-faded)" }}>
         <Inbox className="h-3.5 w-3.5" strokeWidth={1.8} />
         Received
       </span>
@@ -499,7 +513,7 @@ function MessageMeta({ message }) {
   const Icon = meta.icon;
 
   return (
-    <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.16em] text-inherit">
+    <span className="inline-flex items-center gap-1 font-serif text-xs uppercase tracking-[0.16em] text-inherit">
       <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
       {meta.label}
     </span>
@@ -509,50 +523,50 @@ function MessageMeta({ message }) {
 function EmptyInboxState({ title, description }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <MessageSquareText className="h-12 w-12 text-[#A89880]" strokeWidth={1.4} />
-      <h3 className="mt-4 font-serif text-2xl font-black text-[#2C1810]">{title}</h3>
-      <p className="mt-2 max-w-sm font-serif text-sm text-[#5C3A21]">{description}</p>
+      <MessageSquareText className="h-12 w-12" strokeWidth={1.4} style={{ color: "var(--theme-ink-faded)" }} />
+      <h3 className="mt-4 font-serif text-2xl font-black" style={{ color: "var(--theme-ink)" }}>{title}</h3>
+      <p className="mt-2 max-w-sm font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>{description}</p>
     </div>
   );
 }
 
 function MessagesSkeleton() {
   return (
-    <div className="min-h-screen bg-[#FAF3E0] px-4 py-4 text-[#2C1810] sm:px-6 lg:px-8 lg:py-6">
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-7xl flex-col gap-4">
-        <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
-          <div className="h-3 w-24 bg-[#5C3A21]/10" />
-          <div className="mt-3 h-8 w-48 bg-[#5C3A21]/10" />
-          <div className="mt-3 h-4 w-80 max-w-full bg-[#5C3A21]/10" />
+    <div className="min-h-screen px-4 py-4 sm:px-6 lg:px-8 lg:py-6" style={{ background: "var(--theme-bg)", color: "var(--theme-ink)" }}>
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-screen-xl flex-col gap-4">
+        <div className="animate-pulse glass-pane rounded-3xl p-4">
+          <div className="h-3 w-24 rounded-full" style={{ background: "var(--theme-border)" }} />
+          <div className="mt-3 h-8 w-48 rounded-full" style={{ background: "var(--theme-border)" }} />
+          <div className="mt-3 h-4 w-80 max-w-full rounded-full" style={{ background: "var(--theme-border)" }} />
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
-          <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
-            <div className="h-4 w-28 bg-[#5C3A21]/10" />
-            <div className="mt-4 h-11 bg-[#5C3A21]/10" />
+          <div className="animate-pulse glass-pane rounded-2xl p-4">
+            <div className="h-4 w-28 rounded-full" style={{ background: "var(--theme-border)" }} />
+            <div className="mt-4 h-11 rounded-full" style={{ background: "var(--theme-border)" }} />
             <div className="mt-4 space-y-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="flex gap-3">
-                  <div className="h-12 w-12 bg-[#5C3A21]/10" />
+                  <div className="h-12 w-12 rounded-full" style={{ background: "var(--theme-border)" }} />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-2/3 bg-[#5C3A21]/10" />
-                    <div className="h-3 w-full bg-[#5C3A21]/10" />
-                    <div className="h-3 w-5/6 bg-[#5C3A21]/10" />
+                    <div className="h-4 w-2/3 rounded-full" style={{ background: "var(--theme-border)" }} />
+                    <div className="h-3 w-full rounded-full" style={{ background: "var(--theme-border)" }} />
+                    <div className="h-3 w-5/6 rounded-full" style={{ background: "var(--theme-border)" }} />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)]">
-            <div className="h-16 border-b-2 border-[#2C1810] bg-[#5C3A21]/10" />
+          <div className="animate-pulse glass-pane rounded-2xl p-4">
+            <div className="h-16 border-b" style={{ borderColor: "var(--theme-border)", background: "var(--theme-border)" }} />
             <div className="flex min-h-[42vh] flex-col gap-4 p-4">
-              <div className="ml-auto h-16 w-2/3 bg-[#5C3A21]/10" />
-              <div className="h-16 w-2/3 bg-[#5C3A21]/10" />
-              <div className="ml-auto h-16 w-1/2 bg-[#5C3A21]/10" />
+              <div className="ml-auto h-16 w-2/3 rounded-2xl" style={{ background: "var(--theme-border)" }} />
+              <div className="h-16 w-2/3 rounded-2xl" style={{ background: "var(--theme-border)" }} />
+              <div className="ml-auto h-16 w-1/2 rounded-2xl" style={{ background: "var(--theme-border)" }} />
             </div>
-            <div className="border-t-2 border-[#2C1810] p-4">
-              <div className="h-20 bg-[#5C3A21]/10" />
+            <div className="border-t p-4" style={{ borderColor: "var(--theme-border)" }}>
+              <div className="h-20 rounded-2xl" style={{ background: "var(--theme-border)" }} />
             </div>
           </div>
         </div>
