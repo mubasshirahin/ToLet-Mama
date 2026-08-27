@@ -11,12 +11,14 @@ import ListingFormPage from "./components/ListingFormPage";
 import ThemeToggle from "./components/ThemeToggle";
 import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
+import SceneCanvas from "./components/3d/SceneCanvas";
 
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <div className="relative min-h-screen">
+          <SceneCanvas />
           <Routes>
             {/* Public pages — no sidebar/navbar */}
             <Route path="/" element={<LandingPage />} />

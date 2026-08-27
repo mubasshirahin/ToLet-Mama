@@ -60,7 +60,7 @@ export default function SceneCanvas() {
       ref={wrapRef}
       className="fixed inset-0 z-0 pointer-events-none"
       aria-hidden="true"
-      style={{ isolation: "isolate" }}
+      style={{ isolation: "isolate", opacity: 0.10 }}
     />
   );
 }
