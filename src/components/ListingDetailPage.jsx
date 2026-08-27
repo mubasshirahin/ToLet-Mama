@@ -205,7 +205,7 @@ function ListingDetailPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <header className="mb-6 flex flex-col gap-4 border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:flex-row sm:items-center sm:justify-between">
+        <header className="mb-6 flex flex-col gap-4 glass-pane rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link
               to="/"
@@ -254,7 +254,7 @@ function ListingDetailPage() {
 
         <main className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="space-y-6">
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-4 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-5">
+            <div className="glass-pane rounded-2xl p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
@@ -295,7 +295,8 @@ function ListingDetailPage() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[1fr_0.85fr]">
-              <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
+              <div className="glass-pane rounded-2xl p-5 sm:p-6"
+              >
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                   Property information
                 </p>
@@ -355,9 +356,10 @@ function ListingDetailPage() {
               </div>
 
               <div className="space-y-6">
-                <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
-                    Owner contact card
+                <div className="glass-pane rounded-2xl p-5 sm:p-6"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                  Owner contact card
                   </p>
                   <div className="mt-4 flex items-center gap-4 border-b-2 border-[#2C1810] pb-4">
                     <img
@@ -426,7 +428,8 @@ function ListingDetailPage() {
           </section>
 
           <aside className="space-y-6">
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
+            <div className="glass-pane rounded-2xl p-5 sm:p-6"
+            >
               <div className="flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
@@ -447,7 +450,8 @@ function ListingDetailPage() {
               </div>
             </div>
 
-            <div className="border-2 border-[#5C3A21]/20 bg-white p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.05)] sm:p-6">
+            <div className="glass-pane rounded-2xl p-5 sm:p-6"
+            >
               <div className="flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
@@ -554,12 +558,12 @@ function ListingDetailPage() {
 
 function ListingSkeleton() {
   return (
-    <div className="min-h-screen bg-[#FAF3E0] px-4 py-6 text-[#2C1810] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-6 animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4">
-          <div className="h-3 w-32 bg-[#5C3A21]/10" />
-          <div className="mt-4 h-9 w-2/3 bg-[#5C3A21]/10" />
-          <div className="mt-3 h-4 w-1/2 bg-[#5C3A21]/10" />
+    <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-8" style={{ background: "var(--theme-bg)", color: "var(--theme-ink)", }}>
+      <div className="mx-auto max-w-screen-xl">
+        <div className="mb-6 animate-pulse glass-pane rounded-3xl p-4">
+          <div className="h-3 w-32 rounded-full" style={{ background: "var(--theme-border)" }} />
+          <div className="mt-4 h-9 w-2/3 rounded-full" style={{ background: "var(--theme-border)" }} />
+          <div className="mt-3 h-4 w-1/2 rounded-full" style={{ background: "var(--theme-border)" }} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">

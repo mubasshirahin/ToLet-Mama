@@ -27,7 +27,7 @@ function SignUpPage() {
 
   const getPasswordStrength = () => {
     if (!password) return null;
-    if (password.length < 8) return { level: "weak", label: "Too short", color: "bg-[#A89880]", width: "w-1/4" };
+    if (password.length < 8) return { level: "weak", label: "Too short", color: "var(--theme-ink-faded)", width: "w-1/4" };
     let score = 0;
     if (password.length >= 6) score++;
     if (password.length >= 8) score++;
@@ -35,9 +35,9 @@ function SignUpPage() {
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
-    if (score <= 2) return { level: "weak", label: "Weak", color: "bg-[#A89880]", width: "w-1/4" };
-    if (score <= 4) return { level: "medium", label: "Medium", color: "bg-[#5C3A21]", width: "w-2/4" };
-    return { level: "strong", label: "Strong", color: "bg-[#2C1810]", width: "w-full" };
+    if (score <= 2) return { level: "weak", label: "Weak", color: "var(--theme-ink-faded)", width: "w-1/4" };
+    if (score <= 4) return { level: "medium", label: "Medium", color: "var(--theme-ink-muted)", width: "w-2/4" };
+    return { level: "strong", label: "Strong", color: "var(--theme-ink)", width: "w-full" };
   };
 
   const strength = getPasswordStrength();
@@ -126,9 +126,12 @@ function SignUpPage() {
   };
 
   const inputClass = (field) =>
-    `w-full border-b-2 bg-transparent py-3 pl-7 font-serif text-sm text-[#2C1810] placeholder-[#A89880] outline-none transition-colors ${
-      errors[field] ? "border-[#2C1810]" : "border-[#5C3A21]/30 focus:border-[#2C1810]"
-    }`;
+    `w-full rounded-2xl bg-transparent py-3 pl-7 font-serif text-sm outline-none transition-colors`;
+  const inputStyle = (field) => ({
+    background: "var(--theme-surface)",
+    color: "var(--theme-ink)",
+    border: errors[field] ? "2px solid var(--theme-ink)" : "1px solid var(--theme-border-strong)",
+  });
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -140,35 +143,37 @@ function SignUpPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="flex min-h-screen items-center justify-center bg-[#FAF3E0] text-[#2C1810] px-4 py-12"
+      className="flex min-h-screen items-center justify-center px-4 py-12"
+      style={{ background: "var(--theme-bg)", color: "var(--theme-ink)" }}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md bg-white border-2 border-[#5C3A21]/20 p-8 lg:p-10"
+        className="w-full max-w-md glass-pane-strong rounded-3xl p-8 lg:p-10"
       >
-        <div className="mb-8 border-b-2 border-[#2C1810] pb-6">
-          <h2 className="font-serif text-3xl font-black tracking-tight text-[#2C1810]">
+        <div className="mb-8 border-b pb-6" style={{ borderColor: "var(--theme-border)" }}>
+          <h2 className="font-serif text-3xl font-black tracking-tight" style={{ color: "var(--theme-ink)" }}>
             Create your account.
           </h2>
-          <p className="mt-2 font-serif text-sm text-[#5C3A21]">
+          <p className="mt-2 font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>
             Sign up as a {role.toLowerCase()} — it takes less than 2 minutes.
           </p>
         </div>
 
         {/* Role Toggle */}
-        <div className="mb-8 grid grid-cols-2 border-2 border-[#2C1810]">
+        <div className="mb-8 grid grid-cols-2 rounded-full p-1" style={{ border: "1px solid var(--theme-border-strong)" }}>
           {[ROLES.STUDENT, ROLES.OWNER].map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => switchRole(r)}
-              className={`px-4 py-3 font-serif text-xs font-bold uppercase tracking-[0.15em] transition-all ${
+              className="rounded-full px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-[0.15em] transition-all"
+              style={
                 role === r
-                  ? "bg-[#2C1810] text-[#FAF3E0]"
-                  : "bg-transparent text-[#5C3A21] hover:bg-[#F4E8C1]"
-              }`}
+                  ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                  : { color: "var(--theme-ink-muted)" }
+              }
             >
               {r}
             </button>
@@ -182,11 +187,12 @@ function SignUpPage() {
               initial={{ opacity: 0, y: -10, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
               exit={{ opacity: 0, y: -10, height: 0 }}
-              className={`border-2 px-4 py-3 text-center font-serif text-sm font-bold overflow-hidden mb-6 ${
+              className="rounded-2xl overflow-hidden mb-6 px-4 py-3 text-center font-serif text-sm font-bold"
+              style={
                 submitMessage.type === "success"
-                  ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
-                  : "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]"
-              }`}
+                  ? { background: "var(--theme-ink)", color: "var(--theme-bg)" }
+                  : { background: "var(--theme-surface-2)", color: "var(--theme-ink)", border: "1px solid var(--theme-border-strong)" }
+              }
             >
               {submitMessage.text}
             </motion.div>
@@ -202,62 +208,60 @@ function SignUpPage() {
           >
             <motion.div variants={itemVariants}>
               <div>
-                <label htmlFor="name" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                <label htmlFor="name" className="mb-2 block font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${errors.name ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
+                  <User className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2" strokeWidth={1.5} style={{ color: errors.name ? "var(--theme-ink)" : "var(--theme-ink-faded)" }} />
                   <input id="name" type="text" placeholder="Rafsan Islam" value={name}
                     onChange={(e) => { setName(e.target.value); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }}
-                    className={inputClass("name")} />
+                    className={inputClass("name")} style={inputStyle("name")} />
                 </div>
-                {errors.name && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{errors.name}</p>}
+                {errors.name && <p className="mt-1.5 font-serif text-xs" style={{ color: "var(--theme-ink)" }}>{errors.name}</p>}
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <div>
-                <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                <label htmlFor="email" className="mb-2 block font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${errors.email ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
+                  <Mail className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2" strokeWidth={1.5} style={{ color: errors.email ? "var(--theme-ink)" : "var(--theme-ink-faded)" }} />
                   <input id="email" type="email" placeholder="you@example.com" value={email}
                     onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
-                    className={inputClass("email")} />
+                    className={inputClass("email")} style={inputStyle("email")} />
                 </div>
-                {errors.email && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{errors.email}</p>}
+                {errors.email && <p className="mt-1.5 font-serif text-xs" style={{ color: "var(--theme-ink)" }}>{errors.email}</p>}
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <div>
-                <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                <label htmlFor="password" className="mb-2 block font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${errors.password ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
+                  <Lock className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2" strokeWidth={1.5} style={{ color: errors.password ? "var(--theme-ink)" : "var(--theme-ink-faded)" }} />
                   <input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password}
                     onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((p) => ({ ...p, password: "" })); }}
-                    className={`${inputClass("password")} pr-10`} />
+                    className={`${inputClass("password")} pr-10`} style={inputStyle("password")} />
                   <button type="button" onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[#A89880] hover:text-[#2C1810]" tabIndex={-1}>
+                    className="absolute right-0 top-1/2 -translate-y-1/2 transition-colors" style={{ color: "var(--theme-ink-faded)" }} tabIndex={-1}>
                     {showPassword ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{errors.password}</p>}
+                {errors.password && <p className="mt-1.5 font-serif text-xs" style={{ color: "var(--theme-ink)" }}>{errors.password}</p>}
                 {password && !errors.password && strength && (
                   <div className="mt-2">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs uppercase tracking-[0.15em] text-[#A89880]">Password strength</span>
-                      <span className={`font-serif text-xs font-bold uppercase tracking-[0.1em] ${
-                        strength.level === "weak" ? "text-[#A89880]" : "text-[#2C1810]"
-                      }`}>
+                      <span className="font-serif text-xs uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-faded)" }}>Password strength</span>
+                      <span className="font-serif text-xs font-bold uppercase tracking-[0.1em]" style={{ color: strength.level === "weak" ? "var(--theme-ink-faded)" : "var(--theme-ink)" }}>
                         {strength.label}
                       </span>
                     </div>
-                    <div className="flex h-1.5 w-full border border-[#5C3A21]/30 bg-[#FAF3E0]">
-                      <div className={`h-full transition-all duration-500 ${strength.width} ${strength.color}`} />
+                    <div className="flex h-1.5 w-full rounded-full overflow-hidden" style={{ background: "var(--theme-surface)", border: "1px solid var(--theme-border)" }}>
+                      <div className={`h-full transition-all duration-500 ${strength.width}`} style={{ background: strength.color }} />
                     </div>
                   </div>
                 )}
@@ -266,49 +270,53 @@ function SignUpPage() {
 
             <motion.div variants={itemVariants}>
               <div>
-                <label htmlFor="confirmPassword" className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+                <label htmlFor="confirmPassword" className="mb-2 block font-serif text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--theme-ink-muted)" }}>
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <ShieldCheck className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${errors.confirmPassword ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
+                  <ShieldCheck className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2" strokeWidth={1.5} style={{ color: errors.confirmPassword ? "var(--theme-ink)" : "var(--theme-ink-faded)" }} />
                   <input id="confirmPassword" type={showConfirm ? "text" : "password"} placeholder="••••••••" value={confirmPassword}
                     onChange={(e) => { setConfirmPassword(e.target.value); if (errors.confirmPassword) setErrors((p) => ({ ...p, confirmPassword: "" })); }}
-                    className={`${inputClass("confirmPassword")} pr-10`} />
+                    className={`${inputClass("confirmPassword")} pr-10`} style={inputStyle("confirmPassword")} />
                   <button type="button" onClick={() => setShowConfirm((p) => !p)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[#A89880] hover:text-[#2C1810]" tabIndex={-1}>
+                    className="absolute right-0 top-1/2 -translate-y-1/2 transition-colors" style={{ color: "var(--theme-ink-faded)" }} tabIndex={-1}>
                     {showConfirm ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="mt-1.5 font-serif text-xs" style={{ color: "var(--theme-ink)" }}>{errors.confirmPassword}</p>}
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <div>
-                <label className={`flex cursor-pointer items-start gap-3 border-2 p-4 transition-colors ${
-                  errors.agreed ? "border-[#2C1810] bg-[#FAF3E0]" : "border-[#5C3A21]/20 hover:bg-[#FAF3E0]"
-                }`}>
+                <label className={`flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition-colors`}
+                  style={{
+                    background: errors.agreed ? "var(--theme-surface-2)" : "var(--theme-surface)",
+                    border: errors.agreed ? "1px solid var(--theme-ink)" : "1px solid var(--theme-border)",
+                  }}
+                >
                   <input type="checkbox" checked={agreed}
                     onChange={(e) => { setAgreed(e.target.checked); if (errors.agreed) setErrors((p) => ({ ...p, agreed: "" })); }}
-                    className="mt-0.5 accent-[#2C1810]" />
-                  <span className="font-serif text-xs leading-relaxed text-[#5C3A21]">
+                    className="mt-0.5 accent-current" style={{ color: "var(--theme-ink)" }} />
+                  <span className="font-serif text-xs leading-relaxed" style={{ color: "var(--theme-ink-muted)" }}>
                     I agree to the{" "}
-                    <a href="#" className="font-bold text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810]" onClick={(e) => e.preventDefault()}>
+                    <a href="#" className="font-bold underline underline-offset-4" style={{ color: "var(--theme-ink)" }} onClick={(e) => e.preventDefault()}>
                       Terms of Service
                     </a>{" "}and{" "}
-                    <a href="#" className="font-bold text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810]" onClick={(e) => e.preventDefault()}>
+                    <a href="#" className="font-bold underline underline-offset-4" style={{ color: "var(--theme-ink)" }} onClick={(e) => e.preventDefault()}>
                       Privacy Policy
                     </a>
                   </span>
                 </label>
-                {errors.agreed && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{errors.agreed}</p>}
+                {errors.agreed && <p className="mt-1.5 font-serif text-xs" style={{ color: "var(--theme-ink)" }}>{errors.agreed}</p>}
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <motion.button type="submit" disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="btn-rubber-stamp w-full justify-center py-3 text-sm disabled:opacity-50">
+                className="w-full justify-center rounded-full py-3 font-serif text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
+                style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
                 {isSubmitting ? "Creating account..." : `Create ${role} Account`}
               </motion.button>
             </motion.div>
@@ -319,8 +327,8 @@ function SignUpPage() {
         {role === ROLES.STUDENT && (
           <>
             <motion.div variants={itemVariants} className="mb-6">
-              <div className="rounded-sm border-2 border-[#5C3A21]/20 bg-[#FAF3E0] p-4 text-center">
-                <p className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
+              <div className="glass-pane rounded-2xl p-4 text-center">
+                <p className="font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>
                   Sign up with your institutional (.edu) email
                 </p>
               </div>
@@ -335,9 +343,9 @@ function SignUpPage() {
         )}
 
         <motion.div variants={itemVariants} className="mt-8">
-          <p className="text-center font-serif text-sm text-[#5C3A21]">
+          <p className="text-center font-serif text-sm" style={{ color: "var(--theme-ink-muted)" }}>
             Already have an account?{" "}
-            <Link to="/auth" className="font-bold text-[#2C1810] underline underline-offset-4 decoration-[#5C3A21]/40 hover:decoration-[#2C1810] transition-all">
+            <Link to="/auth" className="font-bold underline underline-offset-4 transition-all" style={{ color: "var(--theme-ink)" }}>
               Sign in
             </Link>
           </p>

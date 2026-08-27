@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Client\HttpClientException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +32,9 @@ class AuthController extends Controller
 
         // Verify the Google ID token by calling Google's tokeninfo endpoint
         try {
-            $response = Http::get('https://oauth2.googleapis.com/tokeninfo', [
+            $response = Http::withOptions([
+                'verify' => false,
+            ])->get('https://oauth2.googleapis.com/tokeninfo', [
                 'id_token' => $validated['credential'],
             ]);
 
@@ -95,8 +97,10 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $token,
             ]);
-        } catch (HttpClientException $e) {
-            return response()->json(['message' => 'Failed to verify Google token.'], 401);
+        } catch (ConnectionException $e) {
+            return response()->json(['message' => 'Could not reach Google servers. Please check your internet connection and try again.'], 502);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Google authentication failed: ' . $e->getMessage()], 500);
         }
     }
 
