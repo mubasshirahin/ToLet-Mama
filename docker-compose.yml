@@ -5,8 +5,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./docker.env
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     command: --sort-buffer-size=67108864 --read-rnd-buffer-size=67108864 --tmp-table-size=67108864 --max-heap-table-size=67108864
