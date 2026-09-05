@@ -13,9 +13,9 @@ import {
   Newspaper,
   PlusCircle,
   Settings,
-  Star,
   User,
   FileText,
+  Heart,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -32,7 +32,7 @@ const NAV_ITEMS = [
     items: [
       { label: "My Listings", icon: Building2, to: "/my-listings", role: "Owner" },
       { label: "Add Listing", icon: PlusCircle, to: "/listings/new", role: "Owner" },
-      { label: "Saved", icon: Star, to: "/dashboard" },
+      { label: "Saved", icon: Heart, to: "/saved" },
     ],
   },
   {

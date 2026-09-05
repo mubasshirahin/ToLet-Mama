@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
+  Heart,
   LayoutGrid,
   List,
   MapPin,
@@ -14,7 +15,21 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchDashboardStats, fetchListings, getCurrentUser } from "../lib/api";
+import { fetchDashboardStats, fetchFavorites, fetchListings, getCurrentUser, toggleFavorite } from "../lib/api";
+
+const SAVED_IDS_KEY = "toletmama.saved_ids";
+
+function readSavedIds() {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_IDS_KEY) || "[]").map(String);
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedIds(ids) {
+  try { localStorage.setItem(SAVED_IDS_KEY, JSON.stringify(ids)); } catch {}
+}
 
 const PRICE_BANDS = [
   { value: "any", label: "Any price" },
@@ -212,6 +227,7 @@ function DashboardPage() {
   const [listings, setListings] = useState(() => []);
   const [isLoadingListings, setIsLoadingListings] = useState(true);
   const [dashStats, setDashStats] = useState({ total_listings: 0, active_chats: 0, saved_properties: 0, monthly_visits: 0 });
+  const [savedIds, setSavedIds] = useState(() => readSavedIds());
   const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem("toletmama.api_token"));
 
   useEffect(() => {
@@ -258,6 +274,37 @@ function DashboardPage() {
       });
     return () => { cancelled = true; };
   }, [isAuthed]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    let cancelled = false;
+    fetchFavorites()
+      .then((res) => {
+        if (cancelled) return;
+        const ids = (res.saved_ids || []).map(String);
+        setSavedIds(ids);
+        writeSavedIds(ids);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAuthed]);
+
+  const handleFavorite = async (listingId) => {
+    const id = String(listingId);
+    const wasSaved = savedIds.includes(id);
+    const nextIds = wasSaved ? savedIds.filter((value) => value !== id) : [...savedIds, id];
+    setSavedIds(nextIds);
+    writeSavedIds(nextIds);
+    try {
+      const res = await toggleFavorite(listingId);
+      const serverIds = res.saved ? [...new Set(nextIds)] : nextIds.filter((value) => value !== id);
+      setSavedIds(serverIds);
+      writeSavedIds(serverIds);
+    } catch {
+      setSavedIds(savedIds);
+      writeSavedIds(savedIds);
+    }
+  };
 
 
   useEffect(() => {
@@ -566,13 +613,13 @@ function DashboardPage() {
                 ) : filters.view === "list" ? (
                   <div key="list" className="space-y-4">
                     {filteredListings.map((listing, i) => (
-                      <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} />
+                      <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
                     ))}
                   </div>
                 ) : (
                   <div key="grid" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                     {filteredListings.map((listing, i) => (
-                      <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} />
+                      <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
                     ))}
                   </div>
                 )}
@@ -800,12 +847,13 @@ function ActiveFilterChip({ label, onClear }) {
 /* ═══════════════════════════════════════════
    PROPERTY CARDS WITH 3D + SHIMMER
    ═══════════════════════════════════════════ */
-function ListingGridCard({ listing, statusStyles, index = 0 }) {
+function ListingGridCard({ listing, statusStyles, isFavorite, onFavorite }) {
   return (
     <TiltCard
         intensity={10}
         className="group relative flex flex-col glass-pane rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 gold-glow"
       >
+        <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
         <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
           <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
             <img
@@ -860,12 +908,13 @@ function ListingGridCard({ listing, statusStyles, index = 0 }) {
   );
 }
 
-function ListingListCard({ listing, statusStyles, index = 0 }) {
+function ListingListCard({ listing, statusStyles, isFavorite, onFavorite }) {
   return (
     <TiltCard
       intensity={6}
         className="group relative grid overflow-hidden glass-pane rounded-2xl transition-all duration-300 hover:-translate-y-0.5 md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
       >
+        <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
         <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
           <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
             <img
@@ -920,6 +969,24 @@ function ListingListCard({ listing, statusStyles, index = 0 }) {
           </div>
         </Link>
       </TiltCard>
+  );
+}
+
+function FavoriteButton({ isFavorite, onClick }) {
+  return (
+    <button
+      type="button"
+      aria-label={isFavorite ? "Remove from saved listings" : "Save listing"}
+      aria-pressed={isFavorite}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      }}
+      className={`absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center border-2 shadow-[2px_2px_0px_rgba(44,24,16,0.15)] transition-all hover:-translate-y-0.5 ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]"}`}
+    >
+      <Heart className="h-4 w-4" fill={isFavorite ? "currentColor" : "none"} strokeWidth={2} />
+    </button>
   );
 }
 
