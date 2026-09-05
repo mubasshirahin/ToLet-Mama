@@ -11,12 +11,26 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
-      if (user.role) setRole(user.role);
-      else if (location.state?.role) setRole(location.state.role);
+      if (user.role) setRole(user.role === "owner" ? "Owner" : "Student");
+      else if (location.state?.role) setRole(location.state.role === "owner" || location.state.role === "Owner" ? "Owner" : "Student");
     } catch {
       // keep default
     }
-  }, [location.state]);
+  }, [location.state, location.pathname]);
+
+  // Also listen to storage changes and auth updates
+  useEffect(() => {
+    const onStorage = () => {
+      try {
+        const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
+        if (u.role) setRole(u.role === "owner" ? "Owner" : "Student");
+      } catch {}
+    };
+    window.addEventListener("storage", onStorage);
+    // Poll for role changes after login
+    const interval = setInterval(onStorage, 1000);
+    return () => { window.removeEventListener("storage", onStorage); clearInterval(interval); };
+  }, []);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
