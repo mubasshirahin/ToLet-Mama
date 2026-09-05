@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   {
     section: "Manage",
     items: [
-      { label: "My Listings", icon: Building2, to: "/dashboard", role: "Owner" },
+      { label: "My Listings", icon: Building2, to: "/my-listings", role: "Owner" },
       { label: "Add Listing", icon: PlusCircle, to: "/listings/new", role: "Owner" },
       { label: "Saved", icon: Star, to: "/dashboard" },
     ],

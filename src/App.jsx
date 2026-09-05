@@ -4,6 +4,7 @@ import AuthPage from "./components/AuthPage";
 import SignUpPage from "./components/SignUpPage";
 import ForgotPasswordPage from "./components/ForgotPasswordPage";
 import DashboardPage from "./components/DashboardPage";
+import MyListingsPage from "./components/MyListingsPage";
 import MessagesPage from "./components/MessagesPage";
 import ProfilePage from "./components/ProfilePage";
 import ListingDetailPage from "./components/ListingDetailPage";
@@ -30,6 +31,10 @@ function App() {
             <Route
               path="/dashboard"
               element={<AppLayout><DashboardPage /></AppLayout>}
+            />
+            <Route
+              path="/my-listings"
+              element={<AppLayout><MyListingsPage /></AppLayout>}
             />
             <Route
               path="/messages"

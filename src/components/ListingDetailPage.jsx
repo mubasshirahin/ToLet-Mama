@@ -22,7 +22,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchListing, fetchListings, fetchFavorites, toggleFavorite, recordListingView } from "../lib/api";
+import { fetchListing, fetchListings, fetchFavorites, toggleFavorite, recordListingView, fetchInterestedUsers, sendMessage } from "../lib/api";
 
 
 
@@ -89,6 +89,8 @@ function ListingDetailPage() {
   }, []);
 
   const isOwner = currentUser && listing && apiListing?.user && currentUser.id === apiListing.user.id;
+  const isStudent = (currentUser?.role ?? 'student') === 'student';
+  const isOwnerRole = (currentUser?.role ?? 'student') === 'owner';
 
   useEffect(() => {
     setIsLoading(true);
@@ -113,6 +115,38 @@ function ListingDetailPage() {
   const isFavorite = listing ? favorites.includes(listing.id) : false;
 
   const [relatedListings, setRelatedListings] = useState([]);
+  const [interestedUsers, setInterestedUsers] = useState([]);
+  const [isLoadingInterested, setIsLoadingInterested] = useState(false);
+
+  // Owner: fetch who is interested / responded
+  useEffect(() => {
+    if (!isOwner || !listing) return;
+    let cancelled = false;
+    setIsLoadingInterested(true);
+    fetchInterestedUsers(listing.id)
+      .then((data) => { if (!cancelled) setInterestedUsers(Array.isArray(data) ? data : []); })
+      .catch(() => { if (!cancelled) setInterestedUsers([]); })
+      .finally(() => { if (!cancelled) setIsLoadingInterested(false); });
+    return () => { cancelled = true; };
+  }, [isOwner, listing]);
+
+  const handleContactOwner = async () => {
+    if (!listing || !apiListing?.user) return;
+    // Only students can contact owner
+    if (!isStudent) {
+      setToast("Only students can contact owners");
+      setTimeout(() => setToast(""), 2000);
+      return;
+    }
+    try {
+      await sendMessage({ receiver_id: apiListing.user.id, listing_id: listing.id, body: `Hi, I am interested in "${listing.title}" at ${listing.location}. Please let me know about availability.` });
+      setToast("Message sent to owner — check Messages");
+      setTimeout(() => navigate("/messages"), 1200);
+    } catch {
+      setToast("Could not send message. Please try again.");
+    }
+    setTimeout(() => setToast(""), 2000);
+  };
 
   useEffect(() => {
     if (!listing) return;
@@ -205,66 +239,46 @@ function ListingDetailPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <header className="mb-6 flex flex-col gap-4 glass-pane rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <Link
-              to="/"
-              className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-              Back to home
-            </Link>
-            <h1 className="font-serif text-3xl font-black tracking-tight sm:text-4xl">
-              {listing.title}
-            </h1>
-            <p className="mt-1 font-serif text-sm text-[#5C3A21]">
-              {listing.location} / {listing.type} / {listing.status}
-            </p>
+        <header className="mb-6 glass-pane rounded-3xl p-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880] transition-colors hover:text-[#2C1810]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
+            Back to home
+          </Link>
+          <h1 className="mt-3 font-serif text-3xl font-black tracking-tight sm:text-4xl">
+            {listing.title}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2 font-serif text-sm">
+            <span className="inline-flex items-center gap-1.5 text-[#5C3A21]"><MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />{listing.location}</span>
+            <span className="text-[#A89880]">•</span>
+            <span className="text-[#5C3A21]">{listing.type}</span>
+            <span className="text-[#A89880]">•</span>
+            <span className="text-[#5C3A21]">{listing.gender || "Any"}</span>
+            <span className={`ml-1 border px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.14em] ${listing.status === "Available" ? "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]" : "border-[#5C3A21] bg-[#2C1810] text-[#FAF3E0]"}`}>{listing.status}</span>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em]">
-              <Sparkles className="h-4 w-4" strokeWidth={1.8} />
-              {listing.price}
-            </span>
-            <button
-              type="button"
-              onClick={handleFavorite}
-              className={`btn-coupon-clip px-4 py-2 text-xs ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : ""}`}
-            >
-              <Bookmark className="h-4 w-4" strokeWidth={1.8} />
-              {isFavorite ? "Saved" : "Save"}
-            </button>
-            <button type="button" onClick={handleShare} className="btn-coupon-clip px-4 py-2 text-xs">
-              <Share2 className="h-4 w-4" strokeWidth={1.8} />
-              Share
-            </button>
-            <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="btn-rubber-stamp px-4 py-2 text-xs">
-              <PenLine className="h-4 w-4" strokeWidth={1.8} />
-              Edit
-            </Link>
-            {isOwner && (
-              <Link to="/listings/new" className="btn-rubber-stamp px-4 py-2 text-xs bg-[#2C1810] text-[#FAF3E0] border-[#2C1810]">
-                <Plus className="h-4 w-4" strokeWidth={1.8} />
-                Add Listing
-              </Link>
-            )}
-          </div>
+          <p className="mt-2 font-serif text-xs uppercase tracking-[0.14em] text-[#A89880]">Posted {listing.posted}</p>
         </header>
 
         <main className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="space-y-6">
             <div className="glass-pane rounded-2xl p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                     Image gallery
                   </p>
                   <h2 className="font-serif text-xl font-black">Tour the space</h2>
                 </div>
-                <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 text-xs uppercase tracking-[0.15em] text-[#5C3A21]">
-                  {activeImageIndex + 1}/{listing.images.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 text-xs uppercase tracking-[0.15em] text-[#5C3A21]">
+                    {activeImageIndex + 1}/{listing.images.length}
+                  </span>
+                  <button type="button" onClick={handleShare} aria-label="Share listing" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#5C3A21]/15 bg-white text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]">
+                    <Share2 className="h-4 w-4" strokeWidth={1.8} />
+                  </button>
+                </div>
               </div>
 
               <button
@@ -297,10 +311,19 @@ function ListingDetailPage() {
             <div className="grid gap-6 xl:grid-cols-[1fr_0.85fr]">
               <div className="glass-pane rounded-2xl p-5 sm:p-6"
               >
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
-                  Property information
-                </p>
-                <h2 className="mt-2 font-serif text-2xl font-black tracking-tight">{listing.title}</h2>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+                      Property information
+                    </p>
+                    <h2 className="mt-2 font-serif text-2xl font-black tracking-tight">{listing.title}</h2>
+                  </div>
+                  {isOwner && (
+                    <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#5C3A21]/15 bg-white text-[#5C3A21] transition-colors hover:border-[#2C1810] hover:text-[#2C1810]" aria-label="Edit listing">
+                      <PenLine className="h-4 w-4" strokeWidth={1.8} />
+                    </Link>
+                  )}
+                </div>
                 <p className="mt-3 font-serif text-sm leading-relaxed text-[#5C3A21]">{listing.description}</p>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -312,10 +335,30 @@ function ListingDetailPage() {
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <InfoPill icon={BedDouble} label="Bedrooms" value={listing.specs.bedrooms} />
-                  <InfoPill icon={Bath} label="Bathrooms" value={listing.specs.bathrooms} />
-                  <InfoPill icon={Clock3} label="Size" value={listing.specs.size} />
-                  <InfoPill icon={CalendarDays} label="Available from" value={listing.availableFrom} />
+                  {/* Only show relevant specs — hide Bedrooms/Size/Bathrooms when not input for Single Room etc. */}
+                  {(() => {
+                    const isSingle = listing.type === "Single Room";
+                    const isShared = listing.type === "Shared Room";
+                    const isDrawing = listing.type === "Drawing Space";
+                    const isApartmentFlat = listing.type === "Apartment" || listing.type === "Flat";
+                    const showBedrooms = isApartmentFlat && listing.specs.bedrooms && String(listing.specs.bedrooms) !== "N/A";
+                    const showBathrooms = !isSingle && listing.specs.bathrooms && String(listing.specs.bathrooms) !== "N/A";
+                    const showSize = isApartmentFlat && listing.specs.size && String(listing.specs.size).trim() && String(listing.specs.size) !== "N/A";
+                    const showFloor = listing.specs.floor && String(listing.specs.floor).trim() && String(listing.specs.floor) !== "N/A";
+                    const showMembers = (isSingle || isShared || isDrawing) && listing.specs.totalOccupants;
+                    const showAvailable = listing.availableFrom && String(listing.availableFrom).trim();
+                    const availableDisplay = showAvailable ? (() => { const ym = String(listing.availableFrom).slice(0,7); if(/^\d{4}-\d{2}$/.test(ym)){ const [y,m]=ym.split("-"); return new Date(Number(y),Number(m)-1,1).toLocaleString("en-US",{month:"long",year:"numeric"});} try{ return new Date(listing.availableFrom).toLocaleDateString("en-US",{month:"long",year:"numeric"});}catch{ return String(listing.availableFrom).slice(0,10);} })() : "";
+                    return (
+                      <>
+                        {showBedrooms && <InfoPill icon={BedDouble} label="Bedrooms" value={listing.specs.bedrooms} />}
+                        {showBathrooms && <InfoPill icon={Bath} label="Bathrooms" value={listing.specs.bathrooms} />}
+                        {showSize && <InfoPill icon={Clock3} label="Size" value={listing.specs.size} />}
+                        {showFloor && <InfoPill icon={Clock3} label="Floor" value={listing.specs.floor} />}
+                        {showMembers && <InfoPill icon={Users} label="Total Members" value={listing.specs.totalOccupants} />}
+                        {showAvailable && <InfoPill icon={CalendarDays} label="Available from" value={availableDisplay} />}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="mt-6">
@@ -418,6 +461,44 @@ function ListingDetailPage() {
                   </div>
                 </div>
 
+                {isOwner && (
+                  <div className="glass-pane rounded-2xl p-5 sm:p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">Interested — owner only</p>
+                        <h3 className="font-serif text-lg font-black">Who responded</h3>
+                      </div>
+                      <span className="rounded-full border border-[#5C3A21]/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
+                        {isLoadingInterested ? "..." : `${interestedUsers.length} people`}
+                      </span>
+                    </div>
+                    {isLoadingInterested ? (
+                      <p className="font-serif text-sm text-[#5C3A21]">Loading...</p>
+                    ) : interestedUsers.length === 0 ? (
+                      <p className="font-serif text-sm text-[#5C3A21]">No one has shown interest yet. Share your listing to get inquiries.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {interestedUsers.map((u) => (
+                          <div key={u.id} className="flex items-center justify-between gap-3 border border-[#5C3A21]/15 bg-[#FAF3E0] px-3 py-2">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] font-bold text-xs">
+                                {u.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-serif text-sm font-bold text-[#2C1810]">{u.name} <span className="text-xs font-normal text-[#A89880]">({u.role})</span></p>
+                                <p className="font-serif text-xs text-[#5C3A21]">{u.email} {u.saved ? "• Saved" : ""} {u.messages ? `• ${u.messages} msgs` : ""} {u.views ? `• ${u.views} views` : ""}</p>
+                              </div>
+                            </div>
+                            <button type="button" onClick={async () => { try { await sendMessage({ receiver_id: u.id, listing_id: listing.id, body: `Hi ${u.name}, thanks for interest in "${listing.title}"`}); setToast(`Message sent to ${u.name}`); setTimeout(()=>setToast(""),1500);} catch { setToast("Failed to message"); setTimeout(()=>setToast(""),1500); }}} className="btn-coupon-clip px-3 py-1 text-xs">
+                              <MessageCircle className="h-3.5 w-3.5" /> Reply
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {toast && (
                   <div className="border-2 border-[#2C1810] bg-white px-4 py-3 font-serif text-sm font-bold">
                     {toast}
@@ -428,6 +509,65 @@ function ListingDetailPage() {
           </section>
 
           <aside className="space-y-6">
+            {/* Price & Primary Actions — the only place for price/share/edit */}
+            <div className="glass-pane rounded-2xl p-5 sm:p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">Rent</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="font-serif text-3xl font-black tracking-tight text-[#2C1810]">{listing.price}</span>
+                <span className="font-serif text-sm text-[#A89880]">/ month</span>
+                <span className={`ml-auto border px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.14em] ${listing.status === "Available" ? "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]" : "border-[#5C3A21] bg-[#2C1810] text-[#FAF3E0]"}`}>{listing.status}</span>
+              </div>
+              <p className="mt-2 font-serif text-xs text-[#5C3A21]">{listing.type} • {listing.gender || "Any"} • {listing.location}</p>
+
+              <div className="mt-5 grid gap-2">
+                {isOwner ? (
+                  <>
+                    <Link to={`/listings/${listing.id}/edit`} state={{ listing }} className="btn-rubber-stamp w-full justify-center py-3 text-sm">
+                      <PenLine className="h-4 w-4" strokeWidth={1.8} />
+                      Edit listing
+                    </Link>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={handleShare} className="btn-coupon-clip justify-center py-2.5 text-xs">
+                        <Share2 className="h-4 w-4" strokeWidth={1.8} />
+                        Share
+                      </button>
+                      <Link to="/dashboard" className="btn-coupon-clip justify-center py-2.5 text-xs">
+                        <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
+                        Dashboard
+                      </Link>
+                    </div>
+                    <p className="text-center font-serif text-[11px] text-[#A89880]">Only you can see Edit • Manage inquiries below</p>
+                  </>
+                ) : isStudent ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={handleContactOwner} className="btn-rubber-stamp justify-center py-3 text-sm">
+                        <MessageCircle className="h-4 w-4" strokeWidth={1.8} />
+                        Contact Owner
+                      </button>
+                      <button type="button" onClick={handleFavorite} className={`btn-coupon-clip justify-center py-3 text-sm ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : ""}`}>
+                        <Bookmark className="h-4 w-4" strokeWidth={1.8} />
+                        {isFavorite ? "Saved" : "Express Interest"}
+                      </button>
+                    </div>
+                    <button type="button" onClick={handleShare} className="inline-flex items-center justify-center gap-1.5 py-1 font-serif text-xs font-medium text-[#A89880] hover:text-[#2C1810]">
+                      <Share2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+                      Share listing
+                    </button>
+                    <p className="text-center font-serif text-[11px] text-[#A89880]">Express Interest lets owner see you • or message directly</p>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={handleShare} className="btn-coupon-clip w-full justify-center py-2.5 text-xs">
+                      <Share2 className="h-4 w-4" strokeWidth={1.8} />
+                      Share listing
+                    </button>
+                    <p className="text-center font-serif text-[11px] text-[#A89880]">Owners can only post and view inquiries on their own listings</p>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="glass-pane rounded-2xl p-5 sm:p-6"
             >
               <div className="flex items-center justify-between border-b-2 border-[#2C1810] pb-4">
@@ -443,10 +583,11 @@ function ListingDetailPage() {
               </div>
 
               <div className="mt-5 space-y-4 font-serif text-sm">
-                <SummaryRow label="Price" value={listing.price} />
                 <SummaryRow label="Location" value={listing.location} />
-                <SummaryRow label="Type" value={listing.type} />
-                <SummaryRow label="Floor" value={listing.specs.floor} />
+                <SummaryRow label="Type" value={`${listing.type} • ${listing.gender || "Any"}`} />
+                <SummaryRow label="Floor" value={listing.specs.floor || "—"} />
+                <SummaryRow label="Total Members" value={listing.specs.totalOccupants ? `${listing.specs.totalOccupants} people` : "—"} />
+                <SummaryRow label="Available" value={listing.availableFrom ? new Date(listing.availableFrom).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—"} />
               </div>
             </div>
 

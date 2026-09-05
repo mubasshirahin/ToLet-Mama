@@ -20,7 +20,7 @@ class ListingSeeder extends Seeder
                 'title' => 'Cozy Single Room in Banani',
                 'price' => '8,500',
                 'location' => 'Banani, Dhaka',
-                'type' => 'Room',
+                'type' => 'Single Room',
                 'status' => 'available',
                 'description' => 'Furnished single room in a quiet residential area of Banani. Close to Banani DOHS and market.',
                 'images' => [
@@ -114,7 +114,7 @@ class ListingSeeder extends Seeder
                 'title' => 'Budget Room in Mohammadpur',
                 'price' => '5,500',
                 'location' => 'Mohammadpur, Dhaka',
-                'type' => 'Room',
+                'type' => 'Single Room',
                 'status' => 'available',
                 'description' => 'Affordable room in Mohammadpur with basic amenities. Good for single working professionals.',
                 'images' => [

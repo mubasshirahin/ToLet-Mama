@@ -15,7 +15,6 @@ import {
   X,
 } from "lucide-react";
 import { fetchDashboardStats, fetchListings, getCurrentUser } from "../lib/api";
-import { LISTINGS } from "../data/listings";
 
 const PRICE_BANDS = [
   { value: "any", label: "Any price" },
@@ -206,14 +205,11 @@ function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const role = location.state?.role || "Student";
-  const [listings, setListings] = useState(() =>
-    LISTINGS.map((l) => ({
-      ...l,
-      image: l.images?.[0] || "",
-      status: l.status ? l.status.charAt(0).toUpperCase() + l.status.slice(1) : "Available",
-    }))
-  );
+  const [userRole, setUserRole] = useState(() => {
+    try { const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}"); return u.role === 'owner' ? 'Owner' : 'Student'; } catch { return 'Student'; }
+  });
+  const role = userRole;
+  const [listings, setListings] = useState(() => []);
   const [isLoadingListings, setIsLoadingListings] = useState(true);
   const [dashStats, setDashStats] = useState({ total_listings: 0, active_chats: 0, saved_properties: 0, monthly_visits: 0 });
   const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem("toletmama.api_token"));
@@ -225,7 +221,14 @@ function DashboardPage() {
     }
     let cancelled = false;
     getCurrentUser()
-      .then(() => { if (!cancelled) setIsAuthed(true); })
+      .then((user) => {
+        if (!cancelled) {
+          setIsAuthed(true);
+          const r = user.role === 'owner' ? 'Owner' : 'Student';
+          setUserRole(r);
+          try { localStorage.setItem("toletmama.api_user", JSON.stringify(user)); } catch {}
+        }
+      })
       .catch(() => {
         if (!cancelled) {
           localStorage.removeItem("toletmama.api_token");
@@ -244,11 +247,11 @@ function DashboardPage() {
       .then((res) => {
         if (!cancelled) {
           const raw = res.data || [];
-          setListings(raw.length > 0 ? raw.map(normalizeListing) : LISTINGS.map(normalizeListing));
+          setListings(raw.map(normalizeListing));
         }
       })
       .catch(() => {
-        if (!cancelled) setListings(LISTINGS.map(normalizeListing));
+        if (!cancelled) setListings([]);
       })
       .finally(() => {
         if (!cancelled) setIsLoadingListings(false);
@@ -411,51 +414,29 @@ function DashboardPage() {
             ))}
           </motion.div>
 
-          {/* ═══ BROWSE HEADER ═══ */}
+          {/* ═══ BROWSE HEADER — clean, no Filters/Clear/My Listings in masthead ═══ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, type: "spring", stiffness: 260, damping: 24 }}
-            className="mb-6 flex flex-col gap-4 glass-pane rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between"
+            className="mb-6 flex flex-col gap-3 glass-pane rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
                 {role === "Owner" ? "Property Management" : "Property Search"}
               </p>
               <h2 className="font-serif text-2xl font-black tracking-tight text-[#2C1810]">Browse Listings</h2>
-              <p className="mt-1 text-sm leading-relaxed text-[#5C3A21]">
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5C3A21]">
                 {role === "Owner"
                   ? "Search, sort, and manage your listings with URL-synced filters."
                   : "Search verified rooms and apartments with quick filters by price, area, and amenities."}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <motion.button
-                type="button"
-                onClick={() => setMobileFiltersOpen(true)}
-                whileTap={{ scale: 0.97, y: 2 }}
-                className="btn-coupon-clip px-4 py-2 text-xs lg:hidden"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
-              </motion.button>
-              <motion.button
-                type="button"
-                onClick={clearFilters}
-                whileTap={{ scale: 0.97, y: 2 }}
-                className="btn-coupon-clip px-4 py-2 text-xs"
-              >
-                <X className="h-4 w-4" />
-                Clear
-              </motion.button>
-              {role === "Owner" && (
-                <motion.div whileTap={{ scale: 0.97, y: 2 }} className="inline-flex">
-                  <Link to="/listings/new" className="btn-rubber-stamp px-5 py-2 text-xs">
-                    + Add Listing
-                  </Link>
-                </motion.div>
-              )}
-            </div>
+            {role === "Owner" && (
+              <Link to="/listings/new" className="btn-rubber-stamp shrink-0 px-5 py-2.5 text-xs">
+                + Add Listing
+              </Link>
+            )}
           </motion.div>
 
           {/* ═══ FILTERS + LISTINGS ═══ */}
@@ -465,7 +446,7 @@ function DashboardPage() {
             transition={{ delay: 0.45 }}
           >
             <section className="min-w-0 space-y-5">
-              {/* Search Bar */}
+              {/* Search Bar — Filters/Clear now here, not in masthead */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -534,7 +515,30 @@ function DashboardPage() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <motion.button
+                    type="button"
+                    onClick={() => setMobileFiltersOpen(true)}
+                    whileTap={{ scale: 0.97, y: 2 }}
+                    className="btn-coupon-clip px-3 py-1.5 text-xs lg:hidden"
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    onClick={clearFilters}
+                    whileTap={{ scale: 0.97, y: 2 }}
+                    className="btn-coupon-clip px-3 py-1.5 text-xs"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear
+                  </motion.button>
+                  {activeFilterCount > 0 && (
+                    <span className="ml-1 text-xs font-medium text-[#A89880]">{activeFilterCount} filter{activeFilterCount === 1 ? "" : "s"} active</span>
+                  )}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   {filters.q && <ActiveFilterChip label={`Search: ${filters.q}`} onClear={() => setSearchDraft("")} />}
                   {filters.price !== "any" && <ActiveFilterChip label={`Price: ${getBandLabel(filters.price)}`} onClear={() => setPrice("any")} />}
                   {filters.type !== "any" && <ActiveFilterChip label={`Type: ${filters.type}`} onClear={() => setType("any")} />}
