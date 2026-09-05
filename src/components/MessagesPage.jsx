@@ -16,7 +16,9 @@ import {
 function MessagesPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || "Student";
+  const role = useMemo(() => {
+    try { const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}"); return u.role === 'owner' ? 'Owner' : 'Student'; } catch { return location.state?.role || "Student"; }
+  }, [location.state?.role]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
@@ -25,18 +27,20 @@ function MessagesPage() {
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
 
-  // Load conversations from API
+  // Load conversations from API with polling for real-time
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
-    fetchConversations()
-      .then((data) => {
-        if (!cancelled) {
+    let interval;
+    const load = () => {
+      fetchConversations()
+        .then((data) => {
+          if (cancelled) return;
           const mapped = (Array.isArray(data) ? data : []).map((conv) => ({
             id: conv.user?.id || conv.id,
             name: conv.user?.name || "Unknown",
-            role: conv.user?.role || "User",
+            role: conv.user?.role ? (conv.user.role === 'owner' ? 'Owner' : 'Student') : "User",
             listing: conv.last_message?.listing?.title || "General",
+            listingId: conv.last_message?.listing_id || conv.last_message?.listing?.id || null,
             unread: conv.unread_count || 0,
             online: false,
             lastSeen: "Last seen recently",
@@ -47,18 +51,27 @@ function MessagesPage() {
             messages: [],
             _userId: conv.user?.id,
           }));
-          setConversations(mapped);
-          if (mapped.length > 0) setActiveConversationId(mapped[0].id);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setConversations([]);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [role]);
+          setConversations((prev) => {
+            // Preserve already loaded messages for active conversation
+            const prevMap = new Map(prev.map(p=>[p.id,p]));
+            const next = mapped.map(m => {
+              const p = prevMap.get(m.id);
+              return p ? { ...m, messages: p.messages } : m;
+            });
+            if (prev.length === 0 && next.length > 0) {
+              setActiveConversationId(next[0].id);
+            }
+            return next;
+          });
+        })
+        .catch(() => { if (!cancelled) setConversations([]); })
+        .finally(() => { if (!cancelled) setIsLoading(false); });
+    };
+    setIsLoading(true);
+    load();
+    interval = setInterval(load, 3000); // real-time poll every 3s
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -148,6 +161,8 @@ function MessagesPage() {
   useEffect(() => {
     if (activeConversationId) {
       loadConversation(activeConversationId);
+      const interval = setInterval(() => loadConversation(activeConversationId), 1500);
+      return () => clearInterval(interval);
     }
   }, [activeConversationId, loadConversation]);
 
@@ -159,6 +174,7 @@ function MessagesPage() {
     try {
       await apiSendMessage({
         receiver_id: activeConversation._userId || activeConversation.id,
+        listing_id: activeConversation.listingId || undefined,
         body: text,
       });
 
