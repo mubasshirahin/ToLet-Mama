@@ -101,6 +101,7 @@ export default function LandingPage() {
           <Link to="/" className="font-serif text-lg font-black uppercase tracking-tight" style={{ color: "var(--theme-ink)" }}>
             To-Let Mama
           </Link>
+          <ThemeToggle compact className="md:hidden" />
           <div className="hidden items-center gap-6 md:flex">
             {["Features", "How It Works", "Listings", "Pricing"].map((l) => (
               <a key={l} href={`#${l.toLowerCase().replace(/\s/g, "-")}`}

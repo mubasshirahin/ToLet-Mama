@@ -113,9 +113,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
           </Link>
 
           {/* Theme toggle */}
-          <div className="hidden sm:block">
-            <ThemeToggle compact />
-          </div>
+          <ThemeToggle compact />
 
           {/* Profile dropdown */}
           <div ref={profileRef} className="relative">
