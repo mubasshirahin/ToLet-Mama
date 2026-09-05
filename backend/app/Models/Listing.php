@@ -18,9 +18,12 @@ class Listing extends Model
         'price',
         'location',
         'type',
+        'gender',
         'status',
         'description',
         'images',
+        'washroom_images',
+        'balcony_images',
         'highlights',
         'specs',
         'amenities',
@@ -31,6 +34,8 @@ class Listing extends Model
 
     protected $casts = [
         'images' => 'array',
+        'washroom_images' => 'array',
+        'balcony_images' => 'array',
         'highlights' => 'array',
         'specs' => 'array',
         'amenities' => 'array',
