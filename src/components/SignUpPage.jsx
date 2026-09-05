@@ -107,7 +107,11 @@ function SignUpPage() {
         setSubmitMessage({ type: "success", text: `Account ready, ${firstName}! Redirecting to your dashboard...` });
         setTimeout(() => navigate("/dashboard"), 800);
       } catch (err) {
-        const msg = err.response?.data?.message || "Google sign-up failed. Please try again.";
+        const msg = err.response?.data?.message || (
+          err.request
+            ? "The backend is not running. Start Docker and run `docker compose up --build`, then try Google sign-up again."
+            : "Google sign-up failed. Please try again."
+        );
         setSubmitMessage({ type: "error", text: msg });
       } finally {
         setIsSubmitting(false);
