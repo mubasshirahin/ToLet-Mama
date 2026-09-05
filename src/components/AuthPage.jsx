@@ -104,12 +104,12 @@ function AuthPage() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await loginUser({ email, password });
+      await loginUser({ email, password, role: role.toLowerCase() });
       setSubmitMessage({
         type: "success",
         text: `Welcome back, ${role}! Redirecting to your dashboard...`,
       });
-      setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+      setTimeout(() => navigate("/dashboard"), 800);
     } catch (err) {
       const msg =
         err.response?.data?.message || "Something went wrong. Please try again.";
@@ -128,13 +128,13 @@ function AuthPage() {
     if (user) {
       try {
         setIsSubmitting(true);
-        await loginWithGoogle(user.credential);
+        await loginWithGoogle(user.credential, role.toLowerCase());
         const firstName = user.name?.split(" ")[0] || role;
         setSubmitMessage({
           type: "success",
           text: `Welcome back, ${firstName}! Redirecting to your dashboard...`,
         });
-        setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+        setTimeout(() => navigate("/dashboard"), 800);
       } catch (err) {
         const msg =
           err.response?.data?.message ||
@@ -147,8 +147,6 @@ function AuthPage() {
   };
 
   useEffect(() => {
-    if (role !== ROLES.STUDENT) return;
-
     if (googleBtnRef.current) {
       googleBtnRef.current.innerHTML = "";
     }
@@ -546,6 +544,13 @@ function AuthPage() {
               >
                 {isSubmitting ? "Verifying Credentials..." : `Sign In as Owner`}
               </motion.button>
+              <div className="relative flex items-center justify-center py-4">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderColor: "var(--theme-border)" }} /></div>
+                <span className="relative px-3 font-serif text-xs uppercase tracking-[0.15em]" style={{ background: "var(--theme-surface-2)", color: "var(--theme-ink-muted)" }}>or continue with Google (any Gmail)</span>
+              </div>
+              <div className="flex justify-center">
+                <div id="google-signin-btn" ref={googleBtnRef} className="min-h-[44px] min-w-[240px] flex justify-center" />
+              </div>
             </form>
           )}
 
@@ -575,6 +580,7 @@ function AuthPage() {
                   className="min-h-[44px] min-w-[240px] flex justify-center"
                 />
               </div>
+              <p className="text-center font-serif text-xs" style={{ color: "var(--theme-ink-faded)" }}>Owner can use any Gmail — select Owner tab above</p>
             </div>
           )}
 

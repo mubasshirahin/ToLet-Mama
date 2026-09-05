@@ -40,27 +40,28 @@ api.interceptors.response.use(
 );
 
 // ---- Auth ----
-export async function registerUser({ name, email, password }) {
+export async function registerUser({ name, email, password, role }) {
   const { data } = await api.post("/auth/register", {
     name,
     email,
     password,
     password_confirmation: password,
+    role,
   });
   localStorage.setItem("toletmama.api_token", data.token);
   localStorage.setItem("toletmama.api_user", JSON.stringify(data.user));
   return data;
 }
 
-export async function loginUser({ email, password }) {
-  const { data } = await api.post("/auth/login", { email, password });
+export async function loginUser({ email, password, role }) {
+  const { data } = await api.post("/auth/login", { email, password, role });
   localStorage.setItem("toletmama.api_token", data.token);
   localStorage.setItem("toletmama.api_user", JSON.stringify(data.user));
   return data;
 }
 
-export async function loginWithGoogle(credential) {
-  const { data } = await api.post("/auth/google", { credential });
+export async function loginWithGoogle(credential, role) {
+  const { data } = await api.post("/auth/google", { credential, role });
   localStorage.setItem("toletmama.api_token", data.token);
   localStorage.setItem("toletmama.api_user", JSON.stringify(data.user));
   return data;
@@ -107,6 +108,21 @@ export async function fetchMyListings() {
   return data;
 }
 
+export async function fetchDraft() {
+  const { data } = await api.get("/my/draft");
+  return data;
+}
+
+export async function saveDraft(draftData) {
+  const { data } = await api.post("/my/draft", { data: draftData });
+  return data;
+}
+
+export async function deleteDraft() {
+  const { data } = await api.delete("/my/draft");
+  return data;
+}
+
 // ---- Dashboard ----
 export async function fetchDashboardStats() {
   const { data } = await api.get("/dashboard/stats");
@@ -137,6 +153,11 @@ export async function recordListingView(listingId) {
 
 export async function fetchListingMonthlyViews(listingId) {
   const { data } = await api.get(`/listings/${listingId}/views/monthly`);
+  return data;
+}
+
+export async function fetchInterestedUsers(listingId) {
+  const { data } = await api.get(`/listings/${listingId}/interested`);
   return data;
 }
 
