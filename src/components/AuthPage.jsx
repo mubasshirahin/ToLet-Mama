@@ -138,7 +138,9 @@ function AuthPage() {
       } catch (err) {
         const msg =
           err.response?.data?.message ||
-          "Google sign-in failed. Please try again.";
+          (err.request
+            ? "The backend is not running. Start Docker and run `docker compose up --build`, then try Google sign-in again."
+            : "Google sign-in failed. Please try again.");
         setSubmitMessage({ type: "error", text: msg });
       } finally {
         setIsSubmitting(false);
