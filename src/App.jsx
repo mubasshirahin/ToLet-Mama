@@ -9,6 +9,7 @@ import MessagesPage from "./components/MessagesPage";
 import ProfilePage from "./components/ProfilePage";
 import ListingDetailPage from "./components/ListingDetailPage";
 import ListingFormPage from "./components/ListingFormPage";
+import SavedPage from "./components/SavedPage";
 import ThemeToggle from "./components/ThemeToggle";
 import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
@@ -39,6 +40,10 @@ function App() {
             <Route
               path="/messages"
               element={<AppLayout><MessagesPage /></AppLayout>}
+            />
+            <Route
+              path="/saved"
+              element={<AppLayout><SavedPage /></AppLayout>}
             />
             <Route
               path="/profile"
