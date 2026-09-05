@@ -22,17 +22,8 @@ const ProfilePage = function ProfilePage() {
   const location = useLocation();
   const fileInputRef = useRef(null);
 
-  // Role comes from navigation state or defaults to Student
-  // (read from localStorage as fallback)
-  const initialRole = useMemo(() => {
-    if (location.state?.role) return location.state.role;
-    try {
-      return localStorage.getItem("toletmama.profile.currentRole") || "Student";
-    } catch {
-      return "Student";
-    }
-  }, [location.state?.role]);
-  const [role] = useState(initialRole);
+  // Role comes from backend /profile or /auth/me - single source of truth
+  const [role, setRole] = useState("Student");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -72,9 +63,12 @@ const ProfilePage = function ProfilePage() {
           bio: data.bio || "",
         }));
         setAvatarPreview(data.avatar || "");
+        const backendRole = data.role ? (data.role === 'owner' ? 'Owner' : 'Student') : 'Student';
+        setRole(backendRole);
         // Sync real backend data back to localStorage
         try {
           localStorage.setItem("toletmama.api_user", JSON.stringify(data));
+          localStorage.setItem("toletmama.profile.currentRole", backendRole);
         } catch { /* ignore */ }
         setIsLoading(false);
       })

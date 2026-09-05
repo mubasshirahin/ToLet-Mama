@@ -11,8 +11,8 @@ function getClientId() {
 
 function isEduEmail(email) {
   if (!email) return false;
-  const domain = email.split("@")[1];
-  return domain?.toLowerCase().endsWith(".edu");
+  const domain = (email.split("@")[1] || "").toLowerCase();
+  return domain.includes(".edu") || domain.includes(".ac.");
 }
 
 function readStoredProfiles() {
@@ -96,10 +96,10 @@ function handleCredentialResponse(response) {
     credential: response.credential,
   };
 
-  // Enforce .edu email check
-  if (!isEduEmail(user.email)) {
+  // Enforce .edu / .ac check only for Student role; Owner can use any gmail
+  if (currentRole === "Student" && !isEduEmail(user.email)) {
     currentCallback(
-      new Error("Only .edu email addresses are allowed. Please sign in with your institutional email."),
+      new Error("Student login requires a university email (.edu / .ac.bd). Please use your institutional email or sign in as Owner."),
       null
     );
     currentCallback = null;

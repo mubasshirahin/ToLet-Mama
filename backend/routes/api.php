@@ -38,14 +38,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/listings/{listing}', [ListingController::class, 'destroy']);
     Route::get('/my/listings', [ListingController::class, 'my']);
 
+    // Listing draft — server-side (no localStorage)
+    Route::get('/my/draft', [ListingController::class, 'getDraft']);
+    Route::post('/my/draft', [ListingController::class, 'saveDraft']);
+    Route::delete('/my/draft', [ListingController::class, 'deleteDraft']);
+
     // Favorites
     Route::get('/favorites', [FavoritesController::class, 'index']);
     Route::post('/favorites/{listing}', [FavoritesController::class, 'toggle']);
     Route::delete('/favorites/{listing}', [FavoritesController::class, 'destroy']);
 
-    // Listing views
+    // Listing views & interested
     Route::post('/listings/{listing}/view', [ListingViewController::class, 'record']);
     Route::get('/listings/{listing}/views/monthly', [ListingViewController::class, 'monthlyCount']);
+    Route::get('/listings/{listing}/interested', [ListingController::class, 'interested']);
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index']);

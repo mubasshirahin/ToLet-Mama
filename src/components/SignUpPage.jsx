@@ -75,13 +75,18 @@ function SignUpPage() {
     e.preventDefault();
     setSubmitMessage(null);
     if (!validate()) return;
+    // Extra edu check for student on client side (server also validates)
+    if (role.toLowerCase() === 'student' && !email.toLowerCase().includes('.edu') && !email.toLowerCase().includes('.ac.')) {
+      setSubmitMessage({ type: "error", text: "Student registration requires a university email (.edu / .ac.bd)." });
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await registerUser({ name, email, password });
+      await registerUser({ name, email, password, role: role.toLowerCase() });
       setSubmitMessage({ type: "success", text: "Account created! Redirecting to your dashboard..." });
-      setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+      setTimeout(() => navigate("/dashboard"), 800);
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.errors?.password?.[0] || "Something went wrong. Please try again.";
+      const msg = err.response?.data?.message || err.response?.data?.errors?.email?.[0] || err.response?.data?.errors?.password?.[0] || "Something went wrong. Please try again.";
       setSubmitMessage({ type: "error", text: msg });
     } finally {
       setIsSubmitting(false);
@@ -97,10 +102,10 @@ function SignUpPage() {
     if (user) {
       try {
         setIsSubmitting(true);
-        await loginWithGoogle(user.credential);
+        await loginWithGoogle(user.credential, role.toLowerCase());
         const firstName = user.name?.split(" ")[0] || role;
         setSubmitMessage({ type: "success", text: `Account ready, ${firstName}! Redirecting to your dashboard...` });
-        setTimeout(() => navigate("/dashboard", { state: { role } }), 800);
+        setTimeout(() => navigate("/dashboard"), 800);
       } catch (err) {
         const msg = err.response?.data?.message || "Google sign-up failed. Please try again.";
         setSubmitMessage({ type: "error", text: msg });
@@ -111,8 +116,6 @@ function SignUpPage() {
   };
 
   useEffect(() => {
-    if (role !== ROLES.STUDENT) return;
-
     if (googleBtnRef.current) {
       googleBtnRef.current.innerHTML = "";
     }
@@ -320,16 +323,26 @@ function SignUpPage() {
                 {isSubmitting ? "Creating account..." : `Create ${role} Account`}
               </motion.button>
             </motion.div>
+            <motion.div variants={itemVariants}>
+              <div className="relative flex items-center justify-center py-4">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderColor: "var(--theme-border)" }} /></div>
+                <span className="relative px-3 font-serif text-xs uppercase" style={{ background: "var(--theme-surface)", color: "var(--theme-ink-muted)" }}>or continue with Google</span>
+              </div>
+              <div className="flex justify-center">
+                <div id="google-signup-btn" ref={googleBtnRef} />
+              </div>
+              <p className="mt-2 text-center font-serif text-xs" style={{ color: "var(--theme-ink-faded)" }}>{role === ROLES.STUDENT ? "Student needs .edu / .ac.bd email" : "Owner can use any Gmail"}</p>
+            </motion.div>
           </motion.form>
         )}
 
-        {/* ── Student: Google Sign-In Only ── */}
+        {/* ── Student: Google Sign-In Only (alternative view when not owner) ── */}
         {role === ROLES.STUDENT && (
           <>
             <motion.div variants={itemVariants} className="mb-6">
               <div className="glass-pane rounded-2xl p-4 text-center">
                 <p className="font-serif text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "var(--theme-ink-muted)" }}>
-                  Sign up with your institutional (.edu) email
+                  Or sign up instantly with Google (.edu required)
                 </p>
               </div>
             </motion.div>

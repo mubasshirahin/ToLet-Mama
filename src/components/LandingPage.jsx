@@ -23,13 +23,7 @@ const steps = [
   { num: "04", title: "Move In", desc: "Chat directly, schedule visits, and finalise your rental — all on the platform." },
 ];
 
-const sampleListings = [
-  { id: 1, title: "Luxury Studio — Gulshan", price: "BDT 25,000/mo", img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop" },
-  { id: 2, title: "3BR Apartment — Banani", price: "BDT 45,000/mo", img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=600&auto=format&fit=crop" },
-  { id: 3, title: "Student Room — Dhanmondi", price: "BDT 8,000/mo", img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=600&auto=format&fit=crop" },
-  { id: 4, title: "Family Flat — Mirpur", price: "BDT 18,000/mo", img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=600&auto=format&fit=crop" },
-  { id: 5, title: "Penthouse — Baridhara", price: "BDT 85,000/mo", img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600&auto=format&fit=crop" },
-];
+const sampleListings = [];
 
 const testimonials = [
   { name: "Rafsan Islam", role: "Student, BUET", text: "Found my perfect room near campus in just 3 days. The verified listings gave me peace of mind.", initials: "RI" },
