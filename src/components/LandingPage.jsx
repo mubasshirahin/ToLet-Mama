@@ -435,8 +435,8 @@ export default function LandingPage() {
             </div>
 
             {[
-              { title: "Company", links: [{ label: "About", to: "#" }, { label: "Careers", to: "#" }, { label: "Press", to: "#" }, { label: "Blog", to: "#" }] },
-              { title: "Support", links: [{ label: "Help Center", to: "#" }, { label: "Safety", to: "#" }, { label: "Community", to: "#" }, { label: "Contact", to: "#" }] },
+              { title: "Company", links: [{ label: "About", to: "/about" }, { label: "Careers", to: "#" }, { label: "Press", to: "#" }, { label: "Blog", to: "#" }] },
+              { title: "Support", links: [{ label: "Help Center", to: "/help" }, { label: "Safety", to: "/guidelines" }, { label: "Community", to: "#" }, { label: "Contact", to: "#" }] },
               { title: "Legal", links: [{ label: "Privacy", to: "#" }, { label: "Terms", to: "#" }, { label: "Cookies", to: "#" }, { label: "Accessibility", to: "#" }] },
               { title: "Pages", links: [{ label: "Sign In", to: "/auth" }, { label: "Subscribe", to: "/signup" }, { label: "Dashboard", to: "/dashboard" }, { label: "Listings", to: "#listings" }] },
             ].map((col) => (

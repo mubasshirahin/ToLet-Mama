@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchDashboardStats, fetchFavorites, fetchListings, getCurrentUser, toggleFavorite } from "../lib/api";
+import { fetchAllListings, fetchDashboardStats, fetchFavorites, getCurrentUser, removeFavorite, saveFavorite } from "../lib/api";
 
 const SAVED_IDS_KEY = "toletmama.saved_ids";
 
@@ -260,10 +260,9 @@ function DashboardPage() {
     if (!isAuthed) return;
     let cancelled = false;
     setIsLoadingListings(true);
-    fetchListings({ page: 1 })
-      .then((res) => {
+    fetchAllListings()
+      .then((raw) => {
         if (!cancelled) {
-          const raw = res.data || [];
           setListings(raw.map(normalizeListing));
         }
       })
@@ -297,8 +296,12 @@ function DashboardPage() {
     setSavedIds(nextIds);
     writeSavedIds(nextIds);
     try {
-      const res = await toggleFavorite(listingId);
-      const serverIds = res.saved ? [...new Set(nextIds)] : nextIds.filter((value) => value !== id);
+      const res = wasSaved
+        ? await removeFavorite(listingId)
+        : await saveFavorite(listingId);
+      const serverIds = res.saved
+        ? [...new Set([...nextIds, id])]
+        : nextIds.filter((value) => value !== id);
       setSavedIds(serverIds);
       writeSavedIds(serverIds);
     } catch {

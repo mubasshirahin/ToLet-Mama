@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, MapPin, Sparkles, Users } from "lucide-react";
-import { fetchFavorites, fetchListing, toggleFavorite } from "../lib/api";
+import { fetchFavorites, removeFavorite } from "../lib/api";
 
 const SAVED_IDS_KEY = "toletmama.saved_ids";
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1522708323590?w=1200&h=900&fit=crop";
@@ -38,8 +38,7 @@ export default function SavedPage() {
       .then(async (res) => {
         const ids = (res.saved_ids || []).map(String);
         writeSavedIds(ids);
-        const savedListings = await Promise.all(ids.map((id) => fetchListing(id).catch(() => null)));
-        if (!cancelled) setListings(savedListings.filter(Boolean).map(normalizeListing));
+        if (!cancelled) setListings((res.listings || []).map(normalizeListing));
       })
       .catch(() => {
         if (!cancelled) setListings([]);
@@ -57,7 +56,7 @@ export default function SavedPage() {
     const nextIds = readSavedIds().filter((value) => value !== id);
     writeSavedIds(nextIds);
     try {
-      await toggleFavorite(listingId);
+      await removeFavorite(listingId);
     } catch {
       setListings(previous);
       writeSavedIds([...nextIds, id]);

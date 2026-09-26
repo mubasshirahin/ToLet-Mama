@@ -84,6 +84,23 @@ export async function fetchListings(params = {}) {
   return data;
 }
 
+export async function fetchAllListings(params = {}) {
+  const firstPage = await fetchListings({ ...params, page: 1 });
+  const listings = [...(firstPage.data || [])];
+  const lastPage = Number(firstPage.last_page) || 1;
+
+  if (lastPage > 1) {
+    const remainingPages = await Promise.all(
+      Array.from({ length: lastPage - 1 }, (_, index) =>
+        fetchListings({ ...params, page: index + 2 })
+      )
+    );
+    remainingPages.forEach((page) => listings.push(...(page.data || [])));
+  }
+
+  return listings;
+}
+
 export async function fetchListing(id) {
   const { data } = await api.get(`/listings/${id}`);
   return data;
@@ -131,17 +148,17 @@ export async function fetchDashboardStats() {
 
 // ---- Favorites ----
 export async function fetchFavorites() {
-  const { data } = await api.get("/favorites");
+  const { data } = await api.get("/users/favorites");
   return data;
 }
 
-export async function toggleFavorite(listingId) {
-  const { data } = await api.post(`/favorites/${listingId}`);
+export async function saveFavorite(listingId) {
+  const { data } = await api.post(`/users/favorites/${listingId}`);
   return data;
 }
 
 export async function removeFavorite(listingId) {
-  const { data } = await api.delete(`/favorites/${listingId}`);
+  const { data } = await api.delete(`/users/favorites/${listingId}`);
   return data;
 }
 

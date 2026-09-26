@@ -10,10 +10,10 @@ class ListingSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => bcrypt('password')]
-        );
+       $user = User::firstOrCreate(
+            ['email' => 'demo-owner@toletmama.local'],
+            ['name' => 'Demo Owner', 'password' => 'password', 'role' => 'owner']
+       );
 
         $listings = [
             [
@@ -203,8 +203,11 @@ class ListingSeeder extends Seeder
             ],
         ];
 
-        foreach ($listings as $data) {
-            Listing::create([...$data, 'user_id' => $user->id]);
-        }
+       foreach ($listings as $data) {
+            Listing::firstOrCreate(
+                ['user_id' => $user->id, 'title' => $data['title']],
+                $data
+            );
+       }
     }
 }
