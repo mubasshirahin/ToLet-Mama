@@ -229,6 +229,7 @@ function DashboardPage() {
   const [dashStats, setDashStats] = useState({ total_listings: 0, active_chats: 0, saved_properties: 0, monthly_visits: 0 });
   const [savedIds, setSavedIds] = useState(() => readSavedIds());
   const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem("toletmama.api_token"));
+  const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("toletmama.api_token")) {
@@ -444,6 +445,7 @@ function DashboardPage() {
     setSearchParams({}, { replace: true });
     setSearchDraft("");
     setMobileFiltersOpen(false);
+    setDesktopFiltersOpen(false);
   };
 
 
@@ -565,9 +567,16 @@ function DashboardPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <motion.button
                     type="button"
-                    onClick={() => setMobileFiltersOpen(true)}
+                    onClick={() => {
+                      if (window.matchMedia("(min-width: 1024px)").matches) {
+                        setDesktopFiltersOpen((open) => !open);
+                      } else {
+                        setMobileFiltersOpen(true);
+                      }
+                    }}
                     whileTap={{ scale: 0.97, y: 2 }}
-                    className="btn-coupon-clip px-3 py-1.5 text-xs lg:hidden"
+                    className="btn-coupon-clip px-3 py-1.5 text-xs"
+                    aria-expanded={desktopFiltersOpen || mobileFiltersOpen}
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
@@ -595,6 +604,35 @@ function DashboardPage() {
                   ))}
                 </div>
               </motion.div>
+
+              <AnimatePresence>
+                {desktopFiltersOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="hidden overflow-hidden lg:block"
+                  >
+                    <div className="glass-pane rounded-2xl p-5">
+                      <ListingFilters
+                        filters={filters}
+                        searchDraft={searchDraft}
+                        setSearchDraft={setSearchDraft}
+                        priceBands={PRICE_BANDS}
+                        types={catalogOptions.types}
+                        locations={catalogOptions.locations}
+                        amenities={catalogOptions.amenities}
+                        onPriceChange={setPrice}
+                        onTypeChange={setType}
+                        onLocationChange={setLocation}
+                        onSortChange={setSort}
+                        onToggleAmenity={toggleAmenity}
+                        onClear={clearFilters}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Results count */}
               <div className="flex items-center justify-between gap-3 rounded-sm border border-[#5C3A21]/10 bg-[#FAF3E0]/50 px-4 py-2.5">
