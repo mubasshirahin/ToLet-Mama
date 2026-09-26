@@ -133,6 +133,63 @@ button,
   background-color: var(--theme-elevated) !important;
 }
 
+.photo-preview-panel {
+  background: var(--theme-ink);
+  color: var(--theme-bg);
+  border-color: var(--theme-border);
+}
+
+.photo-preview-muted {
+  color: color-mix(in srgb, var(--theme-bg) 75%, var(--theme-ink));
+}
+
+.photo-preview-tile {
+  border-color: color-mix(in srgb, var(--theme-bg) 28%, var(--theme-ink));
+  background: color-mix(in srgb, var(--theme-bg) 10%, transparent);
+}
+
+.photo-preview-tile:hover {
+  border-color: color-mix(in srgb, var(--theme-bg) 55%, var(--theme-ink));
+  background: color-mix(in srgb, var(--theme-bg) 18%, transparent);
+}
+
+.photo-preview-badge,
+.photo-preview-control {
+  background: var(--theme-ink);
+  color: var(--theme-bg);
+}
+
+.photo-preview-icon {
+  color: var(--theme-bg);
+}
+
+.photo-preview-panel [class~="text-[#F4E8C1]"],
+.photo-preview-panel [class~="text-[#F4E8C1]/60"],
+.photo-preview-panel [class~="text-[#F4E8C1]/70"],
+.photo-preview-panel [class~="text-white"] {
+  color: var(--theme-bg) !important;
+}
+
+.photo-preview-panel [class~="border-[#F4E8C1]/30"] {
+  border-color: color-mix(in srgb, var(--theme-bg) 28%, var(--theme-ink)) !important;
+}
+
+.photo-preview-panel [class~="border-[#F4E8C1]/60"]:hover {
+  border-color: color-mix(in srgb, var(--theme-bg) 55%, var(--theme-ink)) !important;
+}
+
+.photo-preview-panel [class~="bg-[#FAF3E0]/10"] {
+  background: color-mix(in srgb, var(--theme-bg) 10%, transparent) !important;
+}
+
+.photo-preview-panel [class~="bg-[#FAF3E0]/20"]:hover {
+  background: color-mix(in srgb, var(--theme-bg) 18%, transparent) !important;
+}
+
+.photo-preview-panel .bg-amber-400[class~="text-[#2C1810]"] {
+  color: #2C1810 !important;
+}
+
 .text-\[\#2C1810\] {
   color: var(--theme-ink) !important;
 }
