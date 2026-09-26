@@ -39,9 +39,9 @@ const NAV_ITEMS = [
     section: "Others",
     items: [
       { label: "Profile", icon: User, to: "/profile" },
-      { label: "Help Center", icon: LifeBuoy, to: "#" },
-      { label: "Guidelines", icon: FileText, to: "#" },
-      { label: "About", icon: HelpCircle, to: "#" },
+      { label: "Help Center", icon: LifeBuoy, to: "/help" },
+      { label: "Guidelines", icon: FileText, to: "/guidelines" },
+      { label: "About", icon: HelpCircle, to: "/about" },
     ],
   },
 ];

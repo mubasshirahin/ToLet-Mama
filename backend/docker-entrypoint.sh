@@ -15,4 +15,9 @@ php artisan view:cache
 # Run migrations
 php artisan migrate --force
 
+# Populate a fresh local database with browseable demo listings.
+if [ "${APP_ENV:-local}" = "local" ] && [ "${SEED_DEMO_DATA:-true}" = "true" ]; then
+    php artisan db:seed --class=ListingSeeder --force
+fi
+
 exec "$@"

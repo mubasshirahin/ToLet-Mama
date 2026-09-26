@@ -1,7 +1,6 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: toletmama-mysql
     restart: unless-stopped
     env_file:
       - ./docker.env
@@ -18,7 +17,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: toletmama-backend
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -36,8 +37,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: toletmama-frontend
     restart: unless-stopped
+    env_file:
+      - ./.env
     working_dir: /app
     ports:
       - "5173:5173"
@@ -48,9 +50,6 @@ services:
       - ./package.json:/app/package.json
       - ./.env:/app/.env
       - frontend_node_modules:/app/node_modules
-    environment:
-      - VITE_API_URL=http://localhost:8000/api
-      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
     command: sh -c "npm run dev -- --host 0.0.0.0"
 
 volumes:

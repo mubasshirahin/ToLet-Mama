@@ -10,6 +10,9 @@ import ProfilePage from "./components/ProfilePage";
 import ListingDetailPage from "./components/ListingDetailPage";
 import ListingFormPage from "./components/ListingFormPage";
 import SavedPage from "./components/SavedPage";
+import HelpCenterPage from "./components/HelpCenterPage";
+import GuidelinesPage from "./components/GuidelinesPage";
+import AboutPage from "./components/AboutPage";
 import ThemeToggle from "./components/ThemeToggle";
 import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
@@ -48,6 +51,18 @@ function App() {
             <Route
               path="/profile"
               element={<AppLayout><ProfilePage /></AppLayout>}
+            />
+            <Route
+              path="/help"
+              element={<AppLayout><HelpCenterPage /></AppLayout>}
+            />
+            <Route
+              path="/guidelines"
+              element={<AppLayout><GuidelinesPage /></AppLayout>}
+            />
+            <Route
+              path="/about"
+              element={<AppLayout><AboutPage /></AppLayout>}
             />
             <Route
               path="/listings/new"

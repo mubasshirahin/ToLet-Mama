@@ -22,7 +22,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchListing, fetchListings, fetchFavorites, toggleFavorite, recordListingView, fetchInterestedUsers, sendMessage } from "../lib/api";
+import { fetchListing, fetchListings, fetchFavorites, saveFavorite, removeFavorite, recordListingView, fetchInterestedUsers, sendMessage } from "../lib/api";
 
 
 
@@ -165,7 +165,9 @@ function ListingDetailPage() {
   const handleFavorite = async () => {
     if (!listing) return;
     try {
-      const res = await toggleFavorite(listing.id);
+      const res = isFavorite
+        ? await removeFavorite(listing.id)
+        : await saveFavorite(listing.id);
       setFavorites((current) =>
         res.saved
           ? [...current, listing.id]

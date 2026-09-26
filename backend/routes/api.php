@@ -47,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [FavoritesController::class, 'index']);
     Route::post('/favorites/{listing}', [FavoritesController::class, 'toggle']);
     Route::delete('/favorites/{listing}', [FavoritesController::class, 'destroy']);
+    Route::get('/users/favorites', [FavoritesController::class, 'index']);
+    Route::post('/users/favorites/{listingId}', [FavoritesController::class, 'store'])->whereNumber('listingId');
+    Route::delete('/users/favorites/{listingId}', [FavoritesController::class, 'destroy'])->whereNumber('listingId');
 
     // Listing views & interested
     Route::post('/listings/{listing}/view', [ListingViewController::class, 'record']);
