@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -221,7 +221,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userRole, setUserRole] = useState(() => {
-    try { const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}"); return u.role === 'owner' ? 'Owner' : 'Student'; } catch { return 'Student'; }
+    try { const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}"); return String(u.role).toLowerCase() === 'owner' ? 'Owner' : 'Student'; } catch { return 'Student'; }
   });
   const role = userRole;
   const [listings, setListings] = useState(() => []);
@@ -241,7 +241,7 @@ function DashboardPage() {
       .then((user) => {
         if (!cancelled) {
           setIsAuthed(true);
-          const r = user.role === 'owner' ? 'Owner' : 'Student';
+          const r = String(user.role).toLowerCase() === 'owner' ? 'Owner' : 'Student';
           setUserRole(r);
           try { localStorage.setItem("toletmama.api_user", JSON.stringify(user)); } catch {}
         }
@@ -451,6 +451,7 @@ function DashboardPage() {
     setDesktopFiltersOpen(false);
   };
 
+  if (role === "Owner") return <Navigate to="/my-listings" replace />;
 
   return (
       <div className="p-6 lg:p-8">

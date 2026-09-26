@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   {
     section: "Main",
     items: [
-      { label: "Browse Listings", icon: LayoutDashboard, to: "/dashboard" },
+      { label: "Browse Listings", icon: LayoutDashboard, to: "/dashboard", role: "Student" },
       { label: "Messages", icon: Mail, to: "/messages", badge: 3 },
       { label: "Notifications", icon: Bell, to: "/notifications", badge: 5 },
     ],
