@@ -921,14 +921,14 @@ function ListingFormPage() {
               </ul>
             </div>
 
-            <div className="border-2 border-[#5C3A21]/20 bg-[#2C1810] p-5 text-[#FAF3E0] shadow-[4px_4px_0px_rgba(44,24,16,0.08)] sm:p-6">
+            <div className="photo-preview-panel border-2 p-5 shadow-[4px_4px_0px_rgba(44,24,16,0.08)] sm:p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center border border-[#FAF3E0]/30 bg-[#FAF3E0]/10">
+                <div className="photo-preview-tile flex h-10 w-10 items-center justify-center border">
                   <ImagePlus className="h-5 w-5" strokeWidth={1.8} />
                 </div>
                 <div>
                   <h3 className="font-serif text-lg font-black">Photo preview</h3>
-                  <p className="font-serif text-sm text-[#F4E8C1]/80">
+                  <p className="photo-preview-muted font-serif text-sm">
                     {previewImages.length ? "Uploaded images are shown before publishing." : "Upload images to see previews here."}
                   </p>
                 </div>
@@ -944,13 +944,13 @@ function ListingFormPage() {
                     <div
                       key={stableKey}
                       onClick={() => !image && fileInputRef.current?.click()}
-                      className={`overflow-hidden border transition-colors ${image ? "border-[#F4E8C1]/20 bg-[#FAF3E0]/10" : "cursor-pointer border-[#F4E8C1]/20 bg-[#FAF3E0]/10 hover:border-[#F4E8C1]/40 hover:bg-[#FAF3E0]/20"}`}
+                      className={`photo-preview-tile overflow-hidden border transition-colors ${image ? "" : "cursor-pointer"}`}
                       title={image ? "Click star to set as thumbnail" : "Click to upload room photo"}
                     >
                       {image ? (
                         <div className="group relative">
                           <img src={image} alt={`Room Photo ${index + 1}`} className="h-24 w-full object-cover" />
-                          <span className={`absolute left-1 top-1 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${isThumbnail ? "bg-amber-400 text-[#2C1810]" : "bg-[#2C1810]/70 text-white"}`}>{isThumbnail ? "★ Thumbnail" : `Photo ${index + 1}`}</span>
+                          <span className={`absolute left-1 top-1 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${isThumbnail ? "bg-amber-400 text-[#2C1810]" : "photo-preview-badge"}`}>{isThumbnail ? "★ Thumbnail" : `Photo ${index + 1}`}</span>
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); removeImage(index); }}
@@ -988,7 +988,7 @@ function ListingFormPage() {
                   );
                 })}
               </div>
-              <p className="mt-2 font-serif text-[10px] leading-relaxed" style={{ color: "var(--theme-ink-faded)" }}>First photo is thumbnail. Click <span className="font-bold">Set thumbnail</span> on any other photo to make it cover — only one thumbnail at a time.</p>
+              <p className="photo-preview-muted mt-2 font-serif text-[10px] leading-relaxed">First photo is thumbnail. Click <span className="font-bold">Set thumbnail</span> on any other photo to make it cover — only one thumbnail at a time.</p>
 
               {/* Washroom photo always — separate from room photos. Balcony only when selected */}
               <div className="mt-3 grid grid-cols-2 gap-3">
@@ -1000,7 +1000,7 @@ function ListingFormPage() {
                   {washroomPreview[0] ? (
                     <div className="group relative">
                       <img src={washroomPreview[0]} alt="Washroom" className="h-24 w-full object-cover" />
-                      <span className="absolute left-1 top-1 rounded bg-[#2C1810]/80 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Washroom</span>
+                      <span className="absolute left-1 top-1 rounded photo-preview-badge px-1.5 py-0.5 text-[9px] font-bold uppercase">Washroom</span>
                       <button type="button" onClick={(e) => { e.stopPropagation(); removeWashroomImage(0); }} className="absolute right-1 top-1 bg-[#2C1810] p-1 text-white opacity-80 hover:opacity-100"><X className="h-3 w-3" /></button>
                     </div>
                   ) : (
@@ -1020,7 +1020,7 @@ function ListingFormPage() {
                     {balconyPreview[0] ? (
                       <div className="group relative">
                         <img src={balconyPreview[0]} alt="Balcony" className="h-24 w-full object-cover" />
-                        <span className="absolute left-1 top-1 rounded bg-[#2C1810]/80 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Balcony</span>
+                        <span className="absolute left-1 top-1 rounded photo-preview-badge px-1.5 py-0.5 text-[9px] font-bold uppercase">Balcony</span>
                         <button type="button" onClick={(e) => { e.stopPropagation(); removeBalconyImage(0); }} className="absolute right-1 top-1 bg-[#2C1810] p-1 text-white opacity-80 hover:opacity-100"><X className="h-3 w-3" /></button>
                       </div>
                     ) : (

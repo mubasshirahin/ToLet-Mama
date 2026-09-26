@@ -133,6 +133,71 @@ button,
   background-color: var(--theme-elevated) !important;
 }
 
+.photo-preview-panel {
+  background: #F5EFE4 !important;
+  color: #211710 !important;
+  border-color: #B8A995 !important;
+}
+
+.photo-preview-muted {
+  color: #57483B !important;
+}
+
+.photo-preview-tile {
+  border-color: #B8A995 !important;
+  background: #E8DFD3 !important;
+}
+
+.photo-preview-tile:hover {
+  border-color: #6F5945 !important;
+  background: #DED2C2 !important;
+}
+
+.photo-preview-badge,
+.photo-preview-control {
+  background: #17100C !important;
+  color: #FAF3E0 !important;
+}
+
+.photo-preview-icon {
+  color: #211710 !important;
+}
+
+.photo-preview-panel [class~="text-[#F4E8C1]"],
+.photo-preview-panel [class~="text-[#F4E8C1]/60"],
+.photo-preview-panel [class~="text-[#F4E8C1]/70"] {
+  color: #211710 !important;
+}
+
+.photo-preview-panel [class~="border-[#F4E8C1]/30"] {
+  border-color: #9D8A75 !important;
+}
+
+.photo-preview-panel [class~="border-[#F4E8C1]/60"]:hover {
+  border-color: #6F5945 !important;
+}
+
+.photo-preview-panel [class~="bg-[#FAF3E0]/10"] {
+  background: #E8DFD3 !important;
+}
+
+.photo-preview-panel [class~="bg-[#FAF3E0]/20"]:hover {
+  background: #DED2C2 !important;
+}
+
+.photo-preview-panel [class~="bg-[#2C1810]"] {
+  background: #211710 !important;
+  color: #FAF3E0 !important;
+}
+
+.photo-preview-panel [class~="text-[#2C1810]"] {
+  color: #211710 !important;
+}
+
+.photo-preview-panel .bg-amber-400[class~="text-[#2C1810]"] {
+  color: #2C1810 !important;
+}
+
 .text-\[\#2C1810\] {
   color: var(--theme-ink) !important;
 }
