@@ -4,7 +4,11 @@ set -e
 # Install vendor if autoload is missing
 if [ ! -f "vendor/autoload.php" ]; then
     echo "Installing composer dependencies..."
-    composer install --no-dev --optimize-autoloader --no-interaction
+    if [ "${APP_ENV:-local}" = "production" ]; then
+        composer install --no-dev --optimize-autoloader --no-interaction
+    else
+        composer install --optimize-autoloader --no-interaction
+    fi
 fi
 
 # Cache configuration
