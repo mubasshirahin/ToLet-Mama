@@ -29,6 +29,8 @@ services:
       - backend_cache:/var/www/html/bootstrap/cache
     env_file:
       - ./docker.env
+    environment:
+      GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     depends_on:
       mysql:
         condition: service_healthy

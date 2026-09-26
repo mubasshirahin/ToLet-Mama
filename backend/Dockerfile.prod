@@ -22,6 +22,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+RUN printf 'upload_max_filesize=6M\npost_max_size=32M\nmax_file_uploads=20\n' > /usr/local/etc/php/conf.d/uploads.ini
+
 # Copy application code
 COPY . .
 
@@ -33,9 +35,11 @@ RUN composer install --no-dev --optimize-autoloader \
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
+    && chmod +x /var/www/html/docker-entrypoint.sh \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 EXPOSE 9000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["php-fpm"]

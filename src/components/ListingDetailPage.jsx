@@ -488,7 +488,7 @@ function ListingDetailPage() {
                               </div>
                               <div>
                                 <p className="font-serif text-sm font-bold text-[#2C1810]">{u.name} <span className="text-xs font-normal text-[#A89880]">({u.role})</span></p>
-                                <p className="font-serif text-xs text-[#5C3A21]">{u.email} {u.saved ? "• Saved" : ""} {u.messages ? `• ${u.messages} msgs` : ""} {u.views ? `• ${u.views} views` : ""}</p>
+                                <p className="font-serif text-xs text-[#5C3A21]">{u.messages ? `${u.messages} messages about this listing` : "Contacted about this listing"}</p>
                               </div>
                             </div>
                             <button type="button" onClick={async () => { try { await sendMessage({ receiver_id: u.id, listing_id: listing.id, body: `Hi ${u.name}, thanks for interest in "${listing.title}"`}); setToast(`Message sent to ${u.name}`); setTimeout(()=>setToast(""),1500);} catch { setToast("Failed to message"); setTimeout(()=>setToast(""),1500); }}} className="btn-coupon-clip px-3 py-1 text-xs">

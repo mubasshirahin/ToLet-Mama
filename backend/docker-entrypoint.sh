@@ -8,6 +8,7 @@ if [ ! -f "vendor/autoload.php" ]; then
 fi
 
 # Cache configuration
+php artisan storage:link --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

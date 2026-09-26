@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import SignUpPage from "./components/SignUpPage";
@@ -13,7 +13,7 @@ import SavedPage from "./components/SavedPage";
 import HelpCenterPage from "./components/HelpCenterPage";
 import GuidelinesPage from "./components/GuidelinesPage";
 import AboutPage from "./components/AboutPage";
-import ThemeToggle from "./components/ThemeToggle";
+import NotFoundPage from "./components/NotFoundPage";
 import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import SceneCanvas from "./components/3d/SceneCanvas";
@@ -76,7 +76,7 @@ function App() {
               path="/listings/:id"
               element={<AppLayout><ListingDetailPage /></AppLayout>}
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </BrowserRouter>

@@ -15,6 +15,18 @@ class ListingSeeder extends Seeder
             ['name' => 'Demo Owner', 'password' => 'password', 'role' => 'owner']
        );
 
+       foreach ([
+            ['Demo Student One', 'demo-student-1@toletmama.local'],
+            ['Demo Student Two', 'demo-student-2@toletmama.local'],
+            ['Demo Student Three', 'demo-student-3@toletmama.local'],
+            ['Demo Student Four', 'demo-student-4@toletmama.local'],
+       ] as [$name, $email]) {
+            User::firstOrCreate(
+                ['email' => $email],
+                ['name' => $name, 'password' => 'password', 'role' => 'student']
+            );
+       }
+
         $listings = [
             [
                 'title' => 'Cozy Single Room in Banani',

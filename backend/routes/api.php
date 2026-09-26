@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/listings/{listing}', [ListingController::class, 'update']);
     Route::delete('/listings/{listing}', [ListingController::class, 'destroy']);
     Route::get('/my/listings', [ListingController::class, 'my']);
+    Route::get('/my/listings/analytics', [ListingController::class, 'myAnalytics']);
 
     // Listing draft — server-side (no localStorage)
     Route::get('/my/draft', [ListingController::class, 'getDraft']);

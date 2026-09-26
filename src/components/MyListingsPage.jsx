@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, MapPin, Trash2, PenLine, Eye, PlusCircle, Sparkles, Users } from "lucide-react";
-import { fetchMyListings, deleteListing, getCurrentUser } from "../lib/api";
+import { Building2, MapPin, Trash2, PenLine, Eye, PlusCircle, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { fetchMyListings, fetchMyListingAnalytics, deleteListing, getCurrentUser } from "../lib/api";
 
 export default function MyListingsPage() {
   const navigate = useNavigate();
@@ -11,6 +11,12 @@ export default function MyListingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [analytics, setAnalytics] = useState({});
 
   useEffect(() => {
     if (!localStorage.getItem("toletmama.api_token")) {
@@ -28,20 +34,22 @@ export default function MyListingsPage() {
     });
   }, [navigate]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetchMyListings();
-      const raw = res.data || res || [];
-      setListings(Array.isArray(raw) ? raw : []);
+      const [res, metrics] = await Promise.all([fetchMyListings({ search, status, page }), fetchMyListingAnalytics()]);
+      setListings(res.data || []);
+      setLastPage(res.last_page || 1);
+      setTotal(res.total || 0);
+      setAnalytics(metrics || {});
     } catch {
       setListings([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [search, status, page]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this listing? This cannot be undone.")) return;
@@ -77,8 +85,18 @@ export default function MyListingsPage() {
       </motion.div>
 
       <div className="mb-4 flex items-center justify-between rounded-sm border border-[#5C3A21]/10 bg-[#FAF3E0]/60 px-4 py-3">
-        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">{listings.length} listing{listings.length !== 1 ? "s" : ""} found</p>
+        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">{total} listing{total !== 1 ? "s" : ""} found</p>
         <Link to="/dashboard" className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880] hover:text-[#2C1810]">← Browse all</Link>
+      </div>
+
+      <div className="mb-6 grid gap-3 rounded-2xl glass-pane p-4 sm:grid-cols-[1fr_200px]">
+        <label className="flex items-center gap-2 border border-[#5C3A21]/20 px-3">
+          <Search className="h-4 w-4 text-[#A89880]" />
+          <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search your listings by title or area" className="w-full bg-transparent py-3 text-sm outline-none" />
+        </label>
+        <select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }} className="border border-[#5C3A21]/20 bg-transparent px-3 py-3 text-sm">
+          <option value="">All statuses</option><option value="available">Available</option><option value="booked">Booked</option><option value="pending">Pending</option>
+        </select>
       </div>
 
       {isLoading ? (
@@ -96,9 +114,9 @@ export default function MyListingsPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "var(--theme-surface-2)" }}>
             <Building2 className="h-8 w-8 text-[#A89880]" />
           </div>
-          <h3 className="mt-4 font-serif text-xl font-black text-[#2C1810]">No listings yet</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-[#5C3A21]">You haven't posted any property. Create your first listing to get inquiries from students.</p>
-          <Link to="/listings/new" className="btn-rubber-stamp mt-6 inline-flex px-6 py-3 text-sm">Create Listing</Link>
+          <h3 className="mt-4 font-serif text-xl font-black text-[#2C1810]">{search || status ? "No listings match these filters" : "No listings yet"}</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#5C3A21]">{search || status ? "Try a different search or clear the status filter." : "You haven't posted any property. Create your first listing to get inquiries from students."}</p>
+          {search || status ? <button onClick={() => { setSearch(""); setStatus(""); setPage(1); }} className="btn-coupon-clip mt-6 px-6 py-3 text-sm">Clear filters</button> : <Link to="/listings/new" className="btn-rubber-stamp mt-6 inline-flex px-6 py-3 text-sm">Create Listing</Link>}
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
@@ -118,6 +136,9 @@ export default function MyListingsPage() {
                   <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-[#5C3A21]"><MapPin className="h-3.5 w-3.5" />{l.location}</p>
                   <p className="mt-2 line-clamp-2 text-sm text-[#5C3A21]">{l.description}</p>
                   <div className="mt-3 flex items-center gap-2 text-xs text-[#A89880]"><Users className="h-3.5 w-3.5" />{l.type} • {l.created_at ? new Date(l.created_at).toLocaleDateString() : 'Recently'}</div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-y border-[#5C3A21]/10 py-3 text-xs text-[#5C3A21] sm:grid-cols-4">
+                    <span>{analytics[l.id]?.views_total || 0} views</span><span>{analytics[l.id]?.views_this_month || 0} this month</span><span>{analytics[l.id]?.saved_count || 0} saves</span><span>{analytics[l.id]?.inquiries_count || 0} inquiries</span>
+                  </div>
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     <Link to={`/listings/${l.id}`} className="btn-coupon-clip justify-center px-2 py-2 text-xs"><Eye className="h-3.5 w-3.5" />View</Link>
                     <Link to={`/listings/${l.id}/edit`} state={{ listing: l }} className="btn-coupon-clip justify-center px-2 py-2 text-xs"><PenLine className="h-3.5 w-3.5" />Edit</Link>
@@ -131,6 +152,12 @@ export default function MyListingsPage() {
           })}
         </div>
       )}
+
+      {!isLoading && lastPage > 1 && <nav aria-label="My listings pages" className="mt-6 flex items-center justify-center gap-4">
+        <button disabled={page <= 1} onClick={() => setPage((current) => current - 1)} className="btn-coupon-clip px-4 py-2 disabled:opacity-40"><ChevronLeft className="h-4 w-4" />Previous</button>
+        <span className="text-sm">Page {page} of {lastPage}</span>
+        <button disabled={page >= lastPage} onClick={() => setPage((current) => current + 1)} className="btn-coupon-clip px-4 py-2 disabled:opacity-40">Next<ChevronRight className="h-4 w-4" /></button>
+      </nav>}
 
       {toast && (
         <div className="fixed bottom-4 right-4 z-50 rounded-2xl border-2 border-[#2C1810] bg-[#2C1810] px-4 py-3 text-sm font-bold text-[#FAF3E0] shadow-lg">{toast}</div>

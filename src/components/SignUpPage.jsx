@@ -76,8 +76,11 @@ function SignUpPage() {
     setSubmitMessage(null);
     if (!validate()) return;
     // Extra edu check for student on client side (server also validates)
-    if (role.toLowerCase() === 'student' && !email.toLowerCase().includes('.edu') && !email.toLowerCase().includes('.ac.')) {
-      setSubmitMessage({ type: "error", text: "Student registration requires a university email (.edu / .ac.bd)." });
+    const emailDomain = email.toLowerCase().split("@").pop() || "";
+    const isUniversityEmail = [".edu", ".edu.bd", ".ac.bd", ".ac.uk", ".ac.in"]
+      .some((suffix) => emailDomain.endsWith(suffix));
+    if (role.toLowerCase() === 'student' && !isUniversityEmail) {
+      setSubmitMessage({ type: "error", text: "Student registration requires a university email ending in .edu, .edu.bd, .ac.bd, .ac.uk, or .ac.in." });
       return;
     }
     setIsSubmitting(true);

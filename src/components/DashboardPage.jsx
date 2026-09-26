@@ -111,6 +111,10 @@ function TiltCard({ children, className = "", intensity = 15, glareEnabled = tru
 
   const glareX = useSpring(useTransform(x, [-0.5, 0.5], [0, 100]), { stiffness: 300, damping: 30 });
   const glareOpacity = useSpring(useTransform(y, [-0.5, 0.5], [0.15, 0.05]), { stiffness: 300, damping: 30 });
+  const glareBackground = useTransform(
+    [glareX, glareOpacity],
+    ([gx, go]) => `linear-gradient(115deg, transparent 30%, rgba(212,175,55,${go}) ${gx}%, transparent ${gx + 20}%)`
+  );
 
   const handleMouseMove = useCallback((e) => {
     if (!cardRef.current || scrolling.current) return;
@@ -153,11 +157,7 @@ function TiltCard({ children, className = "", intensity = 15, glareEnabled = tru
         <motion.div
           className="pointer-events-none absolute inset-0 z-10 rounded-[inherit]"
           style={{
-            background: useTransform(
-              [glareX, glareOpacity],
-              ([gx, go]) =>
-                `linear-gradient(115deg, transparent 30%, rgba(212,175,55,${go}) ${gx}%, transparent ${gx + 20}%)`
-            ),
+            background: glareBackground,
           }}
         />
       )}

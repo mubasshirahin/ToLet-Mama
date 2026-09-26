@@ -16,8 +16,13 @@ class AuthController extends Controller
     private function isEduEmail(string $email): bool
     {
         $domain = strtolower(explode('@', $email)[1] ?? '');
-        // Accept .edu, .edu.bd, .ac.bd, .ac.uk etc - any domain containing .edu or .ac.
-        return str_contains($domain, '.edu') || str_contains($domain, '.ac.');
+        foreach (['.edu', '.edu.bd', '.ac.bd', '.ac.uk', '.ac.in'] as $suffix) {
+            if (str_ends_with($domain, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -42,9 +47,7 @@ class AuthController extends Controller
 
         // Verify the Google ID token by calling Google's tokeninfo endpoint
         try {
-            $response = Http::withOptions([
-                'verify' => false,
-            ])->get('https://oauth2.googleapis.com/tokeninfo', [
+            $response = Http::timeout(8)->get('https://oauth2.googleapis.com/tokeninfo', [
                 'id_token' => $validated['credential'],
             ]);
 
