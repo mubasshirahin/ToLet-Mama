@@ -11,6 +11,7 @@ docker-compose.yml
 Dockerfile*
 backend/vendor
 backend/node_modules
+backend/public/storage
 backend/storage/logs/*
 backend/storage/framework/views/*
 backend/bootstrap/cache/*
