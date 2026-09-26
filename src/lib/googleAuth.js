@@ -3,8 +3,9 @@ const CURRENT_ROLE_KEY = "toletmama.profile.currentRole";
 
 function getClientId() {
   const id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  if (!id) {
+  if (!id || id.startsWith("your_")) {
     console.warn("VITE_GOOGLE_CLIENT_ID not set in .env");
+    return "";
   }
   return id;
 }
@@ -12,7 +13,7 @@ function getClientId() {
 function isEduEmail(email) {
   if (!email) return false;
   const domain = (email.split("@")[1] || "").toLowerCase();
-  return domain.includes(".edu") || domain.includes(".ac.");
+  return [".edu", ".edu.bd", ".ac.bd", ".ac.uk", ".ac.in"].some((suffix) => domain.endsWith(suffix));
 }
 
 function readStoredProfiles() {

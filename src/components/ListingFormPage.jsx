@@ -247,13 +247,13 @@ function ListingFormPage() {
     }
   };
 
-  const handleFiles = async (event) => {
+  const addPhotoFiles = async (event, field, categoryLimit) => {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
 
-    const imageFiles = files.filter((file) => file.type.startsWith("image/")).slice(0, 6);
+    const imageFiles = files.filter((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 5 * 1024 * 1024);
     if (!imageFiles.length) {
-      setToast("Please upload image files only.");
+      setToast("Choose JPG, PNG, or WebP images up to 5 MB each.");
       return;
     }
 
@@ -268,17 +268,22 @@ function ListingFormPage() {
       )
     );
 
-    setForm((current) => ({
-      ...current,
-      images: [...current.images, ...previews].slice(0, 6),
-    }));
+    let added = 0;
+    setForm((current) => {
+      const count = (current.images?.length || 0) + (current.washroomImages?.length || 0) + (current.balconyImages?.length || 0);
+      const room = Math.max(0, Math.min(categoryLimit - (current[field]?.length || 0), 5 - count));
+      added = Math.min(room, previews.length);
+      return { ...current, [field]: [...(current[field] || []), ...previews.slice(0, added)] };
+    });
     if (errors.images) {
       setErrors((current) => ({ ...current, images: "" }));
     }
-    setToast("Image preview added.");
+    setToast(added ? `${added} photo${added === 1 ? "" : "s"} added.` : "A listing can have at most 5 photos total.");
     window.setTimeout(() => setToast(""), 1600);
     event.target.value = "";
   };
+
+  const handleFiles = (event) => addPhotoFiles(event, "images", 5);
 
   const removeImage = (index) => {
     setForm((current) => ({
@@ -299,28 +304,10 @@ function ListingFormPage() {
     setTimeout(() => setToast(""), 1600);
   };
 
-  const handleWashroomFiles = async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-    const imageFiles = files.filter((f) => f.type.startsWith("image/")).slice(0, 2);
-    const previews = await Promise.all(imageFiles.map((file) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsDataURL(file); })));
-    setForm((c) => ({ ...c, washroomImages: [...(c.washroomImages || []), ...previews].slice(0, 2) }));
-    setToast("Washroom photo added.");
-    setTimeout(() => setToast(""), 1600);
-    event.target.value = "";
-  };
+  const handleWashroomFiles = (event) => addPhotoFiles(event, "washroomImages", 2);
   const removeWashroomImage = (index) => setForm((c) => ({ ...c, washroomImages: c.washroomImages.filter((_, i) => i !== index) }));
 
-  const handleBalconyFiles = async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-    const imageFiles = files.filter((f) => f.type.startsWith("image/")).slice(0, 2);
-    const previews = await Promise.all(imageFiles.map((file) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsDataURL(file); })));
-    setForm((c) => ({ ...c, balconyImages: [...(c.balconyImages || []), ...previews].slice(0, 2) }));
-    setToast("Balcony photo added.");
-    setTimeout(() => setToast(""), 1600);
-    event.target.value = "";
-  };
+  const handleBalconyFiles = (event) => addPhotoFiles(event, "balconyImages", 2);
   const removeBalconyImage = (index) => setForm((c) => ({ ...c, balconyImages: c.balconyImages.filter((_, i) => i !== index) }));
 
   const specCfg = TYPE_SPEC_CONFIG[form.type] || TYPE_SPEC_CONFIG["Single Room"];
@@ -577,9 +564,9 @@ function ListingFormPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
-          <input ref={washroomFileRef} type="file" accept="image/*" multiple onChange={handleWashroomFiles} className="hidden" />
-          <input ref={balconyFileRef} type="file" accept="image/*" multiple onChange={handleBalconyFiles} className="hidden" />
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFiles} className="hidden" />
+          <input ref={washroomFileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleWashroomFiles} className="hidden" />
+          <input ref={balconyFileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleBalconyFiles} className="hidden" />
           <section className="space-y-6">
             <div className="glass-pane rounded-2xl p-5 sm:p-6">
               <div className="mb-4">

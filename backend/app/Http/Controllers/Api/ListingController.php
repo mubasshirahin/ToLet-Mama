@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Listing;
+use App\Models\ListingView;
+use App\Models\Message;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ListingController extends Controller
 {
@@ -14,7 +17,7 @@ class ListingController extends Controller
     {
         // Increase sort buffer for large base64 image rows (622KB+ per listing)
         try { \DB::statement('SET SESSION sort_buffer_size = 67108864'); \DB::statement('SET SESSION read_rnd_buffer_size = 67108864'); } catch (\Throwable $e) {}
-        $query = Listing::with('user');
+        $query = Listing::with('user')->whereIn('status', ['available', 'booked']);
 
         // Filters
         if ($request->has('type')) {
@@ -26,7 +29,12 @@ class ListingController extends Controller
         }
 
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $validatedStatus = $request->validate(['status' => ['string', 'in:available,booked,pending']])['status'];
+            if ($validatedStatus === 'pending') {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where('status', $validatedStatus);
+            }
         }
 
         if ($request->has('search')) {
@@ -53,6 +61,10 @@ class ListingController extends Controller
 
     public function show(Listing $listing): JsonResponse
     {
+        $viewer = auth('sanctum')->user();
+        if ($listing->status === 'pending' && (!$viewer || $viewer->id !== $listing->user_id)) {
+            abort(404);
+        }
         $listing->load('user');
 
         return response()->json($listing);
@@ -65,6 +77,7 @@ class ListingController extends Controller
             return response()->json(['message' => 'Only owners can create listings. Please register as Owner.'], 403);
         }
 
+        $this->decodeStructuredFields($request);
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'price' => ['required', 'string', 'max:50'],
@@ -73,19 +86,31 @@ class ListingController extends Controller
             'gender' => ['sometimes', 'string', 'in:Male,Female,male,female'],
             'status' => ['sometimes', 'string', 'in:available,booked,pending'],
             'description' => ['sometimes', 'string'],
-            'images' => ['sometimes', 'array'],
-            'images.*' => ['string'],
-            'washroom_images' => ['sometimes', 'array'],
-            'washroom_images.*' => ['string'],
-            'balcony_images' => ['sometimes', 'array'],
-            'balcony_images.*' => ['string'],
+            'images' => ['sometimes', 'array', 'max:5'],
+            'images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_images' => ['sometimes', 'array', 'max:5'],
+            'existing_images.*' => ['string', 'max:2048'],
+            'images_present' => ['sometimes', 'boolean'],
+            'washroom_images' => ['sometimes', 'array', 'max:5'],
+            'washroom_images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_washroom_images' => ['sometimes', 'array', 'max:5'],
+            'existing_washroom_images.*' => ['string', 'max:2048'],
+            'washroom_images_present' => ['sometimes', 'boolean'],
+            'balcony_images' => ['sometimes', 'array', 'max:5'],
+            'balcony_images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_balcony_images' => ['sometimes', 'array', 'max:5'],
+            'existing_balcony_images.*' => ['string', 'max:2048'],
+            'balcony_images_present' => ['sometimes', 'boolean'],
             'highlights' => ['sometimes', 'array'],
             'specs' => ['sometimes', 'array'],
             'amenities' => ['sometimes', 'array'],
             'rules' => ['sometimes', 'array'],
             'nearby' => ['sometimes', 'array'],
-            'available_from' => ['sometimes', 'date'],
+            'available_from' => ['sometimes', 'nullable', 'date'],
         ]);
+
+        $this->validatePhotoLimit($request);
+        $validated = $this->applyPhotoFields($request, $validated, false);
 
         $listing = $request->user()->listings()->create($validated);
         // Clear draft after successful publish
@@ -100,6 +125,7 @@ class ListingController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
+        $this->decodeStructuredFields($request);
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'price' => ['sometimes', 'string', 'max:50'],
@@ -108,16 +134,31 @@ class ListingController extends Controller
             'gender' => ['sometimes', 'string', 'in:Male,Female,male,female'],
             'status' => ['sometimes', 'string', 'in:available,booked,pending'],
             'description' => ['sometimes', 'string'],
-            'images' => ['sometimes', 'array'],
-            'washroom_images' => ['sometimes', 'array'],
-            'balcony_images' => ['sometimes', 'array'],
+            'images' => ['sometimes', 'array', 'max:5'],
+            'images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_images' => ['sometimes', 'array', 'max:5'],
+            'existing_images.*' => ['string', 'max:2048'],
+            'images_present' => ['sometimes', 'boolean'],
+            'washroom_images' => ['sometimes', 'array', 'max:5'],
+            'washroom_images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_washroom_images' => ['sometimes', 'array', 'max:5'],
+            'existing_washroom_images.*' => ['string', 'max:2048'],
+            'washroom_images_present' => ['sometimes', 'boolean'],
+            'balcony_images' => ['sometimes', 'array', 'max:5'],
+            'balcony_images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'existing_balcony_images' => ['sometimes', 'array', 'max:5'],
+            'existing_balcony_images.*' => ['string', 'max:2048'],
+            'balcony_images_present' => ['sometimes', 'boolean'],
             'highlights' => ['sometimes', 'array'],
             'specs' => ['sometimes', 'array'],
             'amenities' => ['sometimes', 'array'],
             'rules' => ['sometimes', 'array'],
             'nearby' => ['sometimes', 'array'],
-            'available_from' => ['sometimes', 'date'],
+            'available_from' => ['sometimes', 'nullable', 'date'],
         ]);
+
+        $this->validatePhotoLimit($request);
+        $validated = $this->applyPhotoFields($request, $validated, true);
 
         $listing->update($validated);
 
@@ -138,9 +179,52 @@ class ListingController extends Controller
     public function my(Request $request): JsonResponse
     {
         try { \DB::statement('SET SESSION sort_buffer_size = 67108864'); \DB::statement('SET SESSION read_rnd_buffer_size = 67108864'); } catch (\Throwable $e) {}
-        $listings = $request->user()->listings()->latest()->paginate(12);
+        $filters = $request->validate([
+            'search' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'status' => ['sometimes', 'nullable', 'string', 'in:available,booked,pending'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+        $query = $request->user()->listings()->latest();
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(fn ($builder) => $builder
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('location', 'like', "%{$search}%"));
+        }
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        $listings = $query->paginate(12);
 
         return response()->json($listings);
+    }
+
+    public function myAnalytics(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $listings = $user->listings()->withCount(['views', 'savedByUsers'])->get(['id']);
+        $listingIds = $listings->pluck('id');
+        $monthlyViews = ListingView::query()
+            ->selectRaw('listing_id, COUNT(*) as aggregate')
+            ->whereIn('listing_id', $listingIds)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->groupBy('listing_id')
+            ->pluck('aggregate', 'listing_id');
+        $inquiries = Message::query()
+            ->selectRaw('listing_id, COUNT(DISTINCT sender_id) as aggregate')
+            ->where('receiver_id', $user->id)
+            ->whereIn('listing_id', $listingIds)
+            ->groupBy('listing_id')
+            ->pluck('aggregate', 'listing_id');
+
+        return response()->json($listings->mapWithKeys(fn ($listing) => [
+            $listing->id => [
+                'views_total' => $listing->views_count,
+                'views_this_month' => (int) ($monthlyViews[$listing->id] ?? 0),
+                'saved_count' => $listing->saved_by_users_count,
+                'inquiries_count' => (int) ($inquiries[$listing->id] ?? 0),
+            ],
+        ]));
     }
 
     // Draft — server-side persistence for Add Listing (no localStorage)
@@ -175,34 +259,63 @@ class ListingController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        // Users who saved/favorited this listing
-        $savedUserIds = \DB::table('saved_listings')->where('listing_id', $listing->id)->pluck('user_id');
-
-        // Users who messaged about this listing (or messaged the owner at all - correlate via listing_id)
-        $messagedUserIds = \App\Models\Message::where('listing_id', $listing->id)->pluck('sender_id')
-            ->merge(\App\Models\Message::where('listing_id', $listing->id)->pluck('receiver_id'));
-
-        // Users who viewed
-        $viewedUserIds = \App\Models\ListingView::where('listing_id', $listing->id)->whereNotNull('user_id')->pluck('user_id');
-
-        $allIds = $savedUserIds->merge($messagedUserIds)->merge($viewedUserIds)->unique()->filter(fn($id) => $id !== $request->user()->id);
-
-        $users = \App\Models\User::whereIn('id', $allIds)->get(['id','name','email','avatar','role'])->map(function($u) use ($listing) {
-            $isSaved = \DB::table('saved_listings')->where('listing_id', $listing->id)->where('user_id', $u->id)->exists();
-            $msgCount = \App\Models\Message::where('listing_id', $listing->id)->where(function($q) use ($u){ $q->where('sender_id',$u->id)->orWhere('receiver_id',$u->id); })->count();
-            $viewCount = \App\Models\ListingView::where('listing_id', $listing->id)->where('user_id', $u->id)->count();
-            return [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'avatar' => $u->avatar,
-                'role' => $u->role ?? 'student',
-                'saved' => $isSaved,
-                'messages' => $msgCount,
-                'views' => $viewCount,
-            ];
-        });
+        // Only students who explicitly contacted the owner appear here. Passive views
+        // and bookmarks are private and are shown only as aggregate analytics.
+        $users = Message::query()
+            ->where('listing_id', $listing->id)
+            ->where('receiver_id', $listing->user_id)
+            ->with('sender:id,name,avatar,role')
+            ->get()
+            ->groupBy('sender_id')
+            ->map(fn ($messages) => [
+                'id' => $messages->first()->sender->id,
+                'name' => $messages->first()->sender->name,
+                'avatar' => $messages->first()->sender->avatar,
+                'role' => $messages->first()->sender->role ?? 'student',
+                'messages' => $messages->count(),
+            ])->values();
 
         return response()->json($users);
+    }
+
+    private function decodeStructuredFields(Request $request): void
+    {
+        foreach (['highlights', 'specs', 'amenities', 'rules', 'nearby'] as $field) {
+            $json = $request->input($field.'_json');
+            if ($json === null) continue;
+            $decoded = json_decode($json, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw ValidationException::withMessages([$field => ['Invalid listing data.']]);
+            }
+            $request->merge([$field => $decoded]);
+        }
+    }
+
+    private function validatePhotoLimit(Request $request): void
+    {
+        $count = 0;
+        foreach (['images', 'washroom_images', 'balcony_images'] as $field) {
+            $count += count($request->file($field, []));
+            $count += count($request->input('existing_'.$field, []));
+        }
+        if ($count > 5) {
+            throw ValidationException::withMessages(['images' => ['A listing can have up to 5 photos total.']]);
+        }
+    }
+
+    private function applyPhotoFields(Request $request, array $validated, bool $updating): array
+    {
+        foreach (['images', 'washroom_images', 'balcony_images'] as $field) {
+            if (!$updating || $request->boolean($field.'_present')) {
+                $urls = array_values($request->input('existing_'.$field, []));
+                foreach ($request->file($field, []) as $file) {
+                    $path = $file->store('listings', 'public');
+                    $urls[] = Storage::disk('public')->url($path);
+                }
+                $validated[$field] = $urls;
+            }
+            unset($validated['existing_'.$field], $validated[$field.'_present']);
+        }
+        return $validated;
     }
 }

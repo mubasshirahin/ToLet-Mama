@@ -106,13 +106,44 @@ export async function fetchListing(id) {
   return data;
 }
 
+async function listingToFormData(listingData, updating = false) {
+  const body = new FormData();
+  const photos = [
+    ["images", listingData.images || []],
+    ["washroom_images", listingData.washroom_images || []],
+    ["balcony_images", listingData.balcony_images || []],
+  ];
+  for (const [key, values] of photos) {
+    body.append(key + "_present", "1");
+    let fileIndex = 0;
+    for (const value of values) {
+      if (value instanceof File) body.append(key + "[]", value);
+      else if (typeof value === "string" && value.startsWith("data:image/")) {
+        const blob = await (await fetch(value)).blob();
+        const extension = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
+        body.append(key + "[]", new File([blob], "listing-" + key + "-" + fileIndex++ + "." + extension, { type: blob.type }));
+      } else if (typeof value === "string" && value) body.append("existing_" + key + "[]", value);
+    }
+  }
+  const structured = new Set(["highlights", "specs", "amenities", "rules", "nearby"]);
+  for (const [key, value] of Object.entries(listingData)) {
+    if (["images", "washroom_images", "balcony_images"].includes(key)) continue;
+    if (structured.has(key)) body.append(key + "_json", JSON.stringify(value ?? []));
+    else if (value !== undefined && value !== null) body.append(key, String(value));
+  }
+  if (updating) body.append("_method", "PUT");
+  return body;
+}
+
 export async function createListing(listingData) {
-  const { data } = await api.post("/listings", listingData);
+  const body = await listingToFormData(listingData);
+  const { data } = await api.post("/listings", body, { headers: { "Content-Type": "multipart/form-data" } });
   return data;
 }
 
 export async function updateListing(id, listingData) {
-  const { data } = await api.put(`/listings/${id}`, listingData);
+  const body = await listingToFormData(listingData, true);
+  const { data } = await api.post(`/listings/${id}`, body, { headers: { "Content-Type": "multipart/form-data" } });
   return data;
 }
 
@@ -120,8 +151,14 @@ export async function deleteListing(id) {
   await api.delete(`/listings/${id}`);
 }
 
-export async function fetchMyListings() {
-  const { data } = await api.get("/my/listings");
+export async function fetchMyListings(params = {}) {
+  const query = Object.fromEntries(Object.entries(params).filter(([, value]) => value !== "" && value !== null && value !== undefined));
+  const { data } = await api.get("/my/listings", { params: query });
+  return data;
+}
+
+export async function fetchMyListingAnalytics() {
+  const { data } = await api.get("/my/listings/analytics");
   return data;
 }
 
