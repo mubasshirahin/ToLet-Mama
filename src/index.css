@@ -134,56 +134,56 @@ button,
 }
 
 .photo-preview-panel {
-  background: var(--theme-ink);
-  color: var(--theme-bg);
-  border-color: var(--theme-border);
+  background: #241811 !important;
+  color: #FAF3E0 !important;
+  border-color: #705B49 !important;
 }
 
 .photo-preview-muted {
-  color: color-mix(in srgb, var(--theme-bg) 75%, var(--theme-ink));
+  color: #D6C6B5 !important;
 }
 
 .photo-preview-tile {
-  border-color: color-mix(in srgb, var(--theme-bg) 28%, var(--theme-ink));
-  background: color-mix(in srgb, var(--theme-bg) 10%, transparent);
+  border-color: #806A57 !important;
+  background: #38291F !important;
 }
 
 .photo-preview-tile:hover {
-  border-color: color-mix(in srgb, var(--theme-bg) 55%, var(--theme-ink));
-  background: color-mix(in srgb, var(--theme-bg) 18%, transparent);
+  border-color: #C0A98F !important;
+  background: #49372A !important;
 }
 
 .photo-preview-badge,
 .photo-preview-control {
-  background: var(--theme-ink);
-  color: var(--theme-bg);
+  background: #17100C !important;
+  color: #FAF3E0 !important;
 }
 
 .photo-preview-icon {
-  color: var(--theme-bg);
+  color: #FAF3E0 !important;
 }
 
 .photo-preview-panel [class~="text-[#F4E8C1]"],
 .photo-preview-panel [class~="text-[#F4E8C1]/60"],
 .photo-preview-panel [class~="text-[#F4E8C1]/70"],
 .photo-preview-panel [class~="text-white"] {
-  color: var(--theme-bg) !important;
+  color: #FAF3E0 !important;
 }
 
 .photo-preview-panel [class~="border-[#F4E8C1]/30"] {
-  border-color: color-mix(in srgb, var(--theme-bg) 28%, var(--theme-ink)) !important;
+  border-color: #806A57 !important;
 }
 
 .photo-preview-panel [class~="border-[#F4E8C1]/60"]:hover {
-  border-color: color-mix(in srgb, var(--theme-bg) 55%, var(--theme-ink)) !important;
+  border-color: #C0A98F !important;
 }
 
 .photo-preview-panel [class~="bg-[#FAF3E0]/10"] {
-  background: color-mix(in srgb, var(--theme-bg) 10%, transparent) !important;
+  background: #38291F !important;
 }
 
 .photo-preview-panel [class~="bg-[#FAF3E0]/20"]:hover {
-  background: color-mix(in srgb, var(--theme-bg) 18%, transparent) !important;
+  background: #49372A !important;
 }
 
 .photo-preview-panel .bg-amber-400[class~="text-[#2C1810]"] {
