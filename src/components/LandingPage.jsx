@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import {
   Search, Shield, TrendingUp, Home, ArrowRight, Check, Plus, Minus, MapPin, Building2, Star,
@@ -78,6 +78,8 @@ function SectionHeading({ label, title }) {
 // ── Main component ───────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [activeFaq, setActiveFaq] = useState(null);
   const { scrollYProgress } = useScroll();
@@ -139,20 +141,22 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.6 }}
-            onClick={(e) => e.preventDefault()}
+            onSubmit={(event) => { event.preventDefault(); navigate(`/listings${query ? `?q=${encodeURIComponent(query)}` : ""}`); }}
             className="mx-auto mt-10 flex max-w-2xl items-center gap-2 rounded-full glass-pane-strong p-2">
             <div className="flex flex-1 items-center gap-2 px-3">
               <Search className="h-4 w-4 shrink-0" style={{ color: "var(--theme-ink-muted)" }} strokeWidth={2} />
               <input
                 type="text"
                 placeholder="Search by area, budget, or amenities…"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
                 className="w-full bg-transparent font-serif text-sm outline-none placeholder:opacity-60"
                 style={{ color: "var(--theme-ink)" }}
               />
             </div>
-            <Link to="/listings" className="shrink-0 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
+            <button type="submit" className="shrink-0 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.15em]" style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}>
               Search
-            </Link>
+            </button>
           </motion.form>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75, duration: 0.6 }}

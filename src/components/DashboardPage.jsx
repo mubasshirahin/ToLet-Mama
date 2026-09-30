@@ -352,6 +352,7 @@ function DashboardPage() {
       q: searchParams.get("q") ?? "",
       price: searchParams.get("price") ?? "any",
       type: searchParams.get("type") ?? "any",
+      gender: searchParams.get("gender") ?? "any",
       location: searchParams.get("loc") ?? "any",
       amenities: amenities ? amenities.split(",").filter(Boolean) : [],
       sort: searchParams.get("sort") ?? "relevance",
@@ -363,6 +364,7 @@ function DashboardPage() {
     (filters.q ? 1 : 0) +
     (filters.price !== "any" ? 1 : 0) +
     (filters.type !== "any" ? 1 : 0) +
+    (filters.gender !== "any" ? 1 : 0) +
     (filters.location !== "any" ? 1 : 0) +
     filters.amenities.length +
     (filters.sort !== "relevance" ? 1 : 0) +
@@ -400,13 +402,14 @@ function DashboardPage() {
       return haystack.includes(searchTerm);
     };
     const matchesType = (listing) => filters.type === "any" || listing.type === filters.type;
+    const matchesGender = (listing) => filters.gender === "any" || String(listing.gender || "any").toLowerCase() === filters.gender;
     const matchesLocation = (listing) => filters.location === "any" || getArea(listing.location) === filters.location;
     const matchesAmenities = (listing) => {
       if (selectedAmenities.size === 0) return true;
       const available = new Set(listing.amenities || []);
       return [...selectedAmenities].every((a) => available.has(a));
     };
-    const results = listings.filter((l) => matchesSearch(l) && matchesPriceBand(l) && matchesType(l) && matchesLocation(l) && matchesAmenities(l));
+    const results = listings.filter((l) => matchesSearch(l) && matchesPriceBand(l) && matchesType(l) && matchesGender(l) && matchesLocation(l) && matchesAmenities(l));
     return [...results].sort((a, b) => {
       switch (filters.sort) {
         case "price-low": return getPriceValue(a.price) - getPriceValue(b.price);
@@ -435,6 +438,7 @@ function DashboardPage() {
 
   const setPrice = (value) => updateSearchParams({ price: value === "any" ? "" : value });
   const setType = (value) => updateSearchParams({ type: value === "any" ? "" : value });
+  const setGender = (value) => updateSearchParams({ gender: value === "any" ? "" : value });
   const setLocation = (value) => updateSearchParams({ loc: value === "any" ? "" : value });
   const setSort = (value) => updateSearchParams({ sort: value === "relevance" ? "" : value });
   const setView = (value) => updateSearchParams({ view: value === "grid" ? "" : value });
@@ -602,6 +606,7 @@ function DashboardPage() {
                   {filters.q && <ActiveFilterChip label={`Search: ${filters.q}`} onClear={() => setSearchDraft("")} />}
                   {filters.price !== "any" && <ActiveFilterChip label={`Price: ${getBandLabel(filters.price)}`} onClear={() => setPrice("any")} />}
                   {filters.type !== "any" && <ActiveFilterChip label={`Type: ${filters.type}`} onClear={() => setType("any")} />}
+                  {filters.gender !== "any" && <ActiveFilterChip label={`Room preference: ${filters.gender}`} onClear={() => setGender("any")} />}
                   {filters.location !== "any" && <ActiveFilterChip label={`Location: ${filters.location}`} onClear={() => setLocation("any")} />}
                   {filters.amenities.map((a) => (
                     <ActiveFilterChip key={a} label={a} onClear={() => toggleAmenity(a)} />
@@ -628,6 +633,7 @@ function DashboardPage() {
                         amenities={catalogOptions.amenities}
                         onPriceChange={setPrice}
                         onTypeChange={setType}
+                        onGenderChange={setGender}
                         onLocationChange={setLocation}
                         onSortChange={setSort}
                         onToggleAmenity={toggleAmenity}
@@ -714,6 +720,7 @@ function DashboardPage() {
                   amenities={catalogOptions.amenities}
                   onPriceChange={setPrice}
                   onTypeChange={setType}
+                  onGenderChange={setGender}
                   onLocationChange={setLocation}
                   onSortChange={setSort}
                   onToggleAmenity={toggleAmenity}
@@ -771,7 +778,7 @@ function StatCard({ stat }) {
    ═══════════════════════════════════════════ */
 function ListingFilters({
   filters, searchDraft, setSearchDraft, priceBands, types, locations, amenities,
-  onPriceChange, onTypeChange, onLocationChange, onSortChange, onToggleAmenity, onClear, compact = false,
+  onPriceChange, onTypeChange, onGenderChange, onLocationChange, onSortChange, onToggleAmenity, onClear, compact = false,
 }) {
   return (
     <div className={`border-2 border-[#5C3A21]/20 bg-white shadow-[4px_4px_0px_rgba(44,24,16,0.05)] ${compact ? "p-0 shadow-none" : "p-4"}`}>
@@ -813,6 +820,11 @@ function ListingFilters({
             <select value={filters.type} onChange={(e) => onTypeChange(e.target.value)} className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none">
               <option value="any">Any type</option>
               {types.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </FilterGroup>
+          <FilterGroup title="Room preference" compact={compact}>
+            <select value={filters.gender} onChange={(e) => onGenderChange(e.target.value)} className="w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 text-sm text-[#2C1810] outline-none">
+              <option value="any">Any preference</option><option value="male">Male</option><option value="female">Female</option>
             </select>
           </FilterGroup>
           <FilterGroup title="Location" compact={compact}>
@@ -1077,7 +1089,7 @@ const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1522708323590?w=1200&h
 function normalizeListing(raw) {
   const image = Array.isArray(raw.images) && raw.images.length ? raw.images[0] : raw.image || FALLBACK_IMAGE;
   const owner = raw.user
-    ? { name: raw.user.name || "Unknown", role: "Owner", phone: raw.user.phone || "", email: raw.user.email || "", response: "Usually replies within 1 hour", verified: true, avatar: raw.user.avatar || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop" }
+    ? { name: raw.user.name || "Unknown", role: "Owner", phone: raw.user.phone || "", email: raw.user.email || "", response: "Usually replies within 1 hour", verified: raw.user.verification_status === "verified", avatar: raw.user.avatar || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop" }
     : raw.owner || { name: "Unknown", role: "Owner", phone: "", email: "", response: "", verified: false, avatar: "" };
   const capitalizedStatus = raw.status ? raw.status.charAt(0).toUpperCase() + raw.status.slice(1) : "Available";
   const posted = raw.posted || (raw.created_at ? timeAgo(new Date(raw.created_at)) : "Recently");
