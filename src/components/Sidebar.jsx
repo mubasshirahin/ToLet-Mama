@@ -17,6 +17,7 @@ import {
   FileText,
   Heart,
   ShieldCheck,
+  BadgeCheck,
 } from "lucide-react";
 import { fetchUnreadCount, fetchUnreadNotificationCount } from "../lib/api";
 import { useLanguage } from "../theme/LanguageProvider";
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
       { label: "My Listings", icon: Building2, to: "/my-listings", role: "Owner" },
       { label: "Add Listing", icon: PlusCircle, to: "/listings/new", role: "Owner" },
       { label: "Saved", icon: Heart, to: "/saved" },
+      { label: "Verify account", icon: BadgeCheck, to: "/verification" },
     ],
   },
   {
