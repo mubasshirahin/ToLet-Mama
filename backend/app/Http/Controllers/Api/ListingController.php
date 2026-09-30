@@ -113,6 +113,16 @@ class ListingController extends Controller
         $validated = $this->applyPhotoFields($request, $validated, false);
 
         $listing = $request->user()->listings()->create($validated);
+        $price = (int) preg_replace('/[^0-9]/', '', $listing->price);
+        \App\Models\SavedSearch::where('alerts_enabled', true)->with('user')->get()->each(function ($saved) use ($listing, $price) {
+            $filters = $saved->filters ?? [];
+            $term = trim((string) ($filters['search'] ?? ''));
+            $limit = (int) ($filters['max_price'] ?? 0);
+            $matchesLocation = !$term || str_contains(mb_strtolower($listing->location.' '.$listing->title), mb_strtolower($term));
+            if ($matchesLocation && (!$limit || $price <= $limit)) {
+                $saved->user?->notify(new \App\Notifications\MarketplaceNotice('New listing matches your search', $listing->title.' in '.$listing->location, '/listings/'.$listing->id));
+            }
+        });
         // Clear draft after successful publish
         \App\Models\ListingDraft::where('user_id', $request->user()->id)->delete();
 

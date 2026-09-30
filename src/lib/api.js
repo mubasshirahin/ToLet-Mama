@@ -263,4 +263,32 @@ export async function fetchUnreadCount() {
   return data;
 }
 
+// ---- Marketplace tools ----
+export async function fetchNotifications() { return (await api.get("/notifications")).data; }
+export async function fetchUnreadNotificationCount() { return (await api.get("/notifications/unread/count")).data; }
+export async function readNotification(id) { return (await api.post(`/notifications/${id}/read`)).data; }
+export async function fetchAppointments() { return (await api.get("/appointments")).data; }
+export async function requestViewing(listingId, details) { return (await api.post(`/listings/${listingId}/appointments`, details)).data; }
+export async function updateViewing(id, details) { return (await api.put(`/appointments/${id}`, details)).data; }
+export async function reportListing(listingId, details) { return (await api.post(`/listings/${listingId}/reports`, details)).data; }
+export async function fetchRoommates(params = {}) { return (await api.get("/roommates", { params })).data; }
+export async function fetchRoommateProfile() { return (await api.get("/roommates/profile")).data; }
+export async function saveRoommateProfile(profile) { return (await api.put("/roommates/profile", profile)).data; }
+export async function fetchSavedSearches() { return (await api.get("/saved-searches")).data; }
+export async function saveSearch(search) { return (await api.post("/saved-searches", search)).data; }
+export async function deleteSearch(id) { return (await api.delete(`/saved-searches/${id}`)).data; }
+export async function submitVerification(form) {
+  const body = new FormData();
+  Object.entries(form).forEach(([key, value]) => { if (value !== undefined && value !== null) body.append(key, value); });
+  return (await api.post("/profile/verification", body, { headers: { "Content-Type": "multipart/form-data" } })).data;
+}
+export async function fetchAdminReports() { return (await api.get("/admin/reports")).data; }
+export async function resolveAdminReport(id, status) { return (await api.put(`/admin/reports/${id}`, { status })).data; }
+export async function fetchVerificationQueue() { return (await api.get("/admin/verifications")).data; }
+export async function decideVerification(id, status) { return (await api.put(`/admin/verifications/${id}`, { status })).data; }
+export async function downloadVerificationDocument(id) {
+  const { data } = await api.get(`/admin/verifications/${id}/document`, { responseType: "blob" });
+  return URL.createObjectURL(data);
+}
+
 export default api;

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ListingController;
 use App\Http\Controllers\Api\ListingViewController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\MarketplaceExtrasController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -62,4 +63,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/{userId}', [MessageController::class, 'conversation']);
     Route::post('/messages', [MessageController::class, 'send']);
     Route::get('/messages/unread/count', [MessageController::class, 'unreadCount']);
+
+    // Scheduling, notifications, trust, saved searches and roommate matching
+    Route::get('/notifications', [MarketplaceExtrasController::class, 'notifications']);
+    Route::get('/notifications/unread/count', [MarketplaceExtrasController::class, 'unreadNotificationCount']);
+    Route::post('/notifications/{id}/read', [MarketplaceExtrasController::class, 'readNotification']);
+    Route::get('/appointments', [MarketplaceExtrasController::class, 'appointments']);
+    Route::post('/listings/{listing}/appointments', [MarketplaceExtrasController::class, 'requestAppointment']);
+    Route::put('/appointments/{id}', [MarketplaceExtrasController::class, 'updateAppointment']);
+    Route::post('/listings/{listing}/reports', [MarketplaceExtrasController::class, 'reportListing']);
+    Route::get('/roommates', [MarketplaceExtrasController::class, 'roommates']);
+    Route::get('/roommates/profile', [MarketplaceExtrasController::class, 'getRoommateProfile']);
+    Route::put('/roommates/profile', [MarketplaceExtrasController::class, 'saveRoommateProfile']);
+    Route::get('/saved-searches', [MarketplaceExtrasController::class, 'savedSearches']);
+    Route::post('/saved-searches', [MarketplaceExtrasController::class, 'saveSearch']);
+    Route::delete('/saved-searches/{id}', [MarketplaceExtrasController::class, 'deleteSearch']);
+    Route::post('/profile/verification', [MarketplaceExtrasController::class, 'submitVerification']);
+    Route::get('/admin/reports', [MarketplaceExtrasController::class, 'adminReports']);
+    Route::put('/admin/reports/{id}', [MarketplaceExtrasController::class, 'resolveReport']);
+    Route::get('/admin/verifications', [MarketplaceExtrasController::class, 'verificationQueue']);
+    Route::get('/admin/verifications/{id}/document', [MarketplaceExtrasController::class, 'verificationDocument']);
+    Route::put('/admin/verifications/{id}', [MarketplaceExtrasController::class, 'decideVerification']);
 });
