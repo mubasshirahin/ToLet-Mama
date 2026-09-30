@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Copy,
   MapPin,
   MessageCircle,
   PhoneCall,
@@ -222,6 +223,16 @@ function ListingDetailPage() {
     }
   };
 
+  const handleCopyLocation = async () => {
+    try {
+      await navigator.clipboard.writeText(listing.location);
+      setToast("Location copied");
+    } catch {
+      setToast("Could not copy location");
+    }
+    window.setTimeout(() => setToast(""), 1600);
+  };
+
   const showPreviousImage = () => {
     if (!listing?.images?.length) return;
     setActiveImageIndex((current) => (current - 1 + listing.images.length) % listing.images.length);
@@ -277,6 +288,7 @@ function ListingDetailPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2 font-serif text-sm">
             <span className="inline-flex items-center gap-1.5 text-[#5C3A21]"><MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />{listing.location}</span>
             <a className="text-xs font-bold underline" href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(listing.location)}`} target="_blank" rel="noreferrer">Open map</a>
+            <button type="button" onClick={handleCopyLocation} className="inline-flex items-center gap-1 text-xs font-bold underline" aria-label={`Copy ${listing.location}`}><Copy className="h-3 w-3"/> Copy location</button>
             <span className="text-[#A89880]">•</span>
             <span className="text-[#5C3A21]">{listing.type}</span>
             <span className="text-[#A89880]">•</span>
