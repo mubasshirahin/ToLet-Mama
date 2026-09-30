@@ -22,6 +22,7 @@ import AdminPage from "./components/AdminPage";
 import VerificationPage from "./components/VerificationPage";
 import RoommatesPage from "./components/RoommatesPage";
 import SavedSearchesPage from "./components/SavedSearchesPage";
+import RentCalculatorPage from "./components/RentCalculatorPage";
 import { LanguageProvider } from "./theme/LanguageProvider";
 
 function App() {
@@ -76,6 +77,7 @@ function App() {
             <Route path="/verification" element={<AppLayout><VerificationPage /></AppLayout>} />
             <Route path="/roommates" element={<AppLayout><RoommatesPage /></AppLayout>} />
             <Route path="/saved-searches" element={<AppLayout><SavedSearchesPage /></AppLayout>} />
+            <Route path="/rent-calculator" element={<AppLayout><RentCalculatorPage /></AppLayout>} />
             <Route
               path="/listings/new"
               element={<AppLayout><ListingFormPage /></AppLayout>}

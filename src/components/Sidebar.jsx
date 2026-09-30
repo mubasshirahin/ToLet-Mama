@@ -20,6 +20,7 @@ import {
   BadgeCheck,
   HeartHandshake,
   Search,
+  Calculator,
 } from "lucide-react";
 import { fetchUnreadCount, fetchUnreadNotificationCount } from "../lib/api";
 import { useLanguage } from "../theme/LanguageProvider";
@@ -42,6 +43,7 @@ const NAV_ITEMS = [
       { label: "Verify account", icon: BadgeCheck, to: "/verification" },
       { label: "Find roommates", icon: HeartHandshake, to: "/roommates" },
       { label: "Saved searches", icon: Search, to: "/saved-searches" },
+      { label: "Rent calculator", icon: Calculator, to: "/rent-calculator" },
     ],
   },
   {
