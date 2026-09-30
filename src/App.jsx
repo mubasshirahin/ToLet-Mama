@@ -21,7 +21,8 @@ import SceneCanvas from "./components/3d/SceneCanvas";
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      {/* Production serves the SPA under /app/ (see vite.config.js base). */}
+      <BrowserRouter basename={(import.meta.env.BASE_URL || "/").replace(/\/$/, "") || "/"}>
         <div className="relative min-h-screen">
           <SceneCanvas />
           <Routes>

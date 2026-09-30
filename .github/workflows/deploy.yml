@@ -1,0 +1,86 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DEPLOY_USER: s20230204026
+  DEPLOY_HOST: 187.52.122.100
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Step 1: PHP runtime (composer.json requires ^8.3; deploy target is 8.4)
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      # Step 2: PHP dependencies (Laravel lives in backend/)
+      - name: Install PHP dependencies
+        working-directory: backend
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      # Step 3: Node.js LTS (React frontend lives at the repo root)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # Step 4: Build the React app into backend/public/app
+      - name: Build React app
+        run: |
+          npm ci
+          VITE_API_URL=/api npm run build
+
+      - name: Verify SPA bundle exists
+        run: |
+          test -f backend/public/app/index.html || (echo "ERROR: backend/public/app/index.html missing after build" && exit 1)
+
+      # Step 5: Single archive with runtime artifacts only.
+      # Paths keep the backend/ prefix; the server extracts with --strip-components=1.
+      - name: Create release archive
+        run: >
+          tar -czf release.tar.gz
+          --exclude=.git
+          --exclude=node_modules
+          --exclude=client/node_modules
+          --exclude=.env
+          backend/vendor backend/public/app
+
+      # Step 6: Deploy key + known hosts
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      # Step 7: Ship the archive to the server home directory
+      - name: Upload release archive
+        run: scp -i /tmp/deploy_key release.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:~/"
+
+      # Step 8: Single SSH session — extract, permissions, migrate, optimize, cleanup
+      - name: Deploy on server
+        run: >
+          ssh -i /tmp/deploy_key "$DEPLOY_USER@$DEPLOY_HOST"
+          "set -e &&
+          tar -xzf ~/release.tar.gz -C ~/laravel --strip-components=1 &&
+          chmod -R ug+w ~/laravel/storage ~/laravel/bootstrap/cache &&
+          cd ~/laravel &&
+          php artisan migrate --force &&
+          php artisan optimize &&
+          rm -f ~/release.tar.gz"
+
+      - name: Remove local deploy key
+        if: always()
+        run: rm -f /tmp/deploy_key

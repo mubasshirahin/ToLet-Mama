@@ -5,4 +5,15 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Production: Laravel serves the SPA from backend/public/app under the /app/ subpath.
+  base: '/app/',
+  build: {
+    outDir: 'backend/public/app',
+    emptyOutDir: true,
+  },
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8000',
+    },
+  },
 })

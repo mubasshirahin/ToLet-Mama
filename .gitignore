@@ -31,5 +31,17 @@ docker-compose.override.yml
 
 nul
 
+# Production SPA bundle (built by `npm run build` / CI into backend/public/app)
+public/app
+backend/public/app
+release.tar.gz
+
+# PHP dependencies (installed via Composer from backend/composer.lock)
+vendor
+backend/vendor
+
+# Redundant with node_modules above, kept for CI archive exclusions
+client/node_modules
+
 # Database
 backend/database.sqlite

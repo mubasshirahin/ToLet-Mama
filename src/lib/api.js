@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+// Same-origin by default: in production Laravel serves the SPA and the API
+// from the same host, so relative "/api" avoids hardcoded domains.
+// Local dev can still override via VITE_API_URL (see root .env).
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -30,8 +33,10 @@ api.interceptors.response.use(
       if ((error.config?.url || "").includes("/auth/me")) {
         localStorage.removeItem("toletmama.api_token");
         localStorage.removeItem("toletmama.api_user");
-        if (!window.location.pathname.startsWith("/auth")) {
-          window.location.href = "/auth";
+        // Basename-aware: the SPA is served under /app/ in production.
+        const loginPath = `${import.meta.env.BASE_URL || "/"}auth`.replace(/\/+/g, "/");
+        if (!window.location.pathname.startsWith(loginPath)) {
+          window.location.href = loginPath;
         }
       }
     }
