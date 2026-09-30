@@ -18,6 +18,7 @@ import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import SceneCanvas from "./components/3d/SceneCanvas";
 import NotificationsPage from "./components/NotificationsPage";
+import AdminPage from "./components/AdminPage";
 import { LanguageProvider } from "./theme/LanguageProvider";
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
               element={<AppLayout><AboutPage /></AppLayout>}
             />
             <Route path="/notifications" element={<AppLayout><NotificationsPage /></AppLayout>} />
+            <Route path="/admin" element={<AppLayout><AdminPage /></AppLayout>} />
             <Route
               path="/listings/new"
               element={<AppLayout><ListingFormPage /></AppLayout>}

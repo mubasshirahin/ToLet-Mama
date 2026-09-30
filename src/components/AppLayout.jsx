@@ -11,7 +11,7 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
-      if (user.role) setRole(String(user.role).toLowerCase() === "owner" ? "Owner" : "Student");
+      if (user.role) setRole(user.is_admin ? "Admin" : String(user.role).toLowerCase() === "owner" ? "Owner" : "Student");
       else if (location.state?.role) setRole(location.state.role === "owner" || location.state.role === "Owner" ? "Owner" : "Student");
     } catch {
       // keep default
@@ -23,7 +23,7 @@ export default function AppLayout({ children }) {
     const onStorage = () => {
       try {
         const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
-        if (u.role) setRole(String(u.role).toLowerCase() === "owner" ? "Owner" : "Student");
+        if (u.role) setRole(u.is_admin ? "Admin" : String(u.role).toLowerCase() === "owner" ? "Owner" : "Student");
       } catch {}
     };
     window.addEventListener("storage", onStorage);
