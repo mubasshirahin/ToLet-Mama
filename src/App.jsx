@@ -17,10 +17,13 @@ import NotFoundPage from "./components/NotFoundPage";
 import AppLayout from "./components/AppLayout";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import SceneCanvas from "./components/3d/SceneCanvas";
+import NotificationsPage from "./components/NotificationsPage";
+import { LanguageProvider } from "./theme/LanguageProvider";
 
 function App() {
   return (
     <ThemeProvider>
+      <LanguageProvider>
       <BrowserRouter>
         <div className="relative min-h-screen">
           <SceneCanvas />
@@ -64,6 +67,7 @@ function App() {
               path="/about"
               element={<AppLayout><AboutPage /></AppLayout>}
             />
+            <Route path="/notifications" element={<AppLayout><NotificationsPage /></AppLayout>} />
             <Route
               path="/listings/new"
               element={<AppLayout><ListingFormPage /></AppLayout>}
@@ -80,6 +84,7 @@ function App() {
           </Routes>
         </div>
       </BrowserRouter>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

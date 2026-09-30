@@ -12,14 +12,17 @@ import {
   X,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { fetchUnreadNotificationCount } from "../lib/api";
+import { useLanguage } from "../theme/LanguageProvider";
 
 export default function Navbar({ onToggleSidebar, sidebarOpen }) {
+  const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifCount] = useState(3);
+  const [notifCount, setNotifCount] = useState(0);
   const profileRef = useRef(null);
 
   const userName = (() => {
@@ -32,6 +35,13 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
   })();
 
   const userInitial = userName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    const refresh = () => fetchUnreadNotificationCount().then((data) => setNotifCount(data.count || 0)).catch(() => setNotifCount(0));
+    if (localStorage.getItem("toletmama.api_token")) refresh();
+    const timer = window.setInterval(refresh, 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // Close profile dropdown on outside click
   useEffect(() => {
@@ -85,6 +95,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <button type="button" onClick={toggleLanguage} className="rounded-full border px-3 py-2 text-xs font-bold" style={{ borderColor: "var(--theme-border-strong)", color: "var(--theme-ink-muted)" }} aria-label="Toggle language">{language === "en" ? "বাংলা" : "English"}</button>
           {/* Mobile search toggle */}
           <button
             type="button"
@@ -97,7 +108,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
 
           {/* Notifications */}
           <Link
-            to="/messages"
+            to="/notifications"
             className="relative flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-ink)] hover:text-[var(--theme-bg)]"
             style={{ borderColor: "var(--theme-border-strong)", color: "var(--theme-ink-muted)" }}
           >

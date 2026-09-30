@@ -17,14 +17,16 @@ import {
   FileText,
   Heart,
 } from "lucide-react";
+import { fetchUnreadCount, fetchUnreadNotificationCount } from "../lib/api";
+import { useLanguage } from "../theme/LanguageProvider";
 
 const NAV_ITEMS = [
   {
     section: "Main",
     items: [
       { label: "Browse Listings", icon: LayoutDashboard, to: "/dashboard", role: "Student" },
-      { label: "Messages", icon: Mail, to: "/messages", badge: 3 },
-      { label: "Notifications", icon: Bell, to: "/notifications", badge: 5 },
+      { label: "Messages", icon: Mail, to: "/messages" },
+      { label: "Notifications", icon: Bell, to: "/notifications" },
     ],
   },
   {
@@ -47,6 +49,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ open, onClose, role = "Student" }) {
+  const { t } = useLanguage();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -55,6 +58,20 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
       return false;
     }
   });
+  const [badges, setBadges] = useState({ messages: 0, notifications: 0 });
+
+  useEffect(() => {
+    const refreshBadges = async () => {
+      if (!localStorage.getItem("toletmama.api_token")) return;
+      try {
+        const [messages, notifications] = await Promise.all([fetchUnreadCount(), fetchUnreadNotificationCount()]);
+        setBadges({ messages: messages.count || 0, notifications: notifications.count || 0 });
+      } catch {}
+    };
+    refreshBadges();
+    const timer = window.setInterval(refreshBadges, 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     try {
@@ -117,7 +134,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
           {NAV_ITEMS.map((group) => {
             const visibleItems = group.items.filter(
               (item) => !item.role || item.role === role
-            );
+            ).map((item) => ({ ...item, badge: item.label === "Messages" ? badges.messages : item.label === "Notifications" ? badges.notifications : item.badge }));
             if (visibleItems.length === 0) return null;
 
             return (
@@ -160,7 +177,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                             style={active ? { color: "var(--theme-bg)" } : {}}
                           />
                           {!collapsed && (
-                            <span className="flex-1 font-serif text-sm font-medium">{item.label}</span>
+                            <span className="flex-1 font-serif text-sm font-medium">{t(item.label)}</span>
                           )}
                           {!collapsed && item.badge && (
                             <span
