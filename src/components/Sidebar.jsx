@@ -18,6 +18,7 @@ import {
   Heart,
   ShieldCheck,
   BadgeCheck,
+  HeartHandshake,
 } from "lucide-react";
 import { fetchUnreadCount, fetchUnreadNotificationCount } from "../lib/api";
 import { useLanguage } from "../theme/LanguageProvider";
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
       { label: "Add Listing", icon: PlusCircle, to: "/listings/new", role: "Owner" },
       { label: "Saved", icon: Heart, to: "/saved" },
       { label: "Verify account", icon: BadgeCheck, to: "/verification" },
+      { label: "Find roommates", icon: HeartHandshake, to: "/roommates" },
     ],
   },
   {
