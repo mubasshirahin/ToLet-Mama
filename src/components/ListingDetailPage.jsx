@@ -22,7 +22,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { fetchListing, fetchListings, fetchFavorites, saveFavorite, removeFavorite, recordListingView, fetchInterestedUsers, sendMessage } from "../lib/api";
+import { fetchListing, fetchListings, fetchFavorites, saveFavorite, removeFavorite, recordListingView, fetchInterestedUsers, sendMessage, requestViewing, reportListing } from "../lib/api";
 
 
 
@@ -64,7 +64,7 @@ function ListingDetailPage() {
       rules: baseListing.rules || [],
       nearby: baseListing.nearby || [],
       owner: baseListing.user
-        ? { name: baseListing.user.name, role: "Owner", phone: "", email: baseListing.user.email, response: "Usually replies within 1 hour", verified: true, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop" }
+        ? { name: baseListing.user.name, role: "Owner", phone: baseListing.user.phone || "", email: baseListing.user.email, response: "Usually replies within 1 hour", verified: baseListing.user.verification_status === "verified", avatar: baseListing.user.avatar || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop" }
         : baseListing.owner || { name: "Unknown", role: "Owner", phone: "", email: "", response: "", verified: false, avatar: "" },
       interested: baseListing.interested || 0,
       posted: baseListing.posted || (baseListing.created_at ? new Date(baseListing.created_at).toLocaleDateString() : "Recently"),
@@ -77,6 +77,8 @@ function ListingDetailPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [toast, setToast] = useState("");
+  const [viewingDate, setViewingDate] = useState("");
+  const [showViewingForm, setShowViewingForm] = useState(false);
 
   // Check if logged-in user is the owner of this listing
   const currentUser = useMemo(() => {
@@ -146,6 +148,26 @@ function ListingDetailPage() {
       setToast("Could not send message. Please try again.");
     }
     setTimeout(() => setToast(""), 2000);
+  };
+
+  const handleViewingRequest = async (event) => {
+    event.preventDefault();
+    try {
+      await requestViewing(listing.id, { requested_for: new Date(viewingDate).toISOString() });
+      setToast("Viewing request sent."); setShowViewingForm(false);
+    } catch (error) { setToast(error.response?.data?.message || "Could not request this viewing."); }
+    window.setTimeout(() => setToast(""), 2200);
+  };
+
+  const handleReport = async () => {
+    const reason = window.prompt("Why are you reporting this listing? (Scam or fraud / Incorrect information / Already rented / Inappropriate content / Other)");
+    if (!reason) return;
+    const allowed = ["Incorrect information", "Scam or fraud", "Already rented", "Inappropriate content", "Other"];
+    const choice = allowed.find((item) => item.toLowerCase() === reason.trim().toLowerCase());
+    if (!choice) { setToast("Please use one of the listed report reasons."); return; }
+    try { await reportListing(listing.id, { reason: choice }); setToast("Report sent to the review team."); }
+    catch (error) { setToast(error.response?.data?.message || "Could not send report."); }
+    window.setTimeout(() => setToast(""), 2200);
   };
 
   useEffect(() => {
@@ -254,6 +276,7 @@ function ListingDetailPage() {
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2 font-serif text-sm">
             <span className="inline-flex items-center gap-1.5 text-[#5C3A21]"><MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />{listing.location}</span>
+            <a className="text-xs font-bold underline" href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(listing.location)}`} target="_blank" rel="noreferrer">Open map</a>
             <span className="text-[#A89880]">•</span>
             <span className="text-[#5C3A21]">{listing.type}</span>
             <span className="text-[#A89880]">•</span>
@@ -552,6 +575,9 @@ function ListingDetailPage() {
                         {isFavorite ? "Saved" : "Express Interest"}
                       </button>
                     </div>
+                    <button type="button" onClick={() => setShowViewingForm((value) => !value)} className="btn-coupon-clip w-full justify-center py-2.5 text-xs"><CalendarDays className="h-4 w-4"/> Request a viewing</button>
+                    {showViewingForm && <form onSubmit={handleViewingRequest} className="space-y-2 border border-[#5C3A21]/20 p-3"><label className="block text-xs font-bold" htmlFor="viewing-date">Choose a date and time</label><input id="viewing-date" required type="datetime-local" min={new Date(Date.now() + 3600000).toISOString().slice(0, 16)} value={viewingDate} onChange={(event) => setViewingDate(event.target.value)} className="w-full border border-[#5C3A21]/30 bg-white p-2 text-sm"/><button className="btn-rubber-stamp w-full justify-center py-2 text-xs">Send viewing request</button></form>}
+                    <button type="button" onClick={handleReport} className="w-full py-1 text-xs text-[#A89880] underline">Report this listing</button>
                     <button type="button" onClick={handleShare} className="inline-flex items-center justify-center gap-1.5 py-1 font-serif text-xs font-medium text-[#A89880] hover:text-[#2C1810]">
                       <Share2 className="h-3.5 w-3.5" strokeWidth={1.8} />
                       Share listing

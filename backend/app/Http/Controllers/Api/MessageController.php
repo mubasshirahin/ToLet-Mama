@@ -81,6 +81,7 @@ class MessageController extends Controller
         ]);
 
         $message->load(['sender', 'receiver']);
+        $message->receiver?->notify(new \App\Notifications\MarketplaceNotice('New message', $message->sender->name.' sent you a message.', '/messages'));
 
         return response()->json($message, 201);
     }

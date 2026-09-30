@@ -13,8 +13,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'google_id', 'avatar', 'phone', 'city', 'bio', 'role'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'avatar', 'phone', 'city', 'bio', 'role', 'is_admin', 'verification_status', 'verification_document'])]
+#[Hidden(['password', 'remember_token', 'verification_document'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -45,6 +45,16 @@ class User extends Authenticatable
         return $this->hasMany(ListingView::class);
     }
 
+    public function roommateProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RoommateProfile::class);
+    }
+
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -54,6 +64,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_admin' => 'boolean',
             'password' => 'hashed',
         ];
     }
