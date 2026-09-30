@@ -16,6 +16,7 @@ import {
   User,
   FileText,
   Heart,
+  ShieldCheck,
 } from "lucide-react";
 import { fetchUnreadCount, fetchUnreadNotificationCount } from "../lib/api";
 import { useLanguage } from "../theme/LanguageProvider";
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
       { label: "Help Center", icon: LifeBuoy, to: "/help" },
       { label: "Guidelines", icon: FileText, to: "/guidelines" },
       { label: "About", icon: HelpCircle, to: "/about" },
+      { label: "Admin review", icon: ShieldCheck, to: "/admin", role: "Admin" },
     ],
   },
 ];

@@ -45,3 +45,15 @@ docker compose exec backend php artisan db:seed --class=ListingSeeder
 ```
 
 `backend/.env.example` is for running Laravel directly outside Compose. In the Compose setup, `docker.env` supplies backend and MySQL variables, while root `.env` supplies Vite's variables and the Google client ID.
+
+## Marketplace tools
+
+Signed-in users can create roommate profiles, request property viewings, save listing searches with in-app alerts, and use the rent budget calculator. Listing reports and ID verification submissions are reviewed in the admin area. Verification documents are private and can only be downloaded by administrators.
+
+To grant a local account admin access, sign in once to create the account, then run:
+
+```powershell
+docker compose exec backend php artisan tinker --execute="App\Models\User::where('email', 'you@example.com')->update(['is_admin' => true]);"
+```
+
+Sign out and back in; the **Admin review** page will appear in the sidebar. Phone numbers are contact details; SMS one-time-code verification needs an SMS provider and credentials before it can be enabled.
