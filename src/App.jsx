@@ -21,6 +21,7 @@ import NotificationsPage from "./components/NotificationsPage";
 import AdminPage from "./components/AdminPage";
 import VerificationPage from "./components/VerificationPage";
 import RoommatesPage from "./components/RoommatesPage";
+import SavedSearchesPage from "./components/SavedSearchesPage";
 import { LanguageProvider } from "./theme/LanguageProvider";
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
             <Route path="/admin" element={<AppLayout><AdminPage /></AppLayout>} />
             <Route path="/verification" element={<AppLayout><VerificationPage /></AppLayout>} />
             <Route path="/roommates" element={<AppLayout><RoommatesPage /></AppLayout>} />
+            <Route path="/saved-searches" element={<AppLayout><SavedSearchesPage /></AppLayout>} />
             <Route
               path="/listings/new"
               element={<AppLayout><ListingFormPage /></AppLayout>}
