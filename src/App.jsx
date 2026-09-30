@@ -45,6 +45,10 @@ function App() {
               element={<AppLayout><DashboardPage /></AppLayout>}
             />
             <Route
+              path="/listings"
+              element={<AppLayout><DashboardPage /></AppLayout>}
+            />
+            <Route
               path="/my-listings"
               element={<AppLayout><MyListingsPage /></AppLayout>}
             />
