@@ -151,7 +151,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
               <div key={group.section} className="mb-5">
                 {!collapsed && (
                   <p className="mb-2 px-3 font-serif text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: "var(--theme-ink-faded)" }}>
-                    {group.section}
+                    {t(group.section)}
                   </p>
                 )}
                 {collapsed && <div className="mb-2 mx-3 h-px" style={{ background: "var(--theme-border)" }} />}
