@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import MobileBottomNav from "./MobileBottomNav";
 
 export default function AppLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function AppLayout({ children }) {
       try {
         const u = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
         if (u.role) setRole(String(u.role).toLowerCase() === "owner" ? "Owner" : "Student");
-      } catch {}
+      } catch { }
     };
     window.addEventListener("storage", onStorage);
     // Poll for role changes after login
@@ -37,8 +38,19 @@ export default function AppLayout({ children }) {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [sidebarOpen]);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--theme-bg)]">
+    <div className="flex h-dvh min-h-[100svh] overflow-hidden bg-[var(--theme-bg)]">
       {/* Sidebar — always present */}
       <Sidebar
         open={sidebarOpen}
@@ -55,10 +67,14 @@ export default function AppLayout({ children }) {
         />
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto pb-24 lg:pb-0">
           {children}
         </main>
       </div>
+      <MobileBottomNav
+        menuOpen={sidebarOpen}
+        onOpenMenu={() => setSidebarOpen(true)}
+      />
     </div>
   );
 }

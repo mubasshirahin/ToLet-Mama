@@ -16,6 +16,7 @@ import {
   User,
   FileText,
   Heart,
+  X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -79,7 +80,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[60] backdrop-blur-sm lg:hidden"
             style={{ background: "rgba(0,0,0,0.3)" }}
             onClick={onClose}
           />
@@ -88,27 +89,35 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
 
       {/* Sidebar */}
       <aside
+        id="app-navigation-drawer"
         className={`
-          glass-pane fixed inset-y-0 left-0 z-40 flex flex-col
+          glass-pane fixed inset-y-0 left-0 z-[70] flex w-72 max-w-[calc(100vw-2.5rem)] flex-col
           transition-all duration-300 ease-in-out
-          lg:sticky lg:top-0 lg:h-screen lg:shadow-none
-          ${collapsed ? "w-[68px]" : "w-64"}
+          lg:sticky lg:top-0 lg:h-dvh lg:max-w-none lg:shadow-none
+          ${collapsed ? "lg:w-16" : "lg:w-64"}
           ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         {/* Brand */}
-        <div className="flex h-14 items-center gap-2.5 px-5">
+        <div className="flex h-14 shrink-0 items-center gap-2.5 px-5">
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
             style={{ background: "var(--theme-ink)", color: "var(--theme-bg)" }}
           >
             <Newspaper className="h-4 w-4" strokeWidth={2} />
           </div>
-          {!collapsed && (
-            <span className="font-serif text-lg font-black tracking-tight" style={{ color: "var(--theme-ink)" }}>
-              To-Let <span style={{ color: "var(--theme-ink-muted)" }}>Mama</span>
-            </span>
-          )}
+          <span className={`flex-1 font-serif text-lg font-black tracking-tight ${collapsed ? "lg:hidden" : ""}`} style={{ color: "var(--theme-ink)" }}>
+            To-Let <span style={{ color: "var(--theme-ink-muted)" }}>Mama</span>
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border lg:hidden"
+            style={{ borderColor: "var(--theme-border)", color: "var(--theme-ink-muted)" }}
+            aria-label="Close navigation menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
         <div className="mx-4 h-px" style={{ background: "var(--theme-border)" }} />
 
@@ -122,12 +131,10 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
 
             return (
               <div key={group.section} className="mb-5">
-                {!collapsed && (
-                  <p className="mb-2 px-3 font-serif text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: "var(--theme-ink-faded)" }}>
-                    {group.section}
-                  </p>
-                )}
-                {collapsed && <div className="mb-2 mx-3 h-px" style={{ background: "var(--theme-border)" }} />}
+                <p className={`mb-2 px-3 font-serif text-[10px] font-bold uppercase tracking-[0.25em] ${collapsed ? "lg:hidden" : ""}`} style={{ color: "var(--theme-ink-faded)" }}>
+                  {group.section}
+                </p>
+                {collapsed && <div className="mb-2 mx-3 hidden h-px lg:block" style={{ background: "var(--theme-border)" }} />}
                 <ul className="space-y-1">
                   {visibleItems.map((item) => {
                     const Icon = item.icon;
@@ -141,11 +148,11 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                           title={collapsed ? item.label : undefined}
                           className={`
                             group relative flex items-center rounded-2xl transition-all duration-200
-                            ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}
-                            ${
-                              active
-                                ? "text-[var(--theme-bg)]"
-                                : "transition-colors hover:bg-[var(--theme-surface)]"
+                            gap-3 px-3 py-2.5
+                            ${collapsed ? "lg:justify-center lg:gap-0 lg:px-0" : ""}
+                            ${active
+                              ? "text-[var(--theme-bg)]"
+                              : "transition-colors hover:bg-[var(--theme-surface)]"
                             }
                           `}
                           style={
@@ -159,12 +166,10 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                             strokeWidth={active ? 2.2 : 1.8}
                             style={active ? { color: "var(--theme-bg)" } : {}}
                           />
-                          {!collapsed && (
-                            <span className="flex-1 font-serif text-sm font-medium">{item.label}</span>
-                          )}
-                          {!collapsed && item.badge && (
+                          <span className={`flex-1 font-serif text-sm font-medium ${collapsed ? "lg:hidden" : ""}`}>{item.label}</span>
+                          {item.badge && (
                             <span
-                              className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black"
+                              className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-black ${collapsed ? "lg:hidden" : ""}`}
                               style={
                                 active
                                   ? { background: "var(--theme-bg)", color: "var(--theme-ink)" }
@@ -176,7 +181,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                           )}
                           {collapsed && item.badge && (
                             <span
-                              className="absolute right-1 top-1 h-2 w-2 rounded-full"
+                              className="absolute right-1 top-1 hidden h-2 w-2 rounded-full lg:block"
                               style={{ background: "var(--theme-ink)" }}
                             />
                           )}
@@ -212,7 +217,7 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
 
         {/* Footer / User card */}
         <div className="border-t p-3" style={{ borderColor: "var(--theme-border)" }}>
-          <div className={`flex items-center rounded-2xl glass-pane ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
+          <div className={`flex items-center gap-3 rounded-2xl glass-pane px-3 py-2.5 ${collapsed ? "lg:justify-center lg:px-0" : ""}`}>
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[11px] font-black"
               style={{ borderColor: "var(--theme-ink)", color: "var(--theme-ink)", background: "var(--theme-surface)" }}
@@ -226,34 +231,30 @@ export default function Sidebar({ open, onClose, role = "Student" }) {
                 }
               })()}
             </div>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-serif text-xs font-bold" style={{ color: "var(--theme-ink)" }}>
-                  {(() => {
-                    try {
-                      const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
-                      return user.name || "User";
-                    } catch {
-                      return "User";
-                    }
-                  })()}
-                </p>
-                <p className="font-serif text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--theme-ink-faded)" }}>
-                  {role}
-                </p>
-              </div>
-            )}
-            {!collapsed && (
-              <Link
-                to="/profile"
-                onClick={onClose}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-surface)]"
-                style={{ borderColor: "var(--theme-border)", color: "var(--theme-ink-muted)" }}
-                title="Profile"
-              >
-                <Settings className="h-3.5 w-3.5" strokeWidth={2} />
-              </Link>
-            )}
+            <div className={`min-w-0 flex-1 ${collapsed ? "lg:hidden" : ""}`}>
+              <p className="truncate font-serif text-xs font-bold" style={{ color: "var(--theme-ink)" }}>
+                {(() => {
+                  try {
+                    const user = JSON.parse(localStorage.getItem("toletmama.api_user") || "{}");
+                    return user.name || "User";
+                  } catch {
+                    return "User";
+                  }
+                })()}
+              </p>
+              <p className="font-serif text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--theme-ink-faded)" }}>
+                {role}
+              </p>
+            </div>
+            <Link
+              to="/profile"
+              onClick={onClose}
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-surface)] ${collapsed ? "lg:hidden" : ""}`}
+              style={{ borderColor: "var(--theme-border)", color: "var(--theme-ink-muted)" }}
+              title="Profile"
+            >
+              <Settings className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
           </div>
         </div>
       </aside>

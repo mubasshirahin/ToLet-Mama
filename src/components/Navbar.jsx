@@ -46,7 +46,9 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
           onClick={onToggleSidebar}
           className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-ink)] hover:text-[var(--theme-bg)] lg:hidden"
           style={{ borderColor: "var(--theme-border-strong)", color: "var(--theme-ink-muted)" }}
-          aria-label="Toggle sidebar"
+          aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-controls="app-navigation-drawer"
+          aria-expanded={sidebarOpen}
         >
           {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
