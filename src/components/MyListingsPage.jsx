@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, MapPin, Trash2, PenLine, Eye, PlusCircle, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchMyListings, fetchMyListingAnalytics, deleteListing, getCurrentUser } from "../lib/api";
+import { ListingCardSkeleton } from "./ui";
 
 export default function MyListingsPage() {
   const navigate = useNavigate();
@@ -100,13 +101,9 @@ export default function MyListingsPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="animate-pulse glass-pane rounded-2xl p-5">
-              <div className="h-40 rounded-xl bg-[#5C3A21]/10" />
-              <div className="mt-4 h-4 w-3/4 rounded bg-[#5C3A21]/10" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-[#5C3A21]/10" />
-            </div>
+        <div role="status" aria-label="Loading your listings" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <ListingCardSkeleton key={index} />
           ))}
         </div>
       ) : listings.length === 0 ? (

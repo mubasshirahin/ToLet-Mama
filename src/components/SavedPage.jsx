@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, MapPin, Sparkles, Users } from "lucide-react";
 import { fetchFavorites, removeFavorite } from "../lib/api";
+import { ListingCardSkeleton } from "./ui";
 
 const SAVED_IDS_KEY = "toletmama.saved_ids";
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1522708323590?w=1200&h=900&fit=crop";
@@ -11,7 +12,7 @@ function readSavedIds() {
 }
 
 function writeSavedIds(ids) {
-  try { localStorage.setItem(SAVED_IDS_KEY, JSON.stringify(ids)); } catch {}
+  try { localStorage.setItem(SAVED_IDS_KEY, JSON.stringify(ids)); } catch { }
 }
 
 function normalizeListing(listing) {
@@ -75,15 +76,19 @@ export default function SavedPage() {
       </div>
 
       {isLoading ? (
-        <div className="glass-pane rounded-3xl p-12 text-center text-sm text-[#A89880]">Loading your saved listings...</div>
+        <div role="status" aria-label="Loading saved listings" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <ListingCardSkeleton key={index} />
+          ))}
+        </div>
       ) : listings.length === 0 ? (
-        <div className="glass-pane rounded-3xl p-10 text-center">
+        <div role="status" className="glass-pane rounded-2xl p-7 text-center sm:p-10">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#F4E8C1]">
             <Heart className="h-9 w-9 text-[#5C3A21]" strokeWidth={1.5} />
           </div>
-          <h2 className="mt-6 font-serif text-2xl font-black text-[#2C1810]">No saved listings yet.</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5C3A21]">Tap the heart on a listing you like and it will stay here for your next visit.</p>
-          <Link to="/dashboard" className="btn-rubber-stamp mt-8 inline-flex px-6 py-3 text-sm">Find a place</Link>
+          <h2 className="mt-5 font-serif text-xl font-black text-[#2C1810] sm:text-2xl">Your shortlist is empty.</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5C3A21]">Save a room or apartment you like, and it will be here while you compare your options.</p>
+          <Link to="/dashboard" className="btn-rubber-stamp mt-7 inline-flex w-full justify-center px-6 py-3 text-sm sm:w-auto">Browse homes</Link>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
