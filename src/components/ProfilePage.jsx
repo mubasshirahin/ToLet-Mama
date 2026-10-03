@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Camera,
-  CheckCircle2,
   Eye,
   EyeOff,
   Lock,
@@ -17,9 +16,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { fetchProfile, updateProfile, updatePassword } from "../lib/api";
+import { Badge, Button, Card, Input, ToastViewport } from "./ui";
 
 const ProfilePage = function ProfilePage() {
-  const location = useLocation();
   const fileInputRef = useRef(null);
 
   // Role comes from backend /profile or /auth/me - single source of truth
@@ -310,18 +309,14 @@ const ProfilePage = function ProfilePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-2 font-serif text-xs font-bold uppercase tracking-[0.15em]">
-              <Sparkles className="h-4 w-4" strokeWidth={1.8} />
+            <Badge variant="primary" className="gap-2 px-3 py-2 text-[10px]">
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.8} />
               {role} account
-            </span>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="btn-coupon-clip px-4 py-2 text-xs"
-            >
+            </Badge>
+            <Button variant="secondary" size="md" onClick={() => fileInputRef.current?.click()}>
               <Camera className="h-4 w-4" strokeWidth={1.8} />
               Upload avatar
-            </button>
+            </Button>
           </div>
         </motion.header>
 
@@ -332,8 +327,7 @@ const ProfilePage = function ProfilePage() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
             className="space-y-6"
           >
-            <div className="glass-pane rounded-2xl p-5 sm:p-6"
-              >
+            <Card className="p-5 sm:p-6">
               <div className="mb-5 flex items-center justify-between gap-4 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <div>
                   <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
@@ -372,14 +366,10 @@ const ProfilePage = function ProfilePage() {
                     className="hidden"
                   />
 
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 font-serif text-xs font-bold uppercase tracking-[0.14em] text-[#5C3A21] transition-colors hover:text-[#2C1810]"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="font-serif text-[10px] uppercase tracking-[0.14em]">
                     <SwitchCamera className="h-4 w-4" strokeWidth={1.8} />
                     Change photo
-                  </button>
+                  </Button>
 
                   <p className="max-w-[180px] text-center font-serif text-[11px] leading-relaxed text-[#A89880]">
                     {uploadName || "PNG, JPG, or WEBP up to a few MB works best."}
@@ -432,22 +422,16 @@ const ProfilePage = function ProfilePage() {
                       className="vintage-inset w-full border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 font-serif text-sm text-[#2C1810] outline-none transition-colors focus:border-[#2C1810]"
                     />
                     <div className="mt-3 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={handleBioSave}
-                        disabled={isSavingBio}
-                        className="btn-coupon-clip px-4 py-2 text-xs disabled:opacity-50"
-                      >
+                      <Button variant="secondary" size="sm" onClick={handleBioSave} disabled={isSavingBio}>
                         {isSavingBio ? "Saving bio..." : "Save bio"}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="glass-pane rounded-2xl p-5 sm:p-6"
-              >
+            <Card className="p-5 sm:p-6">
               <div className="mb-5 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                   Security
@@ -484,7 +468,7 @@ const ProfilePage = function ProfilePage() {
                   className="sm:col-span-2"
                 />
               </div>
-            </div>
+            </Card>
 
             <div className="flex flex-col gap-4 glass-pane rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
               <div>
@@ -495,15 +479,9 @@ const ProfilePage = function ProfilePage() {
                   We&apos;ll keep the page open and confirm once your updates are applied.
                 </p>
               </div>
-              <motion.button
-                type="submit"
-                disabled={isSaving}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="btn-rubber-stamp justify-center px-6 py-3 text-sm disabled:opacity-50"
-              >
+              <Button variant="primary" size="lg" type="submit" disabled={isSaving} className="px-6 py-3 text-sm">
                 {isSaving ? "Saving..." : "Save profile"}
-              </motion.button>
+              </Button>
             </div>
           </motion.section>
 
@@ -513,8 +491,7 @@ const ProfilePage = function ProfilePage() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             className="space-y-6"
           >
-            <div className="glass-pane rounded-2xl p-5 sm:p-6"
-            >
+            <Card className="p-5 sm:p-6">
               <div className="mb-5 border-b pb-4" style={{ borderColor: "var(--theme-border)" }}>
                 <h2 className="font-serif text-xl font-black tracking-tight text-[#2C1810]">
                   Profile Summary
@@ -558,36 +535,16 @@ const ProfilePage = function ProfilePage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </Card>
 
           </motion.aside>
         </form>
       </div>
 
-      <div className="pointer-events-none fixed bottom-4 right-4 z-50 space-y-3">
-        <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className={`pointer-events-auto flex max-w-sm items-start gap-3 border-2 px-4 py-3 shadow-[4px_4px_0px_rgba(44,24,16,0.08)] ${
-                toast.type === "success"
-                  ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
-                  : "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]"
-              }`}
-            >
-              {toast.type === "success" ? (
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.8} />
-              ) : (
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.8} />
-              )}
-              <p className="font-serif text-sm font-bold">{toast.text}</p>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      <ToastViewport
+        toasts={toasts}
+        onDismiss={(toastId) => setToasts((current) => current.filter((toast) => toast.id !== toastId))}
+      />
 
     </div>
   );
@@ -599,21 +556,16 @@ function Field({ label, icon: Icon, value, onChange, error, placeholder, type = 
       <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
         {label}
       </label>
-      <div className="relative">
-        <Icon className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${error ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
-        <input
-          type={type}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={`w-full border-b-2 bg-transparent py-3 pl-7 font-serif text-sm text-[#2C1810] placeholder-[#A89880] outline-none transition-colors ${
-            disabled ? "opacity-60 cursor-not-allowed" : ""
-          } ${
-            error ? "border-[#2C1810]" : "border-[#5C3A21]/30 focus:border-[#2C1810]"
-          }`}
-        />
-      </div>
+      <Input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        error={Boolean(error)}
+        icon={Icon}
+        className={disabled ? "cursor-not-allowed opacity-60" : ""}
+      />
       {error && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{error}</p>}
     </div>
   );
@@ -634,15 +586,14 @@ function PasswordField({
         {label}
       </label>
       <div className="relative">
-        <Lock className={`absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 ${error ? "text-[#2C1810]" : "text-[#A89880]"}`} strokeWidth={1.5} />
-        <input
+        <Input
           type={visible ? "text" : "password"}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="Enter password"
-          className={`w-full border-b-2 bg-transparent py-3 pl-7 pr-10 font-serif text-sm text-[#2C1810] placeholder-[#A89880] outline-none transition-colors ${
-            error ? "border-[#2C1810]" : "border-[#5C3A21]/30 focus:border-[#2C1810]"
-          }`}
+          error={Boolean(error)}
+          icon={Lock}
+          className="pr-10"
         />
         <button
           type="button"
