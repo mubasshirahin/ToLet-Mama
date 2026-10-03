@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { fetchAllListings, fetchDashboardStats, fetchFavorites, getCurrentUser, removeFavorite, saveFavorite } from "../lib/api";
+import { ListingCardSkeleton } from "./ui";
 
 const SAVED_IDS_KEY = "toletmama.saved_ids";
 
@@ -28,7 +29,7 @@ function readSavedIds() {
 }
 
 function writeSavedIds(ids) {
-  try { localStorage.setItem(SAVED_IDS_KEY, JSON.stringify(ids)); } catch {}
+  try { localStorage.setItem(SAVED_IDS_KEY, JSON.stringify(ids)); } catch { }
 }
 
 const PRICE_BANDS = [
@@ -243,7 +244,7 @@ function DashboardPage() {
           setIsAuthed(true);
           const r = String(user.role).toLowerCase() === 'owner' ? 'Owner' : 'Student';
           setUserRole(r);
-          try { localStorage.setItem("toletmama.api_user", JSON.stringify(user)); } catch {}
+          try { localStorage.setItem("toletmama.api_user", JSON.stringify(user)); } catch { }
         }
       })
       .catch(() => {
@@ -285,7 +286,7 @@ function DashboardPage() {
         setSavedIds(ids);
         writeSavedIds(ids);
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [isAuthed]);
 
@@ -316,7 +317,7 @@ function DashboardPage() {
     let cancelled = false;
     fetchDashboardStats()
       .then((res) => { if (!cancelled) setDashStats(res); })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [isAuthed]);
 
@@ -454,284 +455,296 @@ function DashboardPage() {
   if (role === "Owner") return <Navigate to="/my-listings" replace />;
 
   return (
-      <div className="p-6 lg:p-8">
-        {/* ═══ STAT CARDS ═══ */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-          >
-            {stats.map((stat) => (
-              <StatCard key={stat.label} stat={stat} />
-            ))}
-          </motion.div>
+    <div className="p-6 lg:p-8">
+      {/* ═══ STAT CARDS ═══ */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        {stats.map((stat) => (
+          <StatCard key={stat.label} stat={stat} />
+        ))}
+      </motion.div>
 
-          {/* ═══ BROWSE HEADER — clean, no Filters/Clear/My Listings in masthead ═══ */}
+      {/* ═══ BROWSE HEADER — clean, no Filters/Clear/My Listings in masthead ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, type: "spring", stiffness: 260, damping: 24 }}
+        className="mb-6 flex flex-col gap-3 glass-pane rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
+            {role === "Owner" ? "Property Management" : "Property Search"}
+          </p>
+          <h2 className="font-serif text-2xl font-black tracking-tight text-[#2C1810]">Browse Listings</h2>
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5C3A21]">
+            {role === "Owner"
+              ? "Search, sort, and manage your listings with URL-synced filters."
+              : "Search verified rooms and apartments with quick filters by price, area, and amenities."}
+          </p>
+        </div>
+        {role === "Owner" && (
+          <Link to="/listings/new" className="btn-rubber-stamp shrink-0 px-5 py-2.5 text-xs">
+            + Add Listing
+          </Link>
+        )}
+      </motion.div>
+
+      {/* ═══ FILTERS + LISTINGS ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+      >
+        <section className="min-w-0 space-y-5">
+          {/* Search Bar — Filters/Clear now here, not in masthead */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, type: "spring", stiffness: 260, damping: 24 }}
-            className="mb-6 flex flex-col gap-3 glass-pane rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between"
+            transition={{ delay: 0.5, type: "spring", stiffness: 260, damping: 24 }}
+            className="glass-pane rounded-2xl p-4"
           >
-            <div>
-              <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#A89880]">
-                {role === "Owner" ? "Property Management" : "Property Search"}
-              </p>
-              <h2 className="font-serif text-2xl font-black tracking-tight text-[#2C1810]">Browse Listings</h2>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5C3A21]">
-                {role === "Owner"
-                  ? "Search, sort, and manage your listings with URL-synced filters."
-                  : "Search verified rooms and apartments with quick filters by price, area, and amenities."}
-              </p>
-            </div>
-            {role === "Owner" && (
-              <Link to="/listings/new" className="btn-rubber-stamp shrink-0 px-5 py-2.5 text-xs">
-                + Add Listing
-              </Link>
-            )}
-          </motion.div>
-
-          {/* ═══ FILTERS + LISTINGS ═══ */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-          >
-            <section className="min-w-0 space-y-5">
-              {/* Search Bar — Filters/Clear now here, not in masthead */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, type: "spring", stiffness: 260, damping: 24 }}
-                className="glass-pane rounded-2xl p-4"
-              >
-                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_160px]">
-                  <label className="search-focus-ring flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 transition-all duration-300 focus-within:border-[#2C1810] focus-within:shadow-[2px_2px_0px_rgba(44,24,16,0.1)]">
-                    <Search className="h-4 w-4 text-[#A89880]" strokeWidth={1.8} />
-                    <input
-                      value={searchDraft}
-                      onChange={(e) => setSearchDraft(e.target.value)}
-                      placeholder="Search by keyword, area, owner, or amenity"
-                      className="w-full bg-transparent text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
-                    />
-                    {searchDraft && (
-                      <button type="button" onClick={() => setSearchDraft("")} className="text-[#A89880] hover:text-[#2C1810]">
-                        <X className="h-4 w-4" strokeWidth={2} />
-                      </button>
-                    )}
-                  </label>
-                  <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3">
-                    <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">Sort</span>
-                    <div className="relative flex-1">
-                      <select
-                        value={filters.sort}
-                        onChange={(e) => setSort(e.target.value)}
-                        className="w-full appearance-none bg-transparent text-sm font-medium text-[#2C1810] outline-none"
-                      >
-                        {SORT_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A89880]" strokeWidth={1.8} />
-                    </div>
-                  </label>
-                  <div className="flex items-center justify-between border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-2">
-                    <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">View</span>
-                    <div className="flex items-center gap-1.5">
-                      <motion.button
-                        type="button"
-                        onClick={() => setView("grid")}
-                        whileTap={{ scale: 0.9 }}
-                        className={`flex h-8 w-8 items-center justify-center border transition-all ${
-                          filters.view === "grid"
-                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
-                            : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
-                        }`}
-                        aria-label="Grid view"
-                      >
-                        <LayoutGrid className="h-4 w-4" strokeWidth={1.8} />
-                      </motion.button>
-                      <motion.button
-                        type="button"
-                        onClick={() => setView("list")}
-                        whileTap={{ scale: 0.9 }}
-                        className={`flex h-8 w-8 items-center justify-center border transition-all ${
-                          filters.view === "list"
-                            ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
-                            : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
-                        }`}
-                        aria-label="List view"
-                      >
-                        <List className="h-4 w-4" strokeWidth={1.8} />
-                      </motion.button>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <motion.button
-                    type="button"
-                    onClick={() => {
-                      if (window.matchMedia("(min-width: 1024px)").matches) {
-                        setDesktopFiltersOpen((open) => !open);
-                      } else {
-                        setMobileFiltersOpen(true);
-                      }
-                    }}
-                    whileTap={{ scale: 0.97, y: 2 }}
-                    className="btn-coupon-clip px-3 py-1.5 text-xs"
-                    aria-expanded={desktopFiltersOpen || mobileFiltersOpen}
-                  >
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                    Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    onClick={clearFilters}
-                    whileTap={{ scale: 0.97, y: 2 }}
-                    className="btn-coupon-clip px-3 py-1.5 text-xs"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Clear
-                  </motion.button>
-                  {activeFilterCount > 0 && (
-                    <span className="ml-1 text-xs font-medium text-[#A89880]">{activeFilterCount} filter{activeFilterCount === 1 ? "" : "s"} active</span>
-                  )}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {filters.q && <ActiveFilterChip label={`Search: ${filters.q}`} onClear={() => setSearchDraft("")} />}
-                  {filters.price !== "any" && <ActiveFilterChip label={`Price: ${getBandLabel(filters.price)}`} onClear={() => setPrice("any")} />}
-                  {filters.type !== "any" && <ActiveFilterChip label={`Type: ${filters.type}`} onClear={() => setType("any")} />}
-                  {filters.location !== "any" && <ActiveFilterChip label={`Location: ${filters.location}`} onClear={() => setLocation("any")} />}
-                  {filters.amenities.map((a) => (
-                    <ActiveFilterChip key={a} label={a} onClear={() => toggleAmenity(a)} />
-                  ))}
-                </div>
-              </motion.div>
-
-              <AnimatePresence>
-                {desktopFiltersOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="hidden overflow-hidden lg:block"
-                  >
-                    <div className="glass-pane rounded-2xl p-5">
-                      <ListingFilters
-                        filters={filters}
-                        searchDraft={searchDraft}
-                        setSearchDraft={setSearchDraft}
-                        priceBands={PRICE_BANDS}
-                        types={catalogOptions.types}
-                        locations={catalogOptions.locations}
-                        amenities={catalogOptions.amenities}
-                        onPriceChange={setPrice}
-                        onTypeChange={setType}
-                        onLocationChange={setLocation}
-                        onSortChange={setSort}
-                        onToggleAmenity={toggleAmenity}
-                        onClear={clearFilters}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Results count */}
-              <div className="flex items-center justify-between gap-3 rounded-sm border border-[#5C3A21]/10 bg-[#FAF3E0]/50 px-4 py-2.5">
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
-                  Showing {filteredListings.length} of {listings.length} listings
-                </p>
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880]">
-                  {activeFilterCount ? `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} active` : "No filters"}
-                </p>
-              </div>
-
-              {/* Listing Grid / List */}
-              <AnimatePresence mode="wait">
-                {filteredListings.length === 0 ? (
-                  <EmptyResultsState key="empty" onClear={clearFilters} />
-                ) : filters.view === "list" ? (
-                  <div key="list" className="space-y-4">
-                    {filteredListings.map((listing, i) => (
-                      <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
-                    ))}
-                  </div>
-                ) : (
-                  <div key="grid" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {filteredListings.map((listing, i) => (
-                      <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
-                    ))}
-                  </div>
-                )}
-              </AnimatePresence>
-            </section>
-          </motion.div>
-
-          {/* Footer */}
-          <div className="mt-12 border-t pt-6" style={{ borderColor: "var(--theme-border)" }}>
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
-              <span>&copy; 2026 The Daily Gazette — All rights reserved.</span>
-              <span>Est. 2022</span>
-            </div>
-          </div>
-
-        {/* ═══ MOBILE FILTERS PANEL ═══ */}
-        <AnimatePresence>
-          {mobileFiltersOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-[#2C1810]/50 lg:hidden"
-              onClick={() => setMobileFiltersOpen(false)}
-            >
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="absolute inset-y-0 right-0 w-full max-w-md overflow-y-auto border-l-2 border-[#5C3A21]/20 bg-[#FAF3E0] p-4 shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A89880]">Filters</p>
-                    <h3 className="font-serif text-2xl font-black">Refine results</h3>
-                  </div>
-                  <button type="button" onClick={() => setMobileFiltersOpen(false)} className="border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21]">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_160px]">
+              <label className="search-focus-ring flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3 transition-all duration-300 focus-within:border-[#2C1810] focus-within:shadow-[2px_2px_0px_rgba(44,24,16,0.1)]">
+                <Search className="h-4 w-4 text-[#A89880]" strokeWidth={1.8} />
+                <input
+                  value={searchDraft}
+                  onChange={(e) => setSearchDraft(e.target.value)}
+                  placeholder="Search by keyword, area, owner, or amenity"
+                  className="w-full bg-transparent text-sm text-[#2C1810] outline-none placeholder:text-[#A89880]"
+                />
+                {searchDraft && (
+                  <button type="button" onClick={() => setSearchDraft("")} className="text-[#A89880] hover:text-[#2C1810]">
                     <X className="h-4 w-4" strokeWidth={2} />
                   </button>
+                )}
+              </label>
+              <label className="flex items-center gap-3 border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-4 py-3">
+                <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">Sort</span>
+                <div className="relative flex-1">
+                  <select
+                    value={filters.sort}
+                    onChange={(e) => setSort(e.target.value)}
+                    className="w-full appearance-none bg-transparent text-sm font-medium text-[#2C1810] outline-none"
+                  >
+                    {SORT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A89880]" strokeWidth={1.8} />
                 </div>
-                <ListingFilters
-                  filters={filters}
-                  searchDraft={searchDraft}
-                  setSearchDraft={setSearchDraft}
-                  priceBands={PRICE_BANDS}
-                  types={catalogOptions.types}
-                  locations={catalogOptions.locations}
-                  amenities={catalogOptions.amenities}
-                  onPriceChange={setPrice}
-                  onTypeChange={setType}
-                  onLocationChange={setLocation}
-                  onSortChange={setSort}
-                  onToggleAmenity={toggleAmenity}
-                  onClear={clearFilters}
-                  compact
-                />
-                <div className="mt-4 flex gap-3">
-                  <motion.button type="button" onClick={clearFilters} whileTap={{ scale: 0.97, y: 2 }} className="btn-coupon-clip flex-1 justify-center px-4 py-3 text-xs">
-                    Clear
+              </label>
+              <div className="flex items-center justify-between border-2 border-[#5C3A21]/20 bg-[#FAF3E0] px-3 py-2">
+                <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">View</span>
+                <div className="flex items-center gap-1.5">
+                  <motion.button
+                    type="button"
+                    onClick={() => setView("grid")}
+                    whileTap={{ scale: 0.9 }}
+                    className={`flex h-8 w-8 items-center justify-center border transition-all ${filters.view === "grid"
+                        ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
+                        : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      }`}
+                    aria-label="Grid view"
+                  >
+                    <LayoutGrid className="h-4 w-4" strokeWidth={1.8} />
                   </motion.button>
-                  <motion.button type="button" onClick={() => setMobileFiltersOpen(false)} whileTap={{ scale: 0.97, y: 2 }} className="btn-rubber-stamp flex-1 justify-center px-4 py-3 text-xs">
-                    Apply
+                  <motion.button
+                    type="button"
+                    onClick={() => setView("list")}
+                    whileTap={{ scale: 0.9 }}
+                    className={`flex h-8 w-8 items-center justify-center border transition-all ${filters.view === "list"
+                        ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
+                        : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      }`}
+                    aria-label="List view"
+                  >
+                    <List className="h-4 w-4" strokeWidth={1.8} />
                   </motion.button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <motion.button
+                type="button"
+                onClick={() => {
+                  if (window.matchMedia("(min-width: 1024px)").matches) {
+                    setDesktopFiltersOpen((open) => !open);
+                  } else {
+                    setMobileFiltersOpen(true);
+                  }
+                }}
+                whileTap={{ scale: 0.97, y: 2 }}
+                className="btn-coupon-clip px-3 py-1.5 text-xs"
+                aria-expanded={desktopFiltersOpen || mobileFiltersOpen}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filters {activeFilterCount ? `(${activeFilterCount})` : ""}
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={clearFilters}
+                whileTap={{ scale: 0.97, y: 2 }}
+                className="btn-coupon-clip px-3 py-1.5 text-xs"
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear
+              </motion.button>
+              {activeFilterCount > 0 && (
+                <span className="ml-1 text-xs font-medium text-[#A89880]">{activeFilterCount} filter{activeFilterCount === 1 ? "" : "s"} active</span>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {filters.q && <ActiveFilterChip label={`Search: ${filters.q}`} onClear={() => setSearchDraft("")} />}
+              {filters.price !== "any" && <ActiveFilterChip label={`Price: ${getBandLabel(filters.price)}`} onClear={() => setPrice("any")} />}
+              {filters.type !== "any" && <ActiveFilterChip label={`Type: ${filters.type}`} onClear={() => setType("any")} />}
+              {filters.location !== "any" && <ActiveFilterChip label={`Location: ${filters.location}`} onClear={() => setLocation("any")} />}
+              {filters.amenities.map((a) => (
+                <ActiveFilterChip key={a} label={a} onClear={() => toggleAmenity(a)} />
+              ))}
+            </div>
+          </motion.div>
+
+          <AnimatePresence>
+            {desktopFiltersOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="hidden overflow-hidden lg:block"
+              >
+                <div className="glass-pane rounded-2xl p-5">
+                  <ListingFilters
+                    filters={filters}
+                    searchDraft={searchDraft}
+                    setSearchDraft={setSearchDraft}
+                    priceBands={PRICE_BANDS}
+                    types={catalogOptions.types}
+                    locations={catalogOptions.locations}
+                    amenities={catalogOptions.amenities}
+                    onPriceChange={setPrice}
+                    onTypeChange={setType}
+                    onLocationChange={setLocation}
+                    onSortChange={setSort}
+                    onToggleAmenity={toggleAmenity}
+                    onClear={clearFilters}
+                  />
                 </div>
               </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Results count */}
+          <div className="flex items-center justify-between gap-3 rounded-sm border border-[#5C3A21]/10 bg-[#FAF3E0]/50 px-4 py-2.5">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#5C3A21]">
+              Showing {filteredListings.length} of {listings.length} listings
+            </p>
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#A89880]">
+              {activeFilterCount ? `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} active` : "No filters"}
+            </p>
+          </div>
+
+          {/* Listing Grid / List */}
+          <AnimatePresence mode="wait">
+            {isLoadingListings ? (
+              <div
+                key="loading"
+                role="status"
+                aria-label="Loading listings"
+                className={filters.view === "list" ? "space-y-4" : "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"}
+              >
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <ListingCardSkeleton
+                    key={index}
+                    variant={filters.view === "list" ? "list" : "grid"}
+                  />
+                ))}
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <EmptyResultsState key="empty" onClear={clearFilters} hasFilters={activeFilterCount > 0} />
+            ) : filters.view === "list" ? (
+              <div key="list" className="space-y-4">
+                {filteredListings.map((listing, i) => (
+                  <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
+                ))}
+              </div>
+            ) : (
+              <div key="grid" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredListings.map((listing, i) => (
+                  <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
+                ))}
+              </div>
+            )}
+          </AnimatePresence>
+        </section>
+      </motion.div>
+
+      {/* Footer */}
+      <div className="mt-12 border-t pt-6" style={{ borderColor: "var(--theme-border)" }}>
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-[#A89880]">
+          <span>&copy; 2026 The Daily Gazette — All rights reserved.</span>
+          <span>Est. 2022</span>
+        </div>
+      </div>
+
+      {/* ═══ MOBILE FILTERS PANEL ═══ */}
+      <AnimatePresence>
+        {mobileFiltersOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#2C1810]/50 lg:hidden"
+            onClick={() => setMobileFiltersOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute inset-y-0 right-0 w-full max-w-md overflow-y-auto border-l-2 border-[#5C3A21]/20 bg-[#FAF3E0] p-4 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#A89880]">Filters</p>
+                  <h3 className="font-serif text-2xl font-black">Refine results</h3>
+                </div>
+                <button type="button" onClick={() => setMobileFiltersOpen(false)} className="border-2 border-[#5C3A21]/20 p-2 text-[#5C3A21]">
+                  <X className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </div>
+              <ListingFilters
+                filters={filters}
+                searchDraft={searchDraft}
+                setSearchDraft={setSearchDraft}
+                priceBands={PRICE_BANDS}
+                types={catalogOptions.types}
+                locations={catalogOptions.locations}
+                amenities={catalogOptions.amenities}
+                onPriceChange={setPrice}
+                onTypeChange={setType}
+                onLocationChange={setLocation}
+                onSortChange={setSort}
+                onToggleAmenity={toggleAmenity}
+                onClear={clearFilters}
+                compact
+              />
+              <div className="mt-4 flex gap-3">
+                <motion.button type="button" onClick={clearFilters} whileTap={{ scale: 0.97, y: 2 }} className="btn-coupon-clip flex-1 justify-center px-4 py-3 text-xs">
+                  Clear
+                </motion.button>
+                <motion.button type="button" onClick={() => setMobileFiltersOpen(false)} whileTap={{ scale: 0.97, y: 2 }} className="btn-rubber-stamp flex-1 justify-center px-4 py-3 text-xs">
+                  Apply
+                </motion.button>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -831,11 +844,10 @@ function ListingFilters({
                     type="button"
                     onClick={() => onToggleAmenity(amenity)}
                     whileTap={{ scale: 0.95 }}
-                    className={`border-2 px-3 py-2 text-xs font-medium transition-colors ${
-                      active
+                    className={`border-2 px-3 py-2 text-xs font-medium transition-colors ${active
                         ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
                         : "border-[#5C3A21]/20 bg-[#FAF3E0] text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
-                    }`}
+                      }`}
                   >
                     {amenity}
                   </motion.button>
@@ -892,61 +904,61 @@ function ActiveFilterChip({ label, onClear }) {
 function ListingGridCard({ listing, statusStyles, isFavorite, onFavorite }) {
   return (
     <TiltCard
-        intensity={10}
-        className="group relative flex flex-col glass-pane rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 gold-glow"
-      >
-        <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
-        <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
-          <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
-            <img
-              src={listing.image}
-              alt={listing.title}
-              className="h-full w-full object-cover sepia-[30%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/20 via-transparent to-transparent" />
-            <div className="shimmer-overlay" />
-            <span
-              className={`badge-float absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}
-            >
-              {listing.status}
-            </span>
-            <span
-              className="badge-float absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.15)]"
-            >
-              {listing.price}
-            </span>
-          </div>
+      intensity={10}
+      className="group relative flex flex-col glass-pane rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 gold-glow"
+    >
+      <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
+      <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
+        <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
+          <img
+            src={listing.image}
+            alt={listing.title}
+            className="h-full w-full object-cover sepia-[30%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/20 via-transparent to-transparent" />
+          <div className="shimmer-overlay" />
+          <span
+            className={`badge-float absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}
+          >
+            {listing.status}
+          </span>
+          <span
+            className="badge-float absolute bottom-3 right-3 border-2 border-[#2C1810] bg-[#FAF3E0] px-3 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.15)]"
+          >
+            {listing.price}
+          </span>
+        </div>
 
-          <div className="relative z-[6] card-3d-inner flex flex-1 flex-col p-5">
-            <h3 className="font-serif text-lg font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
-              {listing.title}
-            </h3>
-            <div className="mt-2 flex items-center gap-1.5 text-sm text-[#5C3A21]">
-              <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-              <span className="truncate font-medium">{listing.location}</span>
-            </div>
-            <p className="mt-2.5 flex-1 line-clamp-2 text-sm leading-relaxed text-[#5C3A21]">
-              {listing.description}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(listing.amenities || []).slice(0, 3).map((amenity) => (
-                <span key={amenity} className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]">
-                  {amenity}
-                </span>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
-              <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
-                {listing.type}
+        <div className="relative z-[6] card-3d-inner flex flex-1 flex-col p-5">
+          <h3 className="font-serif text-lg font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
+            {listing.title}
+          </h3>
+          <div className="mt-2 flex items-center gap-1.5 text-sm text-[#5C3A21]">
+            <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+            <span className="truncate font-medium">{listing.location}</span>
+          </div>
+          <p className="mt-2.5 flex-1 line-clamp-2 text-sm leading-relaxed text-[#5C3A21]">
+            {listing.description}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {(listing.amenities || []).slice(0, 3).map((amenity) => (
+              <span key={amenity} className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]">
+                {amenity}
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
-                <Users className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-                {listing.interested}
-              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t-2 border-[#5C3A21]/10 pt-3">
+            <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
+              {listing.type}
+            </span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
+              <Users className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+              {listing.interested}
             </div>
           </div>
-        </Link>
-      </TiltCard>
+        </div>
+      </Link>
+    </TiltCard>
   );
 }
 
@@ -954,63 +966,63 @@ function ListingListCard({ listing, statusStyles, isFavorite, onFavorite }) {
   return (
     <TiltCard
       intensity={6}
-        className="group relative grid overflow-hidden glass-pane rounded-2xl transition-all duration-300 hover:-translate-y-0.5 md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
-      >
-        <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
-        <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
-          <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
-            <img
-              src={listing.image}
-              alt={listing.title}
-              className="h-full w-full object-cover sepia-[25%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#2C1810]/10" />
-            <div className="shimmer-overlay" />
-            <span className={`badge-float absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}>
-              {listing.status}
+      className="group relative grid overflow-hidden glass-pane rounded-2xl transition-all duration-300 hover:-translate-y-0.5 md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
+    >
+      <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
+      <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
+        <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
+          <img
+            src={listing.image}
+            alt={listing.title}
+            className="h-full w-full object-cover sepia-[25%] contrast-[1.05] brightness-[0.95] transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#2C1810]/10" />
+          <div className="shimmer-overlay" />
+          <span className={`badge-float absolute left-3 top-3 border-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${statusStyles[listing.status]}`}>
+            {listing.status}
+          </span>
+        </div>
+
+        <div className="relative z-[6] card-3d-inner flex flex-col p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="font-serif text-xl font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
+                {listing.title}
+              </h3>
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-[#5C3A21]">
+                <MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />
+                {listing.location}
+              </div>
+            </div>
+            <span className="badge-float border-2 border-[#2C1810] bg-[#FAF3E0] px-3.5 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.12)]">
+              {listing.price}
             </span>
           </div>
-
-          <div className="relative z-[6] card-3d-inner flex flex-col p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="font-serif text-xl font-black leading-snug text-[#2C1810] transition-colors group-hover:text-[#5C3A21]">
-                  {listing.title}
-                </h3>
-                <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-[#5C3A21]">
-                  <MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />
-                  {listing.location}
-                </div>
-              </div>
-              <span className="badge-float border-2 border-[#2C1810] bg-[#FAF3E0] px-3.5 py-1.5 font-serif text-sm font-black text-[#2C1810] shadow-[2px_2px_0px_rgba(44,24,16,0.12)]">
-                {listing.price}
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#5C3A21]">{listing.description}</p>
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {(listing.amenities || []).slice(0, 4).map((amenity) => (
+              <span key={amenity} className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]">
+                {amenity}
+              </span>
+            ))}
+          </div>
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#5C3A21]/10 pt-4">
+            <div className="flex items-center gap-3">
+              <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
+                {listing.type}
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89880]">
+                Posted {listing.posted}
               </span>
             </div>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#5C3A21]">{listing.description}</p>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {(listing.amenities || []).slice(0, 4).map((amenity) => (
-                <span key={amenity} className="border border-[#5C3A21]/15 bg-[#FAF3E0] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#5C3A21]">
-                  {amenity}
-                </span>
-              ))}
-            </div>
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#5C3A21]/10 pt-4">
-              <div className="flex items-center gap-3">
-                <span className="border-2 border-[#5C3A21]/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#5C3A21]">
-                  {listing.type}
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89880]">
-                  Posted {listing.posted}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
-                <Users className="h-3.5 w-3.5" strokeWidth={1.8} />
-                {listing.interested}
-              </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#5C3A21]">
+              <Users className="h-3.5 w-3.5" strokeWidth={1.8} />
+              {listing.interested}
             </div>
           </div>
-        </Link>
-      </TiltCard>
+        </div>
+      </Link>
+    </TiltCard>
   );
 }
 
@@ -1035,7 +1047,7 @@ function FavoriteButton({ isFavorite, onClick }) {
 /* ═══════════════════════════════════════════
    EMPTY STATE
    ═══════════════════════════════════════════ */
-function EmptyResultsState({ onClear }) {
+function EmptyResultsState({ onClear, hasFilters }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -1044,27 +1056,27 @@ function EmptyResultsState({ onClear }) {
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
       className="glass-pane rounded-3xl p-10 text-center"
     >
-      <motion.div
-        animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="mx-auto flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "var(--theme-surface-2)" }}
-      >
-        <Sparkles className="h-9 w-9 text-[#A89880]" strokeWidth={1.4} />
-      </motion.div>
-      <h3 className="mt-6 font-serif text-2xl font-black text-[#2C1810]">
-        No listings match these filters.
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "var(--theme-surface-2)", color: "var(--theme-ink-muted)" }}>
+        <Search className="h-7 w-7" strokeWidth={1.6} />
+      </div>
+      <h3 className="mt-5 font-serif text-xl font-black text-[#2C1810] sm:text-2xl">
+        {hasFilters ? "No homes match your search." : "No listings available yet."}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#5C3A21]">
-        Try broadening the price range, removing a few amenities, or clearing the filters to see the full catalog.
+        {hasFilters
+          ? "Try widening your price range, choosing another area, or clearing filters to see more places."
+          : "New verified homes will appear here as soon as they become available."}
       </p>
-      <motion.button
-        type="button"
-        onClick={onClear}
-        whileTap={{ scale: 0.97, y: 2 }}
-        className="btn-rubber-stamp mt-8 px-6 py-3 text-sm"
-      >
-        Clear all filters
-      </motion.button>
+      {hasFilters && (
+        <motion.button
+          type="button"
+          onClick={onClear}
+          whileTap={{ scale: 0.97, y: 2 }}
+          className="btn-rubber-stamp mt-8 px-6 py-3 text-sm"
+        >
+          Clear filters
+        </motion.button>
+      )}
     </motion.div>
   );
 }

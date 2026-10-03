@@ -16,7 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { fetchProfile, updateProfile, updatePassword } from "../lib/api";
-import { Badge, Button, Card, Input, ToastViewport } from "./ui";
+import { Badge, Button, Card, Input, Skeleton, ToastViewport } from "./ui";
 
 const ProfilePage = function ProfilePage() {
   const fileInputRef = useRef(null);
@@ -250,28 +250,34 @@ const ProfilePage = function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
+      <div role="status" aria-label="Loading profile" aria-busy="true" className="min-h-screen bg-[#FAF3E0] text-[#2C1810]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,58,33,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(44,24,16,0.08),transparent_24%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-4">
-            <div className="h-3 w-32 bg-[#5C3A21]/10" />
-            <div className="mt-4 h-9 w-2/3 bg-[#5C3A21]/10" />
-            <div className="mt-3 h-4 w-1/2 bg-[#5C3A21]/10" />
+          <div className="glass-pane rounded-xl border p-5" style={{ borderColor: "var(--theme-border)" }}>
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="mt-4 h-9 w-2/3" />
+            <Skeleton className="mt-3 h-4 w-1/2" />
           </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-5">
-              <div className="h-6 w-48 bg-[#5C3A21]/10" />
-              <div className="mt-6 h-40 w-40 bg-[#5C3A21]/10" />
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="h-10 bg-[#5C3A21]/10" />
-                <div className="h-10 bg-[#5C3A21]/10" />
+            <div className="glass-pane space-y-6 rounded-xl border p-5 sm:p-6" style={{ borderColor: "var(--theme-border)" }}>
+              <Skeleton className="h-6 w-48" />
+              <div className="grid gap-5 sm:grid-cols-[180px_1fr]">
+                <Skeleton className="h-40 w-40 justify-self-center rounded-lg sm:justify-self-start" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-24 sm:col-span-2" />
+                </div>
               </div>
             </div>
-            <div className="animate-pulse border-2 border-[#5C3A21]/20 bg-white p-5">
-              <div className="h-6 w-40 bg-[#5C3A21]/10" />
-              <div className="mt-6 space-y-3">
-                <div className="h-8 bg-[#5C3A21]/10" />
-                <div className="h-8 bg-[#5C3A21]/10" />
+            <div className="glass-pane space-y-4 rounded-xl border p-5 sm:p-6" style={{ borderColor: "var(--theme-border)" }}>
+              <Skeleton className="h-6 w-40" />
+              <div className="space-y-3">
+                <Skeleton className="h-8" />
+                <Skeleton className="h-8" />
+                <Skeleton className="h-8" />
               </div>
             </div>
           </div>
