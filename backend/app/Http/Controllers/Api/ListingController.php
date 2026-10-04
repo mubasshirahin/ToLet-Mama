@@ -104,6 +104,10 @@ class ListingController extends Controller
             'highlights' => ['sometimes', 'array'],
             'specs' => ['sometimes', 'array'],
             'amenities' => ['sometimes', 'array'],
+            'utility_costs' => ['sometimes', 'nullable', 'array'],
+            'utility_costs.*' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
+            'latitude' => ['sometimes', 'nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'rules' => ['sometimes', 'array'],
             'nearby' => ['sometimes', 'array'],
             'available_from' => ['sometimes', 'nullable', 'date'],
@@ -162,6 +166,10 @@ class ListingController extends Controller
             'highlights' => ['sometimes', 'array'],
             'specs' => ['sometimes', 'array'],
             'amenities' => ['sometimes', 'array'],
+            'utility_costs' => ['sometimes', 'nullable', 'array'],
+            'utility_costs.*' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
+            'latitude' => ['sometimes', 'nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'rules' => ['sometimes', 'array'],
             'nearby' => ['sometimes', 'array'],
             'available_from' => ['sometimes', 'nullable', 'date'],
@@ -290,7 +298,7 @@ class ListingController extends Controller
 
     private function decodeStructuredFields(Request $request): void
     {
-        foreach (['highlights', 'specs', 'amenities', 'rules', 'nearby'] as $field) {
+        foreach (['highlights', 'specs', 'amenities', 'utility_costs', 'rules', 'nearby'] as $field) {
             $json = $request->input($field.'_json');
             if ($json === null) continue;
             $decoded = json_decode($json, true);

@@ -3,9 +3,12 @@ import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
+  Calculator,
+  GitCompareArrows,
   Heart,
   LayoutGrid,
   List,
+  Map,
   MapPin,
   Mail,
   Newspaper,
@@ -17,6 +20,7 @@ import {
 } from "lucide-react";
 import { fetchAllListings, fetchDashboardStats, fetchFavorites, getCurrentUser, removeFavorite, saveFavorite } from "../lib/api";
 import { ListingCardSkeleton } from "./ui";
+import { ListingComparison, ListingsMap, RentCalculator } from "./ListingDiscoveryTools";
 
 const SAVED_IDS_KEY = "toletmama.saved_ids";
 
@@ -231,6 +235,15 @@ function DashboardPage() {
   const [savedIds, setSavedIds] = useState(() => readSavedIds());
   const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem("toletmama.api_token"));
   const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
+  const [comparedIds, setComparedIds] = useState([]);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [calculatorListingId, setCalculatorListingId] = useState("");
+
+  useEffect(() => {
+    if (listings.length && !listings.some((listing) => String(listing.id) === String(calculatorListingId))) {
+      setCalculatorListingId(String(listings[0].id));
+    }
+  }, [listings, calculatorListingId]);
 
   useEffect(() => {
     if (!localStorage.getItem("toletmama.api_token")) {
@@ -356,7 +369,7 @@ function DashboardPage() {
       location: searchParams.get("loc") ?? "any",
       amenities: amenities ? amenities.split(",").filter(Boolean) : [],
       sort: searchParams.get("sort") ?? "relevance",
-      view: searchParams.get("view") === "list" ? "list" : "grid",
+      view: ["list", "map"].includes(searchParams.get("view")) ? searchParams.get("view") : "grid",
     };
   }, [searchParams]);
 
@@ -439,6 +452,13 @@ function DashboardPage() {
   const setLocation = (value) => updateSearchParams({ loc: value === "any" ? "" : value });
   const setSort = (value) => updateSearchParams({ sort: value === "relevance" ? "" : value });
   const setView = (value) => updateSearchParams({ view: value === "grid" ? "" : value });
+  const toggleCompare = (listing) => {
+    const id = String(listing.id);
+    setComparedIds((current) => current.includes(id)
+      ? current.filter((value) => value !== id)
+      : current.length < 3 ? [...current, id] : current);
+  };
+  const comparedListings = listings.filter((listing) => comparedIds.includes(String(listing.id)));
   const toggleAmenity = (amenity) => {
     const next = filters.amenities.includes(amenity)
       ? filters.amenities.filter((a) => a !== amenity)
@@ -545,8 +565,8 @@ function DashboardPage() {
                     onClick={() => setView("grid")}
                     whileTap={{ scale: 0.9 }}
                     className={`flex h-8 w-8 items-center justify-center border transition-all ${filters.view === "grid"
-                        ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
-                        : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
+                      : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
                       }`}
                     aria-label="Grid view"
                   >
@@ -557,12 +577,24 @@ function DashboardPage() {
                     onClick={() => setView("list")}
                     whileTap={{ scale: 0.9 }}
                     className={`flex h-8 w-8 items-center justify-center border transition-all ${filters.view === "list"
-                        ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
-                        : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
+                      : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
                       }`}
                     aria-label="List view"
                   >
                     <List className="h-4 w-4" strokeWidth={1.8} />
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    onClick={() => setView("map")}
+                    whileTap={{ scale: 0.9 }}
+                    className={`flex h-8 w-8 items-center justify-center border transition-all ${filters.view === "map"
+                      ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0] shadow-[2px_2px_0px_rgba(44,24,16,0.2)]"
+                      : "border-[#5C3A21]/20 text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      }`}
+                    aria-label="Map view"
+                  >
+                    <Map className="h-4 w-4" strokeWidth={1.8} />
                   </motion.button>
                 </div>
               </div>
@@ -647,6 +679,27 @@ function DashboardPage() {
             </p>
           </div>
 
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-[#5C3A21]">{comparedIds.length}/3 homes selected to compare</p>
+            <button
+              type="button"
+              onClick={() => setCalculatorOpen((open) => !open)}
+              aria-expanded={calculatorOpen}
+              className="inline-flex items-center gap-2 border border-[#5C3A21]/25 bg-white px-3 py-2 text-xs font-bold text-[#2C1810] transition-colors hover:border-[#2C1810]"
+            >
+              <Calculator className="h-4 w-4" />
+              {calculatorOpen ? "Hide rent calculator" : "Rent calculator"}
+            </button>
+          </div>
+          {comparedListings.length > 0 && (
+            <ListingComparison
+              listings={comparedListings}
+              onRemove={(id) => setComparedIds((current) => current.filter((value) => value !== String(id)))}
+              onClear={() => setComparedIds([])}
+            />
+          )}
+          {calculatorOpen && <RentCalculator listings={listings} selectedListingId={calculatorListingId} onSelectListing={setCalculatorListingId} />}
+
           {/* Listing Grid / List */}
           <AnimatePresence mode="wait">
             {isLoadingListings ? (
@@ -654,27 +707,29 @@ function DashboardPage() {
                 key="loading"
                 role="status"
                 aria-label="Loading listings"
-                className={filters.view === "list" ? "space-y-4" : "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"}
+                className={filters.view === "list" || filters.view === "map" ? "space-y-4" : "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"}
               >
                 {Array.from({ length: 6 }).map((_, index) => (
                   <ListingCardSkeleton
                     key={index}
-                    variant={filters.view === "list" ? "list" : "grid"}
+                    variant={filters.view === "list" || filters.view === "map" ? "list" : "grid"}
                   />
                 ))}
               </div>
             ) : filteredListings.length === 0 ? (
               <EmptyResultsState key="empty" onClear={clearFilters} hasFilters={activeFilterCount > 0} />
+            ) : filters.view === "map" ? (
+              <ListingsMap key="map" listings={filteredListings} onOpenListing={(listing) => navigate(`/listings/${listing.id}`, { state: { listing } })} />
             ) : filters.view === "list" ? (
               <div key="list" className="space-y-4">
                 {filteredListings.map((listing, i) => (
-                  <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
+                  <ListingListCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} isCompared={comparedIds.includes(String(listing.id))} onCompare={toggleCompare} compareDisabled={comparedIds.length >= 3} />
                 ))}
               </div>
             ) : (
               <div key="grid" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredListings.map((listing, i) => (
-                  <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} />
+                  <ListingGridCard key={listing.id} listing={listing} statusStyles={statusStyles} index={i} isFavorite={savedIds.includes(String(listing.id))} onFavorite={handleFavorite} isCompared={comparedIds.includes(String(listing.id))} onCompare={toggleCompare} compareDisabled={comparedIds.length >= 3} />
                 ))}
               </div>
             )}
@@ -845,8 +900,8 @@ function ListingFilters({
                     onClick={() => onToggleAmenity(amenity)}
                     whileTap={{ scale: 0.95 }}
                     className={`border-2 px-3 py-2 text-xs font-medium transition-colors ${active
-                        ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
-                        : "border-[#5C3A21]/20 bg-[#FAF3E0] text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
+                      ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]"
+                      : "border-[#5C3A21]/20 bg-[#FAF3E0] text-[#5C3A21] hover:border-[#2C1810] hover:text-[#2C1810]"
                       }`}
                   >
                     {amenity}
@@ -901,13 +956,14 @@ function ActiveFilterChip({ label, onClear }) {
 /* ═══════════════════════════════════════════
    PROPERTY CARDS WITH 3D + SHIMMER
    ═══════════════════════════════════════════ */
-function ListingGridCard({ listing, statusStyles, isFavorite, onFavorite }) {
+function ListingGridCard({ listing, statusStyles, isFavorite, onFavorite, isCompared, onCompare, compareDisabled }) {
   return (
     <TiltCard
       intensity={10}
       className="group relative flex flex-col glass-pane rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 gold-glow"
     >
       <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
+      <CompareButton listing={listing} isCompared={isCompared} onCompare={onCompare} disabled={compareDisabled && !isCompared} />
       <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
         <div className="halftone-overlay relative h-52 overflow-hidden border-b-2 border-[#5C3A21]/20">
           <img
@@ -962,13 +1018,14 @@ function ListingGridCard({ listing, statusStyles, isFavorite, onFavorite }) {
   );
 }
 
-function ListingListCard({ listing, statusStyles, isFavorite, onFavorite }) {
+function ListingListCard({ listing, statusStyles, isFavorite, onFavorite, isCompared, onCompare, compareDisabled }) {
   return (
     <TiltCard
       intensity={6}
       className="group relative grid overflow-hidden glass-pane rounded-2xl transition-all duration-300 hover:-translate-y-0.5 md:grid-cols-[240px_minmax(0,1fr)] gold-glow"
     >
       <FavoriteButton isFavorite={isFavorite} onClick={() => onFavorite(listing.id)} />
+      <CompareButton listing={listing} isCompared={isCompared} onCompare={onCompare} disabled={compareDisabled && !isCompared} />
       <Link to={`/listings/${listing.id}`} state={{ listing }} className="contents">
         <div className="halftone-overlay relative min-h-56 overflow-hidden border-b-2 border-[#5C3A21]/20 md:min-h-full md:border-b-0 md:border-r-2">
           <img
@@ -1040,6 +1097,26 @@ function FavoriteButton({ isFavorite, onClick }) {
       className={`absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center border-2 shadow-[2px_2px_0px_rgba(44,24,16,0.15)] transition-all hover:-translate-y-0.5 ${isFavorite ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810]"}`}
     >
       <Heart className="h-4 w-4" fill={isFavorite ? "currentColor" : "none"} strokeWidth={2} />
+    </button>
+  );
+}
+
+function CompareButton({ listing, isCompared, onCompare, disabled }) {
+  return (
+    <button
+      type="button"
+      aria-label={isCompared ? `Remove ${listing.title} from comparison` : `Compare ${listing.title}`}
+      aria-pressed={isCompared}
+      title={disabled ? "Compare up to three listings" : isCompared ? "Remove from comparison" : "Add to comparison"}
+      disabled={disabled}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onCompare(listing);
+      }}
+      className={`absolute right-3 top-[3.25rem] z-20 flex h-10 w-10 items-center justify-center border-2 shadow-[2px_2px_0px_rgba(44,24,16,0.15)] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${isCompared ? "border-[#2C1810] bg-[#2C1810] text-[#FAF3E0]" : "border-[#2C1810] bg-[#FAF3E0] text-[#2C1810] hover:bg-[#f0d9a5]"}`}
+    >
+      <GitCompareArrows className="h-4 w-4" strokeWidth={2} />
     </button>
   );
 }
