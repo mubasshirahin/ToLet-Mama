@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "./cn";
@@ -18,7 +19,60 @@ export function Modal({
     footer,
     size = "md",
     className = "",
+    ariaLabel,
 }) {
+    const dialogRef = useRef(null);
+    const onCloseRef = useRef(onClose);
+    const titleId = useId();
+    const descriptionId = useId();
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+
+    useEffect(() => {
+        if (!open) return undefined;
+        const dialog = dialogRef.current;
+        const previouslyFocused = document.activeElement;
+        const focusable = dialog?.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) || [];
+        (focusable[0] || dialog)?.focus();
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                onCloseRef.current?.();
+                return;
+            }
+            if (event.key !== "Tab" || !dialog) return;
+
+            const items = dialog.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (!items.length) {
+                event.preventDefault();
+                dialog.focus();
+                return;
+            }
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        dialog?.addEventListener("keydown", handleKeyDown);
+        return () => {
+            dialog?.removeEventListener("keydown", handleKeyDown);
+            previouslyFocused?.focus?.();
+        };
+    }, [open]);
+
     return (
         <AnimatePresence>
             {open ? (
@@ -27,9 +81,18 @@ export function Modal({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-ink)]/40 p-4"
-                    onClick={onClose}
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) onClose?.();
+                    }}
                 >
                     <motion.div
+                        ref={dialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={title ? titleId : undefined}
+                        aria-describedby={description ? descriptionId : undefined}
+                        aria-label={ariaLabel}
+                        tabIndex={-1}
                         initial={{ opacity: 0, y: 18, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -45,10 +108,10 @@ export function Modal({
                             <div className="mb-4 flex items-start justify-between gap-4">
                                 <div>
                                     {title && (
-                                        <h3 className="font-serif text-xl font-black text-[var(--theme-ink)]">{title}</h3>
+                                        <h3 id={titleId} className="font-serif text-xl font-black text-[var(--theme-ink)]">{title}</h3>
                                     )}
                                     {description && (
-                                        <p className="mt-1 text-sm text-[var(--theme-ink-muted)]">{description}</p>
+                                        <p id={descriptionId} className="mt-1 text-sm text-[var(--theme-ink-muted)]">{description}</p>
                                     )}
                                 </div>
 

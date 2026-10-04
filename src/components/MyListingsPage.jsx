@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, MapPin, Trash2, PenLine, Eye, PlusCircle, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchMyListings, fetchMyListingAnalytics, deleteListing, getCurrentUser } from "../lib/api";
-import { ListingCardSkeleton } from "./ui";
+import { Button, ListingCardSkeleton, Modal } from "./ui";
 
 export default function MyListingsPage() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export default function MyListingsPage() {
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [listingToDelete, setListingToDelete] = useState(null);
   const [toast, setToast] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -52,12 +53,14 @@ export default function MyListingsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this listing? This cannot be undone.")) return;
+  const handleDelete = async () => {
+    if (!listingToDelete) return;
+    const id = listingToDelete.id;
     setDeletingId(id);
     try {
       await deleteListing(id);
       setListings((prev) => prev.filter((l) => l.id !== id));
+      setListingToDelete(null);
       setToast("Listing deleted");
       setTimeout(() => setToast(""), 2000);
     } catch {
@@ -139,7 +142,7 @@ export default function MyListingsPage() {
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     <Link to={`/listings/${l.id}`} className="btn-coupon-clip justify-center px-2 py-2 text-xs"><Eye className="h-3.5 w-3.5" />View</Link>
                     <Link to={`/listings/${l.id}/edit`} state={{ listing: l }} className="btn-coupon-clip justify-center px-2 py-2 text-xs"><PenLine className="h-3.5 w-3.5" />Edit</Link>
-                    <button type="button" onClick={() => handleDelete(l.id)} disabled={deletingId === l.id} className="btn-coupon-clip justify-center border-[#8B1A1A] px-2 py-2 text-xs text-[#8B1A1A] disabled:opacity-50">
+                    <button type="button" onClick={() => setListingToDelete(l)} disabled={deletingId === l.id} className="btn-coupon-clip justify-center border-[#8B1A1A] px-2 py-2 text-xs text-[#8B1A1A] disabled:opacity-50">
                       <Trash2 className="h-3.5 w-3.5" />{deletingId === l.id ? "..." : "Delete"}
                     </button>
                   </div>
@@ -159,6 +162,25 @@ export default function MyListingsPage() {
       {toast && (
         <div className="fixed bottom-4 right-4 z-50 rounded-2xl border-2 border-[#2C1810] bg-[#2C1810] px-4 py-3 text-sm font-bold text-[#FAF3E0] shadow-lg">{toast}</div>
       )}
+
+      <Modal
+        open={Boolean(listingToDelete)}
+        onClose={() => deletingId === null && setListingToDelete(null)}
+        title="Delete listing?"
+        description="This action cannot be undone."
+        footer={(
+          <>
+            <Button variant="secondary" onClick={() => setListingToDelete(null)} disabled={deletingId !== null}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} loading={deletingId !== null}>
+              Delete listing
+            </Button>
+          </>
+        )}
+      >
+        <p className="text-sm text-[var(--theme-ink-muted)]">Delete “{listingToDelete?.title}” from your listings?</p>
+      </Modal>
     </div>
   );
 }

@@ -8,7 +8,7 @@ const variants = {
     ghost:
         "border-transparent bg-transparent text-[var(--theme-ink-muted)] hover:bg-[var(--theme-surface-2)] hover:text-[var(--theme-ink)]",
     danger:
-        "border-[var(--theme-border-strong)] bg-[var(--theme-surface)] text-[var(--theme-ink)] hover:bg-[var(--theme-surface-2)]",
+        "border-[#8B1A1A] bg-[#8B1A1A] text-white hover:brightness-110",
     success:
         "border-[var(--theme-border-strong)] bg-[var(--theme-surface-2)] text-[var(--theme-ink)] hover:bg-[var(--theme-surface-3)]",
 };
@@ -26,11 +26,14 @@ export function Button({
     variant = "primary",
     size = "md",
     loading = false,
+    disabled = false,
+    type = "button",
     ...props
 }) {
     return (
         <button
-            type="button"
+            {...props}
+            type={type}
             className={cn(
                 "inline-flex items-center justify-center gap-2 rounded-full border font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70",
                 variants[variant],
@@ -38,9 +41,8 @@ export function Button({
                 className,
                 loading && "cursor-wait"
             )}
-            aria-busy={loading}
-            disabled={loading || props.disabled}
-            {...props}
+            aria-busy={loading || undefined}
+            disabled={loading || disabled}
         >
             {children}
         </button>

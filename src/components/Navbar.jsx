@@ -105,9 +105,10 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
 
           {/* Profile dropdown */}
           <Dropdown
-            trigger={({ isOpen, setIsOpen }) => (
+            trigger={({ isOpen, setIsOpen, triggerProps }) => (
               <button
                 type="button"
+                {...triggerProps}
                 onClick={() => setIsOpen((open) => !open)}
                 className="flex items-center gap-2 rounded-full border px-2 py-1 transition-colors"
                 style={{ borderColor: "var(--theme-border-strong)" }}
