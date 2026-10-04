@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -557,22 +557,24 @@ const ProfilePage = function ProfilePage() {
 }
 
 function Field({ label, icon: Icon, value, onChange, error, placeholder, type = "text", className = "", disabled = false }) {
+  const inputId = useId();
   return (
     <div className={className}>
-      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
+      <label htmlFor={inputId} className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-[#5C3A21]">
         {label}
       </label>
       <Input
+        id={inputId}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         disabled={disabled}
         error={Boolean(error)}
+        errorMessage={error}
         icon={Icon}
         className={disabled ? "cursor-not-allowed opacity-60" : ""}
       />
-      {error && <p className="mt-1.5 font-serif text-xs text-[#2C1810]">{error}</p>}
     </div>
   );
 }
