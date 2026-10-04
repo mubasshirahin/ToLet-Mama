@@ -38,12 +38,12 @@ const GENDER_TYPES = ["Male", "Female"];
 
 // Which spec fields are relevant per property type
 const TYPE_SPEC_CONFIG = {
-  "Single Room":   { bedrooms: false, bathrooms: false, size: false, floor: true,  note: "Single room — size not needed" },
-  "Shared Room":   { bedrooms: false, bathrooms: true,  size: false, floor: true,  note: "Shared room — size not needed" },
-  "Studio":        { bedrooms: false, bathrooms: true,  size: false, floor: true,  note: "Studio — size not needed" },
-  "Apartment":     { bedrooms: true,  bathrooms: true,  size: true, floor: true,  note: null },
-  "Flat":          { bedrooms: true,  bathrooms: true,  size: true, floor: true,  note: null },
-  "Drawing Space": { bedrooms: false, bathrooms: true,  size: false, floor: true,  note: "Drawing space — shared common area" },
+  "Single Room": { bedrooms: false, bathrooms: false, size: false, floor: true, note: "Single room — size not needed" },
+  "Shared Room": { bedrooms: false, bathrooms: true, size: false, floor: true, note: "Shared room — size not needed" },
+  "Studio": { bedrooms: false, bathrooms: true, size: false, floor: true, note: "Studio — size not needed" },
+  "Apartment": { bedrooms: true, bathrooms: true, size: true, floor: true, note: null },
+  "Flat": { bedrooms: true, bathrooms: true, size: true, floor: true, note: null },
+  "Drawing Space": { bedrooms: false, bathrooms: true, size: false, floor: true, note: "Drawing space — shared common area" },
 };
 const AMENITIES = [
   "Wi-Fi",
@@ -87,11 +87,11 @@ const STEPS = [
 ];
 
 const PRICE_CONFIG = {
-  "Single Room":   { placeholder: "BDT 6,000/mo", hint: "Single room • 4,500 - 12,000/mo" },
-  "Shared Room":   { placeholder: "BDT 4,000/mo per bed", hint: "Shared room • per bed rent" },
-  "Studio":        { placeholder: "BDT 18,000/mo", hint: "Studio • 15,000 - 25,000/mo" },
-  "Apartment":     { placeholder: "BDT 40,000/mo", hint: "Apartment • full unit 30,000 - 80,000/mo" },
-  "Flat":          { placeholder: "BDT 32,000/mo", hint: "Flat • full unit 25,000 - 60,000/mo" },
+  "Single Room": { placeholder: "BDT 6,000/mo", hint: "Single room • 4,500 - 12,000/mo" },
+  "Shared Room": { placeholder: "BDT 4,000/mo per bed", hint: "Shared room • per bed rent" },
+  "Studio": { placeholder: "BDT 18,000/mo", hint: "Studio • 15,000 - 25,000/mo" },
+  "Apartment": { placeholder: "BDT 40,000/mo", hint: "Apartment • full unit 30,000 - 80,000/mo" },
+  "Flat": { placeholder: "BDT 32,000/mo", hint: "Flat • full unit 25,000 - 60,000/mo" },
   "Drawing Space": { placeholder: "BDT 5,500/mo", hint: "Drawing space • shared common area 4,000 - 9,000/mo" },
 };
 
@@ -142,6 +142,9 @@ function createEmptyForm() {
     bathrooms: "1",
     size: "",
     floor: "",
+    latitude: "",
+    longitude: "",
+    utilityCosts: { electricity: "", water: "", gas: "", internet: "", other: "" },
     totalOccupants: "",
     availableFrom: "",
     description: "",
@@ -174,6 +177,11 @@ function createFormFromListing(listing) {
     bathrooms: String(listing.specs?.bathrooms || 1),
     size: listing.specs?.size || "",
     floor: listing.specs?.floor || "",
+    latitude: listing.latitude === null || listing.latitude === undefined ? "" : String(listing.latitude),
+    longitude: listing.longitude === null || listing.longitude === undefined ? "" : String(listing.longitude),
+    utilityCosts: Object.fromEntries(
+      ["electricity", "water", "gas", "internet", "other"].map((key) => [key, listing.utility_costs?.[key] ?? ""])
+    ),
     totalOccupants: String(listing.specs?.totalOccupants || listing.specs?.occupants || ""),
     availableFrom: toMonthInputValue(listing.availableFrom || listing.available_from || ""),
     description: listing.description || "",
@@ -345,7 +353,7 @@ function ListingFormPage() {
           }
           // Ensure string fields are not null
           const base = createEmptyForm();
-          for (const key of ["title","price","location","size","floor","totalOccupants","availableFrom","description","rulesText","nearbyText","ownerName","ownerPhone","ownerEmail"]) {
+          for (const key of ["title", "price", "location", "size", "floor", "totalOccupants", "availableFrom", "description", "rulesText", "nearbyText", "ownerName", "ownerPhone", "ownerEmail"]) {
             if (safeDraft[key] === null) safeDraft[key] = "";
           }
           return { ...base, ...safeDraft };
@@ -353,7 +361,7 @@ function ListingFormPage() {
         setToast("Draft restored from server");
         setTimeout(() => setToast(""), 2000);
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [isEditMode, existingListing]);
 
@@ -365,7 +373,7 @@ function ListingFormPage() {
     const hasAnyData = String(form.title || "").trim() || String(form.price || "").trim() || String(form.location || "").trim() || form.images.length || form.washroomImages?.length || form.balconyImages?.length;
     if (!hasAnyData) return;
     const timer = setTimeout(() => {
-      saveDraft(form).catch(() => {});
+      saveDraft(form).catch(() => { });
     }, 900);
     return () => clearTimeout(timer);
   }, [form, isEditMode]);
@@ -389,7 +397,7 @@ function ListingFormPage() {
           return changed ? next : prev;
         });
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [isEditMode]);
 
@@ -503,6 +511,11 @@ function ListingFormPage() {
           .split("\n")
           .map((line) => line.trim())
           .filter(Boolean),
+        utility_costs: Object.fromEntries(
+          Object.entries(form.utilityCosts).map(([key, value]) => [key, value === "" ? null : Number(value)])
+        ),
+        latitude: form.latitude.trim(),
+        longitude: form.longitude.trim(),
         available_from: String(form.availableFrom || "").trim() ? `${String(form.availableFrom).trim()}-01` : null,
       };
 
@@ -635,6 +648,55 @@ function ListingFormPage() {
                       error={errors.location}
                       placeholder="Banani, Dhaka"
                     />
+                    <div className="sm:col-span-2 grid gap-x-5 gap-y-2 sm:grid-cols-2">
+                      <Field
+                        label="Latitude (optional)"
+                        icon={MapPin}
+                        value={form.latitude}
+                        onChange={(value) => updateField("latitude", value)}
+                        placeholder="23.7937"
+                        type="number"
+                        min="-90"
+                        step="any"
+                      />
+                      <Field
+                        label="Longitude (optional)"
+                        icon={MapPin}
+                        value={form.longitude}
+                        onChange={(value) => updateField("longitude", value)}
+                        placeholder="90.4066"
+                        type="number"
+                        min="-180"
+                        step="any"
+                      />
+                      <a
+                        className="text-xs font-semibold underline sm:col-span-2"
+                        href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(form.location || "Dhaka")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Find coordinates on OpenStreetMap
+                      </a>
+                    </div>
+                    <div className="sm:col-span-2 border-t border-[#5C3A21]/15 pt-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5C3A21]">Estimated monthly utility costs (BDT)</p>
+                      <p className="mt-1 text-xs text-[#A89880]">Leave a cost blank if it is included in rent or unknown.</p>
+                      <div className="mt-2 grid gap-x-5 gap-y-1 sm:grid-cols-2">
+                        {[["electricity", "Electricity"], ["water", "Water"], ["gas", "Gas"], ["internet", "Internet"], ["other", "Other"]].map(([key, label]) => (
+                          <Field
+                            key={key}
+                            label={label}
+                            icon={Sparkles}
+                            value={form.utilityCosts[key]}
+                            onChange={(value) => setForm((current) => ({ ...current, utilityCosts: { ...current.utilityCosts, [key]: value } }))}
+                            placeholder="0"
+                            type="number"
+                            min="0"
+                            step="1"
+                          />
+                        ))}
+                      </div>
+                    </div>
                     {isEditMode && (
                       <SelectField
                         label="Status"
@@ -1043,7 +1105,7 @@ function ListingFormPage() {
   );
 }
 
-function Field({ label, icon: Icon, value, onChange, error, placeholder, className = "", type = "text", min }) {
+function Field({ label, icon: Icon, value, onChange, error, placeholder, className = "", type = "text", min, step }) {
   const inputRef = useRef(null);
   const isDate = type === "date" || type === "month";
   return (
@@ -1061,6 +1123,7 @@ function Field({ label, icon: Icon, value, onChange, error, placeholder, classNa
           ref={inputRef}
           type={type}
           min={min}
+          step={step}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}

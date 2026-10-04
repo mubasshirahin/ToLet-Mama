@@ -130,7 +130,7 @@ async function listingToFormData(listingData, updating = false) {
       } else if (typeof value === "string" && value) body.append("existing_" + key + "[]", value);
     }
   }
-  const structured = new Set(["highlights", "specs", "amenities", "rules", "nearby"]);
+  const structured = new Set(["highlights", "specs", "amenities", "utility_costs", "rules", "nearby"]);
   for (const [key, value] of Object.entries(listingData)) {
     if (["images", "washroom_images", "balcony_images"].includes(key)) continue;
     if (structured.has(key)) body.append(key + "_json", JSON.stringify(value ?? []));
